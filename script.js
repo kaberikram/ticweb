@@ -15,10 +15,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const newRatSrc = shirt.getAttribute('data-rat-src');
                 if (newRatSrc) {
                     ratImage.src = newRatSrc;
-                    console.log(`Rat image changed to: ${newRatSrc}`);
-                    // Optional: Add visual feedback on tap?
-                    // shirt.style.transform = 'scale(0.95)';
-                    // setTimeout(() => { shirt.style.transform = ''; }, 100);
+                    // Quick grab effect
+                    shirt.classList.add('grabbed');
+                    setTimeout(() => {
+                        shirt.classList.remove('grabbed');
+                    }, 200);
                 }
             });
         });
@@ -30,6 +31,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         let initialShirtPos = { left: '', top: '' }; // Store initial position
         let offsetX = 0;
         let offsetY = 0;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let isMoving = false;
+        let moveTimeout;
+        let currentDirection = null;
 
         shirts.forEach(shirt => {
             shirt.style.cursor = 'grab'; // Indicate draggable item
@@ -39,6 +45,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 e.preventDefault(); 
                 
                 activeShirt = shirt;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
                 
                 // Store initial position using computed style for reliability
                 const computedStyle = window.getComputedStyle(activeShirt);
@@ -47,6 +55,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 activeShirt.style.cursor = 'grabbing';
                 activeShirt.style.zIndex = 1000;
+                
+                // Initial grab state
+                activeShirt.classList.add('grabbed');
 
                 const rect = activeShirt.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
@@ -60,19 +71,56 @@ document.addEventListener('DOMContentLoaded', (event) => {
         function onMouseMove(e) {
             if (!activeShirt) return;
 
-            // Calculate new position based on mouse movement and initial offset
-            // We need the container's position to calculate relative positioning
-            const container = document.querySelector('.shirts-container'); // Assuming this is the positioning parent
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+            const isMovingNow = Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
+
+            if (isMovingNow) {
+                // Determine direction based on deltaX
+                const newDirection = deltaX > 0 ? 'right' : 'left';
+                
+                if (currentDirection !== newDirection) {
+                    // Remove previous direction class if it exists
+                    if (currentDirection) {
+                        activeShirt.classList.remove(`dragging-${currentDirection}`);
+                    }
+                    // Add new direction class
+                    activeShirt.classList.remove('grabbed');
+                    activeShirt.classList.add(`dragging-${newDirection}`);
+                    currentDirection = newDirection;
+                }
+                
+                isMoving = true;
+            }
+
+            // Update last position
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            // Clear existing timeout
+            if (moveTimeout) {
+                clearTimeout(moveTimeout);
+            }
+
+            // Set new timeout
+            moveTimeout = setTimeout(() => {
+                if (isMoving) {
+                    // Stopped moving
+                    if (currentDirection) {
+                        activeShirt.classList.remove(`dragging-${currentDirection}`);
+                        currentDirection = null;
+                    }
+                    activeShirt.classList.add('grabbed');
+                    isMoving = false;
+                }
+            }, 50);
+
+            const container = document.querySelector('.shirts-container');
             const containerRect = container.getBoundingClientRect();
 
             let newX = e.clientX - containerRect.left - offsetX;
             let newY = e.clientY - containerRect.top - offsetY;
 
-            // Optional: Keep the shirt within the bounds of the container
-            // newX = Math.max(0, Math.min(newX, containerRect.width - activeShirt.offsetWidth));
-            // newY = Math.max(0, Math.min(newY, containerRect.height - activeShirt.offsetHeight));
-
-            // Set the position using style.left and style.top (in pixels)
             activeShirt.style.left = `${newX}px`;
             activeShirt.style.top = `${newY}px`;
         }
@@ -81,6 +129,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (activeShirt) {
                 activeShirt.style.cursor = 'grab'; 
                 activeShirt.style.zIndex = ''; 
+                
+                // Remove all effect classes
+                activeShirt.classList.remove('grabbed');
+                if (currentDirection) {
+                    activeShirt.classList.remove(`dragging-${currentDirection}`);
+                    currentDirection = null;
+                }
 
                 const shirtRect = activeShirt.getBoundingClientRect();
                 const ratRect = ratImage.getBoundingClientRect();
@@ -101,7 +156,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
 
+                if (moveTimeout) {
+                    clearTimeout(moveTimeout);
+                }
+                
                 activeShirt = null;
+                isMoving = false;
             }
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
