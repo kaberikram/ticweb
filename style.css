@@ -23,16 +23,18 @@ body, html {
 .logo-container {
     width: 100%;
     text-align: center;
-    padding-bottom: 20px; /* Space below logo */
-    position: absolute; /* Position relative to container */
-    top: 0%; /* Corrected position for desktop (was -10%) */
+    padding: 20px 0; /* Added padding top and bottom */
+    position: fixed;
+    top: 2%; /* Moved down slightly from 0% */
     left: 50%;
     transform: translateX(-50%);
 }
 
 .logo {
-    max-width: 150px; /* Adjust logo size */
+    max-width: 105px;
     height: auto;
+    display: block; /* Ensure proper margin handling */
+    margin: 0 auto; /* Center the logo */
 }
 
 .shirts-container {
@@ -46,7 +48,7 @@ body, html {
 
 .rat-center {
     position: absolute; /* Position relative to shirts-container */
-    max-width: 32.5%; /* Increased size by 30% (was 25%) */
+    max-width: 15.925%; /* Reduced by 30% from 22.75% */
     height: auto;
     top: 50%;
     left: 50%;
@@ -56,7 +58,7 @@ body, html {
 
 .shirt {
     position: absolute; /* Position relative to shirts-container */
-    max-width: 20%; /* Adjust shirt size */
+    max-width: 9.8%; /* Reduced by 30% from 14% */
     height: auto;
     transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* More bouncy easing */
     transform-origin: center center;
@@ -140,21 +142,6 @@ body, html {
 } 
 */
 
-/* Styling for the curved text below the rat */
-.curved-text {
-    position: absolute;
-    bottom: 15%; /* Lowered text slightly (was 18%) */
-    left: 50%;
-    transform: translateX(-50%); /* Center horizontally */
-    color: #333; /* Text color */
-    font-size: 1.95em; /* Increased size by 30% (was 1.5em) */
-    font-weight: bold;
-    white-space: nowrap; /* Prevent text wrapping */
-    transform-origin: center bottom; /* Rotate around the bottom center */
-    transform: translateX(-50%) perspective(300px) rotateX(45deg); /* Apply perspective and rotation */
-    z-index: 5; /* Place it below the rat but above background */
-}
-
 /* Optional: Add perspective to the parent container if needed for better effect */
 /*
 .shirts-container {
@@ -167,96 +154,82 @@ body, html {
 /* Styles for mobile devices (screens less than 768px wide) */
 @media (max-width: 767px) {
     body, html {
-        /* Allow vertical scrolling on mobile if content overflows */
-        overflow: auto;
+        overflow: hidden;
         width: 100%;
         height: 100%;
     }
 
     .container {
-        width: 100%; /* Use full width */
-        height: auto; /* Allow height to adjust */
-        padding-top: 80px;
+        width: 100%;
+        height: 100vh;
+        padding-top: 120px; /* Increased padding to ensure content starts below browser chrome */
         padding-bottom: 5vh;
-        align-items: stretch;
-        margin: 0; /* Remove any margin */
+        align-items: center;
+        margin: 0;
+        overflow: hidden;
     }
 
     .logo-container {
-        position: sticky; /* Make header sticky */
-        top: 0; /* Stick to the top */
-        z-index: 100; /* Ensure it's above other content */
-        background-color: transparent; /* Make background transparent */
-        transform: none;
-        padding-bottom: 10px; /* Adjusted padding */
-        padding-top: 10px; /* Added top padding for spacing */
-        width: 100%; /* Ensure it spans width for background */
-        margin-left: -2.5vw; /* Offset container padding if needed */
-        padding-left: 2.5vw; /* Re-apply padding */
-        padding-right: 2.5vw;
-        box-sizing: border-box; /* Include padding in width */
-        height: auto; 
+        position: fixed; /* Changed to fixed to ensure it stays visible */
+        top: 35px; /* Increased top spacing to avoid browser chrome */
+        z-index: 100;
+        background-color: transparent;
+        transform: translateX(-50%);
+        padding: 10px 2.5vw;
+        width: auto;
+        height: auto;
     }
 
     .logo {
-        max-width: 120px; /* Slightly larger logo for mobile */
+        max-width: 105px; /* Made consistent with desktop size */
     }
 
     .shirts-container {
-        position: static; /* Change from relative */
-        display: flex; 
-        flex-wrap: wrap; /* Allow shirts to wrap */
-        justify-content: center; 
+        position: relative;
+        display: flex;
+        justify-content: center;
         align-items: center;
-        gap: 0px; /* Add space between shirts */
-        height: auto; /* Allow height to adjust */
-        padding-bottom: 0; /* Removed large padding */
+        height: 100%;
+        width: 100%;
+        padding: 0;
     }
 
     .shirt {
-        position: static; /* Override absolute positioning */
-        max-width: 40%;  /* Make shirts much larger on mobile */
-        top: auto;
-        left: auto;
-        right: auto;
-        bottom: auto;
-        order: 3; /* Place shirts after text */
-        /* Keep the transition properties */
-        transition: transform 0.2s ease-out;
+        position: absolute;
+        max-width: 21%; /* Reduced by 30% from 30% */
         transform-origin: center center;
         will-change: transform;
+        transition: transform 0.2s ease-out;
+    }
+
+    /* Update shirt positions for mobile */
+    .top-left {
+        top: 20%;
+        left: 15%;
+    }
+
+    .top-right {
+        top: 20%;
+        left: 60%;
+    }
+
+    .bottom-left {
+        top: 60%;
+        left: 15%;
+    }
+
+    .bottom-right {
+        top: 60%;
+        left: 60%;
     }
 
     .rat-center {
-        position: relative; /* Can be relative or static */
-        order: 1; /* Place rat first */
-        max-width: 60%; /* Adjust rat size for mobile */
-        top: auto; /* Reset positioning */
-        left: auto;
-        transform: none; /* Reset transform */
-        margin-bottom: 5px; /* Reduced space below rat */
-        display: block; /* Ensure it takes block space */
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    /* Reset rat circle if it was enabled */
-    /* 
-    .rat-center::after {
-        display: none; 
-    }
-    */
-
-    .curved-text {
-        position: relative; /* Change from absolute */
-        order: 2; /* Place text second (after rat) */
-        bottom: auto; /* Reset positioning */
-        left: auto;
-        transform: none; /* Remove curve on mobile */
-        font-size: 1.5em; /* Adjust text size */
-        margin-top: -30px; /* Reduced space above text */
-        margin-bottom: 0px; /* Reduced space below text before shirts */
-        text-align: center; /* Center text */
-        width: 100%;
+        position: absolute;
+        max-width: 42%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        z-index: 10;
     }
 } 
