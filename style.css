@@ -8,6 +8,7 @@ body, html {
     align-items: center;
     background-color: #fff; /* Or any desired background */
     overflow: hidden; /* Hide scrollbars if content exceeds viewport */
+    font-family: "Source Code Pro", monospace;
 }
 
 .container {
@@ -18,6 +19,9 @@ body, html {
     flex-direction: column;
     align-items: center;
     max-width: none; /* Remove max-width limitation */
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 15px 15px;
+    padding: 20px;
 }
 
 .logo-container {
@@ -107,23 +111,33 @@ body, html {
 }
 
 .top-left {
-    top: 15%; /* Adjust position */
-    left: 10%; /* Adjust position */
+    top: 20%; /* Arc layout */
+    left: 15%;
 }
 
 .top-right {
-    top: 15%; /* Adjust position */
-    left: 70%; /* Changed from right: 10% */
+    top: 20%; /* Arc layout */
+    left: 75%;
+}
+
+.middle-left {
+    top: 45%; /* Arc layout */
+    left: 10%; /* Closer to center */
+}
+
+.middle-right {
+    top: 45%; /* Arc layout */
+    left: 80%; /* Closer to center */
 }
 
 .bottom-left {
-    top: 70%; /* Changed from bottom: 15% */
-    left: 10%; /* Adjust position */
+    top: 70%; /* Arc layout */
+    left: 15%;
 }
 
 .bottom-right {
-    top: 70%; /* Changed from bottom: 15% */
-    left: 70%; /* Changed from right: 10% */
+    top: 70%; /* Arc layout */
+    left: 75%;
 }
 
 /* Optional: Add styles for the circle under the rat if needed */
@@ -204,23 +218,33 @@ body, html {
 
     /* Update shirt positions for mobile */
     .top-left {
-        top: 20%;
-        left: 15%;
+        top: 20%; /* Keep top row */
+        left: 20%; /* Closer horizontally */
     }
 
     .top-right {
-        top: 20%;
-        left: 60%;
+        top: 20%; /* Keep top row */
+        left: 55%; /* Closer horizontally */
+    }
+
+    .middle-left {
+        top: 35%; /* Reduce vertical space */
+        left: 5%; /* Align horizontally with bottom */
+    }
+
+    .middle-right {
+        top: 35%; /* Reduce vertical space */
+        left: 70%; /* Align horizontally with bottom */
     }
 
     .bottom-left {
-        top: 60%;
-        left: 15%;
+        top: 50%; /* Reduce vertical space */
+        left: 3%; /* Keep wide spread */
     }
 
     .bottom-right {
-        top: 60%;
-        left: 60%;
+        top: 50%; /* Reduce vertical space */
+        left: 72%; /* Keep wide spread */
     }
 
     .rat-center {
@@ -232,4 +256,249 @@ body, html {
         margin: 0;
         z-index: 10;
     }
+
+    #shirt-name {
+        position: absolute;
+        top: 68%; /* Restore original top positioning for mobile default */
+        /* bottom: 22%; */ /* Remove bottom positioning for mobile default */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%; /* Ensure text wraps if needed */
+        font-size: 18px; /* Smaller font for mobile */
+        /* font-weight: bold; */ /* Let's use the desktop style or remove */
+        color: #333;
+        text-align: center;
+        z-index: 15;
+        margin: 0;
+        padding: 0 10px; /* Add horizontal padding */
+    }
+} 
+
+.get-free-button {
+    position: fixed;
+    bottom: 10%; /* Moved button further down */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: normal; /* Changed from bold */
+    color: #fff;
+    background-color: #222; /* Dark gray/black */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    z-index: 100; /* Ensure it's above other elements */
+    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
+}
+
+.get-free-button:hover {
+    background-color: #444; /* Lighter gray on hover */
+}
+
+.get-free-button:active {
+    background-color: #000; /* Black on active/click */
+    transform: translateX(-50%) scale(0.98); /* Slight scale down */
+}
+
+#shirt-name {
+    position: absolute;
+    bottom: 20%; /* Adjusted position slightly lower */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px; /* Adjust font size as desired */
+    font-weight: 600; /* Changed to semi-bold (600) */
+    color: #333; /* Adjust color as desired */
+    text-align: center;
+    z-index: 15; /* Ensure it's visible */
+    margin: 0; /* Remove default margin */
+    /* Removed padding-top as bottom positioning handles space */
+    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: "Source Code Pro", monospace;
+}
+
+.modal {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    text-align: center;
+    width: 90%;
+    max-width: 400px; /* Adjust max width as needed */
+    border: 1px solid #ccc; /* Light grey border */
+    position: relative;
+}
+
+.modal-content {
+    position: relative; /* Needed for absolute positioning of children like the X button */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-rat-image {
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 15px;
+    border: 1px solid #eee; /* Optional border for the image */
+}
+
+.modal-instruction {
+    font-size: 0.8em;
+    color: #333; /* Darker grey, matches button color */
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.email-input {
+    width: calc(100% - 22px); /* Full width minus padding/border */
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: "Source Code Pro", monospace;
+    font-size: 1em;
+}
+
+.confirm-button,
+.close-button {
+    background-color: #333; /* Dark button background */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: "Source Code Pro", monospace;
+    font-size: 1.1em;
+    font-weight: normal; /* Changed from bold */
+    transition: background-color 0.2s ease;
+}
+
+.confirm-button:hover,
+.close-button:hover {
+    background-color: #555; /* Slightly lighter on hover */
+}
+
+.modal-confirmation-message {
+    /* Match instruction style */
+    font-size: 0.8em;
+    color: #333;
+    margin-bottom: 20px; /* Adjusted margin */
+    line-height: 1.4;
+    font-weight: normal; /* Removed bold */
+}
+
+/* Specific styles for confirmed state */
+.confirmed-state {
+    /* Styles specific to the confirmed state if needed */
+}
+
+/* Ensure modal is above the dotted background */
+.modal-overlay {
+    background-color: rgba(255, 255, 255, 0.8); /* Lighter background to see dots */
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 600px) {
+    .modal {
+        padding: 15px; /* Further reduced padding */
+        width: 80%;    /* Reduced width from 90% */
+    }
+
+    .modal-rat-image {
+        width: 60px; /* Smaller image */
+        margin-bottom: 10px; /* Reduced margin */
+    }
+
+    .modal-instruction,
+    .modal-confirmation-message {
+        font-size: 0.75em; /* Slightly smaller text */
+        margin-bottom: 15px; /* Reduced margin */
+    }
+
+    .confirm-button,
+    .close-button {
+        font-size: 1em; /* Slightly smaller buttons */
+        padding: 10px 20px;
+    }
+
+    .email-input {
+        font-size: 0.9em; /* Adjust input font size too */
+        margin-bottom: 15px; /* Reduced margin */
+    }
+} 
+
+/* Additional override for TALLER mobile screens (e.g., iPhone XR/14 Pro Max) */
+@media (max-width: 767px) and (min-height: 670px) {
+    #shirt-name {
+        top: auto; /* Override previous top */
+        bottom: 32%; /* Increased from 22% to move closer to rat */
+    }
+    .get-free-button {
+        bottom: 20%; /* Increased from 10% to move closer to rat */
+    }
+} 
+
+/* #help-button CSS removed */
+
+/* ... shirts-container styles ... */
+
+/* ... logo styles ... */
+
+/* ... shirts-container styles ... */ 
+
+/* --- Tooltip Styles --- */
+#instruction-tooltip {
+    position: absolute;
+    top: 58%; /* Position below the rat image (adjust as needed) */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(51, 51, 51, 0.9); /* Dark semi-transparent background */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: "Source Code Pro", monospace;
+    z-index: 20; /* Above rat, below shirts being dragged */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.5s ease-in-out;
+    white-space: nowrap; /* Prevent wrapping */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+#instruction-tooltip.visible {
+    opacity: 1; /* Make visible */
+}
+
+.modal-close-x {
+    position: absolute;
+    top: 4px; /* Reduced from 10px */
+    right: 4px; /* Reduced from 10px */
+    background: none;
+    border: none;
+    font-size: 24px; /* Adjust size of X */
+    font-weight: bold;
+    color: #aaa; /* Light grey color */
+    cursor: pointer;
+    padding: 0;
+    line-height: 1; /* Prevent extra spacing */
+    transition: color 0.2s ease;
+}
+
+.modal-close-x:hover {
+    color: #333; /* Darken on hover */
 } 

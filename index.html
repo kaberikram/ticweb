@@ -6,6 +6,9 @@
     <title>TIC Web</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="/ticLOGO.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -14,14 +17,38 @@
         </header>
 
         <main class="shirts-container">
-            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png">
-            <img src="/2Shirt.png" alt="Shirt 2" class="shirt top-right" data-rat-src="/2Rat.png">
+            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png" data-shirt-name="Ratphex-T">
+            <img src="/2Shirt.png" alt="Shirt 2" class="shirt top-right" data-rat-src="/2Rat.png" data-shirt-name="Ratvolution-T">
             <img src="/1Rat.png" alt="Rat wearing Shirt" class="rat-center" id="ratImage">
-            <div class="curved-text">Tim Cheese</div>
-            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png">
-            <img src="/4Shirt.png" alt="Shirt 4" class="shirt bottom-right" data-rat-src="/4Rat.png">
+            <div id="instruction-tooltip" class="tooltip">Drag a shirt onto the rat!</div>
+            <p id="shirt-name">Ratphex-T</p>
+            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png" data-shirt-name="AnimalCollective-T">
+            <img src="/4Shirt.png" alt="Shirt 4" class="shirt bottom-right" data-rat-src="/4Rat.png" data-shirt-name="TimPeaks-T">
+            <img src="/5Shirt.png" alt="Shirt 5" class="shirt middle-left" data-rat-src="/5Rat.png" data-shirt-name="Ratph4x-T">
+            <img src="/6Shirt.png" alt="Shirt 6" class="shirt middle-right" data-rat-src="/6Rat.png" data-shirt-name="RatwardScissor-T">
         </main>
+
+        <button class="get-free-button">Get for free</button>
     </div>
+
+    <!-- Modal Structure -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="emailModal" class="modal">
+            <div class="modal-content initial-state">
+                <button id="modalCloseX" class="modal-close-x">&times;</button>
+                <img id="modalRatImage" src="/1Rat.png" alt="Selected Rat" class="modal-rat-image">
+                <p class="modal-instruction">Get <span id="modalShirtName"></span> for free, enter your email we'll send if its the top pick!</p>
+                <input type="email" id="emailInput" placeholder="Email" class="email-input">
+                <button id="confirmButton" class="confirm-button">Confirm</button>
+            </div>
+            <div class="modal-content confirmed-state" style="display: none;">
+                 <p class="modal-confirmation-message">Got it! We'll email you by<br><strong>April 20, 2025</strong><br>if you're getting this<br><span id="modalConfirmShirtName"></span>.</p>
+                <button id="closeButton" class="close-button">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Structure -->
+
     <script type="module" src="./script.js"></script>
 </body>
 </html> 
