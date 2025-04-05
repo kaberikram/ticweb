@@ -442,16 +442,7 @@ body, html {
     }
 } 
 
-/* Additional override for TALLER mobile screens (e.g., iPhone XR/14 Pro Max) */
-@media (max-width: 767px) and (min-height: 670px) {
-    #shirt-name {
-        top: auto; /* Override previous top */
-        bottom: 32%; /* Increased from 22% to move closer to rat */
-    }
-    .get-free-button {
-        bottom: 20%; /* Increased from 10% to move closer to rat */
-    }
-} 
+
 
 /* #help-button CSS removed */
 
