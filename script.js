@@ -2,6 +2,41 @@ import { inject } from "@vercel/analytics";
 
 inject();
 
+// --- LocalStorage Helper Functions ---
+const STORAGE_KEY = 'submittedTicEmails';
+
+function getSubmittedEmails() {
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    if (storedData) {
+        try {
+            const emails = JSON.parse(storedData);
+            // Ensure it's an array
+            return Array.isArray(emails) ? emails : [];
+        } catch (e) {
+            console.error("Error parsing submitted emails from localStorage:", e);
+            return []; // Return empty array on error
+        }
+    } 
+    return []; // Return empty array if nothing stored
+}
+
+function hasEmailBeenSubmitted(email) {
+    if (!email) return false;
+    const submittedEmails = getSubmittedEmails();
+    return submittedEmails.includes(email.toLowerCase());
+}
+
+function addSubmittedEmail(email) {
+    if (!email) return;
+    const submittedEmails = getSubmittedEmails();
+    const lowerCaseEmail = email.toLowerCase();
+    if (!submittedEmails.includes(lowerCaseEmail)) {
+        submittedEmails.push(lowerCaseEmail);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(submittedEmails));
+    }
+}
+// --- End LocalStorage Helpers ---
+
 document.addEventListener('DOMContentLoaded', () => {
     const shirts = document.querySelectorAll('.shirt');
     const ratImage = document.getElementById('ratImage');
@@ -23,12 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const instructionTooltip = document.getElementById('instruction-tooltip'); // Get tooltip
     const preDeadlineMessage = document.getElementById('preDeadlineMessage'); // Get pre-deadline msg p
     const postDeadlineMessage = document.getElementById('postDeadlineMessage'); // Get post-deadline msg p
-    const alreadySubmittedMessage = document.createElement('p'); // Create element for message
-    alreadySubmittedMessage.textContent = 'Looks like you\'ve already submitted from this browser!';
-    alreadySubmittedMessage.style.color = 'orange';
-    alreadySubmittedMessage.style.textAlign = 'center';
-    alreadySubmittedMessage.style.marginTop = '10px';
-    alreadySubmittedMessage.style.display = 'none'; // Hide initially
 
     let activeShirt = null;
     let initialShirtPos = { left: '', top: '' };
@@ -227,8 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to close the modal
     function closeModal() {
         modalOverlay.style.display = 'none';
-        // Hide the 'already submitted' message when closing
-        alreadySubmittedMessage.style.display = 'none'; 
     }
 
     // Show modal when 'Get for free' is clicked
@@ -238,52 +265,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set the T-shirt name in the modal instruction
         modalShirtName.textContent = shirtNameElement.textContent;
         
-        // Ensure the initial state is visible and confirmed state is hidden
-        initialState.style.display = 'flex'; // Use flex as defined in CSS
+        initialState.style.display = 'flex'; 
         confirmedState.style.display = 'none';
         emailInput.value = ''; // Clear previous email input
 
-        // Check local storage
-        if (localStorage.getItem('hasSubmittedTicForm') === 'true') {
-            emailInput.disabled = true;
-            confirmButton.disabled = true;
-            confirmButton.textContent = 'Submitted';
-            // Append and show the 'already submitted' message
-            if (!initialState.contains(alreadySubmittedMessage)) { // Avoid duplicates
-                initialState.appendChild(alreadySubmittedMessage);
-            }
-            alreadySubmittedMessage.style.display = 'block'; 
-        } else {
-            emailInput.disabled = false;
-            confirmButton.disabled = false;
-            confirmButton.textContent = 'Confirm';
-            alreadySubmittedMessage.style.display = 'none'; // Hide message if not submitted
-        }
+        // Reset form state (no need to check localStorage on open anymore)
+        emailInput.disabled = false;
+        confirmButton.disabled = false;
+        confirmButton.textContent = 'Confirm';
 
-        // Show the modal overlay
-        modalOverlay.style.display = 'flex'; // Use flex to trigger centering styles
+        modalOverlay.style.display = 'flex';
     });
 
     // --- Deadline & Endpoint --- 
-    const deadline = new Date('2025-04-20T00:00:00+08:00'); // April 20, 2025, 00:00 Malaysia Time (UTC+8)
-    const formspreeURL = 'https://formspree.io/f/mvgkwnpq'; // <-- Updated to Formspree URL
+    const deadline = new Date('2025-04-20T00:00:00+08:00');
+    const formspreeURL = 'https://formspree.io/f/mvgkwnpq';
 
     // Handle confirm button click
     confirmButton.addEventListener('click', () => {
-        // Double-check local storage before submitting
-        if (localStorage.getItem('hasSubmittedTicForm') === 'true') {
-            alert('You have already submitted from this browser.');
-            // Optionally re-disable form elements just in case
-            emailInput.disabled = true;
-            confirmButton.disabled = true;
-            confirmButton.textContent = 'Submitted';
-            if (!initialState.contains(alreadySubmittedMessage)) { 
-                initialState.appendChild(alreadySubmittedMessage);
-            }
-            alreadySubmittedMessage.style.display = 'block'; 
-            return; // Stop the submission process
-        }
-
         const email = emailInput.value;
         const chosenShirt = shirtNameElement.textContent;
         const currentTime = new Date();
@@ -292,6 +291,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!email || !email.includes('@')) { 
             alert('Please enter a valid email address.');
             return; 
+        }
+        
+        // *** Check if THIS specific email has been submitted from this browser ***
+        if (hasEmailBeenSubmitted(email)) {
+            alert('This email address has already been submitted from this browser.');
+            return; // Stop the submission process
         }
 
         // Determine which confirmation message to show *before* sending
@@ -303,9 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = { 
             email: email, 
-            shirtChoice: chosenShirt, // Changed key slightly for clarity in Formspree
+            shirtChoice: chosenShirt, 
             submittedAt: currentTime.toISOString()
-        };
+        }; 
 
         fetch(formspreeURL, {
             method: 'POST',
@@ -332,8 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             console.log('Formspree Success:', data);
 
-            // --- Submission Successful - Set flag in local storage --- 
-            localStorage.setItem('hasSubmittedTicForm', 'true');
+            // --- Submission Successful - Add email to local storage --- 
+            addSubmittedEmail(email); // Use the helper function
 
             if (showPreDeadlineMsg) {
                 preDeadlineMessage.style.display = 'block';
@@ -351,20 +356,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- Network or Formspree error --- 
             console.error('Submission Error:', error);
             alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + error.message);
-            // Don't set the flag if submission failed
         })
         .finally(() => {
-            // --- Always re-enable button (unless already submitted successfully) ---
-            if (localStorage.getItem('hasSubmittedTicForm') !== 'true') {
+            // --- Re-enable button if submission failed or wasn't attempted ---
+            // Check again in case the failure was the duplicate check
+            if (!hasEmailBeenSubmitted(email)) {
                  confirmButton.disabled = false;
                  confirmButton.textContent = 'Confirm';
             } else {
-                // Keep it disabled if submission was successful
-                 confirmButton.disabled = true;
-                 confirmButton.textContent = 'Submitted';
+                 // Keep it disabled if this email is now marked as submitted
+                 // (Technically redundant due to the initial check, but safe)
+                 confirmButton.disabled = true; // Or just leave as 'Submitting...'? Maybe reset?
+                 confirmButton.textContent = 'Submitted'; // Or 'Confirmed'? Let's stick to Confirm
+                 emailInput.disabled = true; // Disable input too if submitted
             }
         });
-
     });
 
     // Handle close button click (from confirmed state)
