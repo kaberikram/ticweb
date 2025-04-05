@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const instructionTooltip = document.getElementById('instruction-tooltip'); // Get tooltip
     const preDeadlineMessage = document.getElementById('preDeadlineMessage'); // Get pre-deadline msg p
     const postDeadlineMessage = document.getElementById('postDeadlineMessage'); // Get post-deadline msg p
+    const alreadySubmittedMessage = document.createElement('p'); // Create element for message
+    alreadySubmittedMessage.textContent = 'Looks like you\'ve already submitted from this browser!';
+    alreadySubmittedMessage.style.color = 'orange';
+    alreadySubmittedMessage.style.textAlign = 'center';
+    alreadySubmittedMessage.style.marginTop = '10px';
+    alreadySubmittedMessage.style.display = 'none'; // Hide initially
 
     let activeShirt = null;
     let initialShirtPos = { left: '', top: '' };
@@ -221,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to close the modal
     function closeModal() {
         modalOverlay.style.display = 'none';
+        // Hide the 'already submitted' message when closing
+        alreadySubmittedMessage.style.display = 'none'; 
     }
 
     // Show modal when 'Get for free' is clicked
@@ -235,6 +243,23 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmedState.style.display = 'none';
         emailInput.value = ''; // Clear previous email input
 
+        // Check local storage
+        if (localStorage.getItem('hasSubmittedTicForm') === 'true') {
+            emailInput.disabled = true;
+            confirmButton.disabled = true;
+            confirmButton.textContent = 'Submitted';
+            // Append and show the 'already submitted' message
+            if (!initialState.contains(alreadySubmittedMessage)) { // Avoid duplicates
+                initialState.appendChild(alreadySubmittedMessage);
+            }
+            alreadySubmittedMessage.style.display = 'block'; 
+        } else {
+            emailInput.disabled = false;
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Confirm';
+            alreadySubmittedMessage.style.display = 'none'; // Hide message if not submitted
+        }
+
         // Show the modal overlay
         modalOverlay.style.display = 'flex'; // Use flex to trigger centering styles
     });
@@ -245,6 +270,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle confirm button click
     confirmButton.addEventListener('click', () => {
+        // Double-check local storage before submitting
+        if (localStorage.getItem('hasSubmittedTicForm') === 'true') {
+            alert('You have already submitted from this browser.');
+            // Optionally re-disable form elements just in case
+            emailInput.disabled = true;
+            confirmButton.disabled = true;
+            confirmButton.textContent = 'Submitted';
+            if (!initialState.contains(alreadySubmittedMessage)) { 
+                initialState.appendChild(alreadySubmittedMessage);
+            }
+            alreadySubmittedMessage.style.display = 'block'; 
+            return; // Stop the submission process
+        }
+
         const email = emailInput.value;
         const chosenShirt = shirtNameElement.textContent;
         const currentTime = new Date();
@@ -292,7 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             console.log('Formspree Success:', data);
-            // --- Submission Successful --- 
+
+            // --- Submission Successful - Set flag in local storage --- 
+            localStorage.setItem('hasSubmittedTicForm', 'true');
+
             if (showPreDeadlineMsg) {
                 preDeadlineMessage.style.display = 'block';
                 postDeadlineMessage.style.display = 'none';
@@ -309,11 +351,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- Network or Formspree error --- 
             console.error('Submission Error:', error);
             alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + error.message);
+            // Don't set the flag if submission failed
         })
         .finally(() => {
-            // --- Always re-enable button --- 
-            confirmButton.disabled = false;
-            confirmButton.textContent = 'Confirm';
+            // --- Always re-enable button (unless already submitted successfully) ---
+            if (localStorage.getItem('hasSubmittedTicForm') !== 'true') {
+                 confirmButton.disabled = false;
+                 confirmButton.textContent = 'Confirm';
+            } else {
+                // Keep it disabled if submission was successful
+                 confirmButton.disabled = true;
+                 confirmButton.textContent = 'Submitted';
+            }
         });
 
     });
