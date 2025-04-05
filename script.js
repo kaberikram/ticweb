@@ -235,9 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.style.display = 'flex'; // Use flex to trigger centering styles
     });
 
-    // --- Deadline --- 
+    // --- Deadline & Endpoint --- 
     const deadline = new Date('2025-04-20T00:00:00+08:00'); // April 20, 2025, 00:00 Malaysia Time (UTC+8)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyHf1VziE_W6JIMef_CiBcYJYSiY8oGNk-12PQISk1scT9iU_bl5YIB1-VkyinjzZSrQw/exec';
+    const formspreeURL = 'https://formspree.io/f/mvgkwnpq'; // <-- Updated to Formspree URL
+
     // Handle confirm button click
     confirmButton.addEventListener('click', () => {
         const email = emailInput.value;
@@ -250,49 +251,60 @@ document.addEventListener('DOMContentLoaded', () => {
             return; 
         }
 
-        // --- Send data to Google Sheet --- 
+        // Determine which confirmation message to show *before* sending
+        const showPreDeadlineMsg = currentTime < deadline;
+
+        // --- Send data to Formspree --- 
         confirmButton.disabled = true;
         confirmButton.textContent = 'Submitting...';
 
-        const formData = { email: email, shirtName: chosenShirt };
+        const formData = { 
+            email: email, 
+            shirtChoice: chosenShirt, // Changed key slightly for clarity in Formspree
+            submittedAt: currentTime.toISOString()
+        };
 
-        fetch(scriptURL, {
+        fetch(formspreeURL, {
             method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json' // Often helpful with Formspree
             },
-            redirect: 'follow',
             body: JSON.stringify(formData)
         })
-        .then(response => response.json()) // Parse the JSON response from Apps Script
-        .then(data => {
-            console.log('Google Sheet Response:', data);
-            if (data.result === "success") {
-                // --- Submission Successful --- 
-                // Check deadline and set appropriate message visibility
-                if (currentTime < deadline) {
-                    preDeadlineMessage.style.display = 'block';
-                    postDeadlineMessage.style.display = 'none';
-                    modalConfirmShirtName.textContent = chosenShirt;
-                } else {
-                    preDeadlineMessage.style.display = 'none';
-                    postDeadlineMessage.style.display = 'block';
-                }
-                // Switch to confirmed state view
-                initialState.style.display = 'none';
-                confirmedState.style.display = 'flex';
+        .then(response => {
+            // Check if Formspree indicated success (usually status 200)
+            if (response.ok) {
+                return response.json(); // Parse success response (might contain confirmation)
             } else {
-                // --- Submission Failed (Error from Apps Script) --- 
-                console.error('Error reported by Apps Script:', data.message);
-                alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + data.message);
+                // Try to parse error response from Formspree
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Formspree submission failed.');
+                }).catch(() => {
+                    // Fallback if error response isn't JSON
+                    throw new Error('Formspree submission failed with status: ' + response.status);
+                });
             }
         })
+        .then(data => {
+            console.log('Formspree Success:', data);
+            // --- Submission Successful --- 
+            if (showPreDeadlineMsg) {
+                preDeadlineMessage.style.display = 'block';
+                postDeadlineMessage.style.display = 'none';
+                modalConfirmShirtName.textContent = chosenShirt;
+            } else {
+                preDeadlineMessage.style.display = 'none';
+                postDeadlineMessage.style.display = 'block';
+            }
+            // Switch to confirmed state view
+            initialState.style.display = 'none';
+            confirmedState.style.display = 'flex';
+        })
         .catch((error) => {
-            // --- Network or other fetch error --- 
-            console.error('Fetch Error:', error);
-            alert('Sorry, a network error occurred. Please check your connection and try again.');
+            // --- Network or Formspree error --- 
+            console.error('Submission Error:', error);
+            alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + error.message);
         })
         .finally(() => {
             // --- Always re-enable button --- 
@@ -300,8 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmButton.textContent = 'Confirm';
         });
 
-        // NOTE: The original logic to switch views is now inside the fetch().then() block
-        // to ensure it only happens after successful submission.
     });
 
     // Handle close button click (from confirmed state)
