@@ -1,3 +1,7 @@
+import { inject } from "@vercel/analytics";
+
+inject();
+
 document.addEventListener('DOMContentLoaded', () => {
     const shirts = document.querySelectorAll('.shirt');
     const ratImage = document.getElementById('ratImage');
