@@ -42,7 +42,10 @@
                 <button id="confirmButton" class="confirm-button">Confirm</button>
             </div>
             <div class="modal-content confirmed-state" style="display: none;">
-                 <p class="modal-confirmation-message">Got it! We'll email you by<br><strong>April 20, 2025</strong><br>if you're getting this<br><span id="modalConfirmShirtName"></span>.</p>
+                 <!-- Pre-deadline message -->
+                 <p class="modal-confirmation-message" id="preDeadlineMessage">Got it! We'll email you by<br><strong>April 20, 2025</strong><br>if you're getting this<br><span id="modalConfirmShirtName"></span>.</p>
+                 <!-- Post-deadline message (initially hidden) -->
+                 <p class="modal-confirmation-message" id="postDeadlineMessage" style="display: none;">The deadline was<br><strong>April 20, 2025</strong>.<br>Thanks for your interest!<br>We'll keep you updated via email.</p>
                 <button id="closeButton" class="close-button">Close</button>
             </div>
         </div>

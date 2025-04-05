@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmedState = modal.querySelector('.confirmed-state');
     const modalConfirmShirtName = document.getElementById('modalConfirmShirtName');
     const instructionTooltip = document.getElementById('instruction-tooltip'); // Get tooltip
+    const preDeadlineMessage = document.getElementById('preDeadlineMessage'); // Get pre-deadline msg p
+    const postDeadlineMessage = document.getElementById('postDeadlineMessage'); // Get post-deadline msg p
 
     let activeShirt = null;
     let initialShirtPos = { left: '', top: '' };
@@ -233,26 +235,74 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.style.display = 'flex'; // Use flex to trigger centering styles
     });
 
+    // --- Deadline --- 
+    const deadline = new Date('2025-04-20T00:00:00+08:00'); // April 20, 2025, 00:00 Malaysia Time (UTC+8)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDFAibnf40orYPTjlAf63YQj-IbwfROw-gYXBhoV0XwMPGgAf6ObZf7XJN0em_I3Byew/exec';
+
     // Handle confirm button click
     confirmButton.addEventListener('click', () => {
         const email = emailInput.value;
         const chosenShirt = shirtNameElement.textContent;
+        const currentTime = new Date();
 
-        // Basic validation (optional, can be enhanced)
+        // Basic validation
         if (!email || !email.includes('@')) { 
             alert('Please enter a valid email address.');
             return; 
         }
 
-        console.log(`Email: ${email}, Chosen Shirt: ${chosenShirt}`); // Log for now
-        // TODO: Implement actual submission logic here (e.g., send to server)
+        // --- Send data to Google Sheet --- 
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Submitting...';
 
-        // Update the shirt name in the confirmation message
-        modalConfirmShirtName.textContent = chosenShirt;
+        const formData = { email: email, shirtName: chosenShirt };
 
-        // Switch to confirmed state
-        initialState.style.display = 'none';
-        confirmedState.style.display = 'flex'; // Use flex as defined in CSS
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            redirect: 'follow',
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json()) // Parse the JSON response from Apps Script
+        .then(data => {
+            console.log('Google Sheet Response:', data);
+            if (data.result === "success") {
+                // --- Submission Successful --- 
+                // Check deadline and set appropriate message visibility
+                if (currentTime < deadline) {
+                    preDeadlineMessage.style.display = 'block';
+                    postDeadlineMessage.style.display = 'none';
+                    modalConfirmShirtName.textContent = chosenShirt;
+                } else {
+                    preDeadlineMessage.style.display = 'none';
+                    postDeadlineMessage.style.display = 'block';
+                }
+                // Switch to confirmed state view
+                initialState.style.display = 'none';
+                confirmedState.style.display = 'flex';
+            } else {
+                // --- Submission Failed (Error from Apps Script) --- 
+                console.error('Error reported by Apps Script:', data.message);
+                alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            // --- Network or other fetch error --- 
+            console.error('Fetch Error:', error);
+            alert('Sorry, a network error occurred. Please check your connection and try again.');
+        })
+        .finally(() => {
+            // --- Always re-enable button --- 
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Confirm';
+        });
+
+        // NOTE: The original logic to switch views is now inside the fetch().then() block
+        // to ensure it only happens after successful submission.
     });
 
     // Handle close button click (from confirmed state)
