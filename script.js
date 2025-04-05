@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Deadline --- 
     const deadline = new Date('2025-04-20T00:00:00+08:00'); // April 20, 2025, 00:00 Malaysia Time (UTC+8)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDFAibnf40orYPTjlAf63YQj-IbwfROw-gYXBhoV0XwMPGgAf6ObZf7XJN0em_I3Byew/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzxRkzUjaBxZlMBjI4plNQmQL2VXlu417w4KzjWElDmkEex2d0YKkeajq1JtLQ63Mi6Xg/exec';
 
     // Handle confirm button click
     confirmButton.addEventListener('click', () => {
