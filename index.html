@@ -78,11 +78,43 @@
     <script>
         async function updatePreOrderLink() {
             try {
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-                const country = data.country;
-                const region = data.continent_code;
+                // Check for test parameter in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const testRegion = urlParams.get('region');
                 
+                let country = '';
+                let region = '';
+
+                if (testRegion) {
+                    // Use test parameters if provided
+                    switch(testRegion.toUpperCase()) {
+                        case 'MY':
+                            country = 'MY';
+                            region = 'AS';
+                            break;
+                        case 'SEA':
+                            country = 'TH'; // Example SEA country
+                            region = 'AS';
+                            break;
+                        case 'WORLD':
+                            country = 'US'; // Example non-SEA country
+                            region = 'NA';
+                            break;
+                        default:
+                            // If invalid parameter, fetch real location
+                            const response = await fetch('https://ipapi.co/json/');
+                            const data = await response.json();
+                            country = data.country;
+                            region = data.continent_code;
+                    }
+                } else {
+                    // No test parameter, fetch real location
+                    const response = await fetch('https://ipapi.co/json/');
+                    const data = await response.json();
+                    country = data.country;
+                    region = data.continent_code;
+                }
+
                 const preOrderLink = document.getElementById('preOrderLink');
                 
                 // Define the links based on location
@@ -95,10 +127,13 @@
                 // Set the appropriate link
                 if (country === 'MY') {
                     preOrderLink.href = links.MY;
+                    console.log('Using Malaysia link');
                 } else if (region === 'AS') {
                     preOrderLink.href = links.AS;
+                    console.log('Using SEA link');
                 } else {
                     preOrderLink.href = links.default;
+                    console.log('Using Worldwide link');
                 }
             } catch (error) {
                 console.error('Error detecting location:', error);
