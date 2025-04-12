@@ -402,10 +402,6 @@ body, html {
     font-weight: normal; /* Removed bold */
 }
 
-/* Specific styles for confirmed state */
-.confirmed-state {
-    /* Styles specific to the confirmed state if needed */
-}
 
 /* Ensure modal is above the dotted background */
 .modal-overlay {
@@ -503,6 +499,10 @@ body, html {
     z-index: 1000;
     width: 100%;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
 }
 
 .footer-link {
@@ -518,14 +518,25 @@ body, html {
     opacity: 1;
 }
 
+.footer-separator {
+    color: #222;
+    opacity: 0.4;
+    font-size: 14px;
+    font-family: "Source Code Pro", monospace;
+}
+
 /* Mobile responsiveness for footer */
 @media (max-width: 768px) {
     .get-free-button {
-        bottom: 60px; /* Move button up to make room for footer */
+        bottom: 60px;
     }
     
     .footer {
-        bottom: 20px; /* Place footer at the very bottom */
+        bottom: 20px;
+        gap: 10px;
+    }
+
+    .footer-link, .footer-separator {
         font-size: 12px;
     }
-} 
+}

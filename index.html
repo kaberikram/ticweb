@@ -70,8 +70,45 @@
 
     <footer class="footer">
         <a href="/privacypolicy" class="footer-link">Privacy Policy</a>
+        <span class="footer-separator">|</span>
+        <a href="#" class="footer-link pre-order-link" id="preOrderLink">Pre-order Now</a>
     </footer>
 
     <script type="module" src="./script.js"></script>
+    <script>
+        async function updatePreOrderLink() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                const country = data.country;
+                const region = data.continent_code;
+                
+                const preOrderLink = document.getElementById('preOrderLink');
+                
+                // Define the links based on location
+                const links = {
+                    MY: 'https://buy.stripe.com/fZe4hQ5Wk04OfkYcMQ', // Malaysia
+                    AS: 'https://buy.stripe.com/5kA3dMesQ4l4a0E5kp', // Asia (SEA)
+                    default: 'https://buy.stripe.com/4gwbKi1G47xg0q4aEK' // Worldwide
+                };
+                
+                // Set the appropriate link
+                if (country === 'MY') {
+                    preOrderLink.href = links.MY;
+                } else if (region === 'AS') {
+                    preOrderLink.href = links.AS;
+                } else {
+                    preOrderLink.href = links.default;
+                }
+            } catch (error) {
+                console.error('Error detecting location:', error);
+                // Default to worldwide link if location detection fails
+                document.getElementById('preOrderLink').href = 'https://buy.stripe.com/4gwbKi1G47xg0q4aEK';
+            }
+        }
+        
+        // Update the link when the page loads
+        window.addEventListener('load', updatePreOrderLink);
+    </script>
 </body>
 </html> 
