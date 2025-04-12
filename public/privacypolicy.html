@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - TIC</title>
-    <link href="style.css" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,7 +18,7 @@
         body {
             min-height: 100vh;
             width: 100%;
-            background-image: url('public/timBG.gif');
+            background-image: url('/timBG.gif');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -42,14 +45,14 @@
             background: rgba(255, 255, 255, 0.95);
             max-width: 800px;
             width: 90%;
-            height: 70vh; /* Fixed height relative to viewport */
+            height: 70vh;
             margin: 100px auto 20px;
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow-y: auto; /* Enable vertical scrolling */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: #888 #f1f1f1; /* Firefox */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
         }
 
         /* Webkit scrollbar styles */
@@ -104,6 +107,28 @@
             margin-top: 20px;
             position: fixed;
             bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: normal;
+            color: #fff;
+            background-color: #222;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            z-index: 100;
+            font-family: "Source Code Pro", monospace;
+        }
+
+        .get-free-button:hover {
+            background-color: #444;
+        }
+
+        .get-free-button:active {
+            background-color: #000;
+            transform: translateX(-50%) scale(0.98);
         }
 
         /* Mobile responsiveness */
@@ -121,7 +146,7 @@
     </style>
 </head>
 <body>
-    <img src="public/ticLOGO.png" alt="TIC Logo" class="logo">
+    <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
     <div class="privacy-container">
         <h1>Privacy Policy</h1>
         <p>Effective Date: January 1, 2024</p>
