@@ -492,4 +492,40 @@ body, html {
 
 .modal-close-x:hover {
     color: #333; /* Darken on hover */
+}
+
+/* Footer Styles */
+.footer {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 100%;
+    text-align: center;
+}
+
+.footer-link {
+    color: #222;
+    text-decoration: none;
+    font-family: "Source Code Pro", monospace;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+    opacity: 1;
+}
+
+/* Mobile responsiveness for footer */
+@media (max-width: 768px) {
+    .get-free-button {
+        bottom: 60px; /* Move button up to make room for footer */
+    }
+    
+    .footer {
+        bottom: 20px; /* Place footer at the very bottom */
+        font-size: 12px;
+    }
 } 
