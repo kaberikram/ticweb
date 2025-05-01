@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Slide-to-buy elements (added)
     const sliderContainer = document.getElementById('slide-to-buy-container');
     const sliderHandle = document.getElementById('slider-handle');
+    const sliderFill = document.getElementById('slider-fill'); // Added fill element
 
     // Drag state variables (added for slider)
     let isSliderDragging = false;
@@ -468,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSliderStart(e) {
         isSliderDragging = true;
         sliderHandle.classList.add('dragging');
+        sliderContainer.classList.add('dragging'); // Add class to container
         sliderHandle.style.transition = 'none'; // Disable transition during drag
 
         if (e.type === 'mousedown') {
@@ -506,13 +508,23 @@ document.addEventListener('DOMContentLoaded', () => {
         newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
 
         sliderHandle.style.left = `${newLeft}px`;
+
+        // Update fill width - relative to the handle's center
+        const handleCenter = newLeft + sliderHandle.offsetWidth / 2;
+        const fillWidthPercentage = (handleCenter / sliderContainer.offsetWidth) * 100;
+        if (sliderFill) {
+            sliderFill.style.width = `${Math.min(fillWidthPercentage, 100)}%`;
+        }
     }
 
     function handleSliderEnd(e) {
         if (!isSliderDragging) return;
         isSliderDragging = false;
         sliderHandle.classList.remove('dragging');
+        sliderContainer.classList.remove('dragging'); // Remove class from container
         sliderHandle.style.transition = 'left 0.2s ease-out'; // Re-enable transition for snap back
+        sliderHandle.style.transform = 'scale(1)'; // Reset scale
+        sliderHandle.style.boxShadow = ''; // Reset shadow
 
         if (e.type === 'mousemove') {
             document.removeEventListener('mousemove', handleSliderMove);
@@ -530,13 +542,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Success! Trigger the modal.
             console.log('Slide successful!');
             openEmailModal(); 
-            // Snap back slightly delayed to allow modal to appear maybe?
-             setTimeout(() => {
+            // Snap back slightly delayed, reset fill quickly
+            if (sliderFill) sliderFill.style.width = '100%'; // Fill completely on success briefly
+            setTimeout(() => {
                 sliderHandle.style.left = `${sliderPadding}px`; 
-             }, 100);
+                if (sliderFill) sliderFill.style.width = '0px'; // Reset fill on snap back
+            }, 150); // Increased delay slightly
         } else {
             // Didn't slide far enough, snap back.
             sliderHandle.style.left = `${sliderPadding}px`;
+            if (sliderFill) sliderFill.style.width = '0px'; // Reset fill on snap back
         }
     }
     // --- End Slide to Buy Logic ---

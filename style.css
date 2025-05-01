@@ -688,6 +688,23 @@ body, html {
     cursor: default;
 }
 
+#slider-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0; /* Start with 0 width */
+    background-color: #a5d6a7; /* Light green fill color */
+    border-radius: 25px; /* Match container */
+    z-index: 100; /* Below text and handle */
+    transition: width 0.1s linear; /* Smooth width change */
+}
+
+/* Disable fill transition while dragging */
+#slide-to-buy-container.dragging #slider-fill {
+    transition: none;
+}
+
 #slider-handle {
     position: absolute;
     left: 5px; /* Initial padding */
@@ -710,6 +727,8 @@ body, html {
 #slider-handle.dragging {
     cursor: grabbing;
     transition: none; /* Disable transition during drag for direct control */
+    transform: scale(1.05); /* Slightly larger when dragging */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2); /* Enhance shadow */
 }
 
 .slider-text {
@@ -736,6 +755,9 @@ body, html {
         height: 40px;
         border-radius: 20px;
         bottom: 12%; /* Adjust position slightly for mobile */
+    }
+    #slider-fill { /* Adjust border-radius for mobile */
+        border-radius: 20px;
     }
     #slider-handle {
         width: 32px;
