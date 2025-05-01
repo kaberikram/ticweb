@@ -1,3 +1,4 @@
+import '/style.css'; // Import the main stylesheet
 import { inject } from "@vercel/analytics";
 
 inject();
