@@ -456,7 +456,9 @@ body, html {
     z-index: 20;
 }
 
-#info-tooltip:hover::after {
+/* Show tooltip on hover OR when class is present */
+#info-tooltip:hover::after,
+#info-tooltip.tooltip-visible::after {
     opacity: 1;
     visibility: visible;
 }

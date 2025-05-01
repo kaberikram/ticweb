@@ -499,4 +499,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     // --- End Slide to Buy Logic ---
+
+    // --- Tooltip Click Listener --- 
+    if (infoTooltip) {
+        infoTooltip.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent click from immediately closing via document listener
+            infoTooltip.classList.toggle('tooltip-visible');
+        });
+
+        // Add listener to close tooltip when clicking elsewhere
+        document.addEventListener('click', (event) => {
+            // Check if the tooltip is visible and the click was outside the tooltip
+            if (infoTooltip.classList.contains('tooltip-visible') && !infoTooltip.contains(event.target)) {
+                infoTooltip.classList.remove('tooltip-visible');
+            }
+        });
+    } else {
+        console.error('Info Tooltip element not found');
+    }
 }); 
