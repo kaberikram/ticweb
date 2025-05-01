@@ -661,6 +661,12 @@ body, html {
     }
 }
 
+@media (max-width: 429px) {
+    .toggle-container {
+        top: 19%; /* Specific vertical position for smaller mobile */
+    }
+}
+
 /* --- Slide to Buy Styles --- */
 #slide-to-buy-container {
     position: fixed;
