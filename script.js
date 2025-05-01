@@ -44,6 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoTooltip = document.getElementById('info-tooltip'); // Get tooltip span
     const getFreeButton = document.querySelector('.get-free-button');
 
+    // Model Info Constants
+    const MODEL_INFO = {
+        rat: { height: '5ft 10"' },
+        mouse: { height: '5ft 4"' }
+    };
+
     // Modal elements
     const modalOverlay = document.getElementById('modalOverlay');
     const modal = document.getElementById('emailModal');
@@ -103,6 +109,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let originalRatSrc = ''; // Store original rat image source
     let isHoveringRat = false; // Track if currently hovering the rat with the specific shirt
     // We will now determine hover source dynamically based on the current rat image
+
+    // --- Tooltip Update Function ---
+    function findShirtElementByName(name) {
+        for (const shirt of shirts) {
+            if (shirt.getAttribute('data-shirt-name') === name) {
+                return shirt;
+            }
+        }
+        return null; // Not found
+    }
+
+    function updateTooltip(mode) {
+        if (!infoTooltip || !shirtNameElement) return;
+
+        const shirtName = shirtNameElement.textContent;
+        let tooltipText = '';
+
+        if (mode === 'mouse') {
+            tooltipText = `Model is ${MODEL_INFO.mouse.height} and wears size S`;
+        } else if (mode === 'rat') {
+            const shirtElement = findShirtElementByName(shirtName);
+            // Default to L if shirt not found or no attr specifically for the Rat mode
+            const ratModelSize = shirtElement ? shirtElement.getAttribute('data-model-size') || 'L' : 'L'; 
+            tooltipText = `Model is ${MODEL_INFO.rat.height} and wears size ${ratModelSize}`;
+        } else {
+            console.error("Unknown mode for tooltip:", mode);
+            return; 
+        }
+
+        infoTooltip.setAttribute('data-tooltip', tooltipText);
+    }
 
     shirts.forEach(shirt => {
         shirt.style.cursor = 'grab';
@@ -276,11 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     shirtNameElement.textContent = 'Unknown Shirt'; 
                 }
 
-                // Update tooltip text
-                const modelSize = activeShirt.getAttribute('data-model-size');
-                if (modelSize && infoTooltip) {
-                    infoTooltip.setAttribute('data-tooltip', `Model is 5ft 10" and wears size ${modelSize}`);
-                }
+                // Update tooltip text based on new shirt and current mode
+                updateTooltip(currentMode);
 
                 // Reset position
                 activeShirt.style.left = initialShirtPos.left;
@@ -325,7 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ratMouseToggle) {
         ratMouseToggle.addEventListener('change', (e) => {
             const isMouseMode = e.target.checked; // true if switching TO Mouse (original images)
-            currentMode = isMouseMode ? 'mouse' : 'rat';
+            const newMode = isMouseMode ? 'mouse' : 'rat';
+            currentMode = newMode; // Update global mode state
 
             console.log(`Switched mode to: ${currentMode}`);
 
@@ -333,25 +368,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentRatPath = new URL(ratImage.src).pathname;
             const newRatPath = conversionMap[currentRatPath] || currentRatPath; 
 
+            // Function to run after fade-out completes
+            const changeImageAndTooltip = () => {
+                console.log(`Changing src to: ${newRatPath}`);
+                ratImage.src = newRatPath; // Change the source
+                ratImage.style.opacity = 1; // Fade back in
+                
+                // Update tooltip after image source is confirmed changed
+                updateTooltip(currentMode);
+
+                // Clean up the listener
+                ratImage.removeEventListener('transitionend', changeImageAndTooltip);
+            };
+
             // Only transition if the path is actually changing
             if (newRatPath !== currentRatPath) {
-                // Function to run after fade-out completes
-                const changeImageSrc = () => {
-                    console.log(`Changing src to: ${newRatPath}`);
-                    ratImage.src = newRatPath; // Change the source
-                    ratImage.style.opacity = 1; // Fade back in
-                    // Clean up the listener to prevent it firing unexpectedly later
-                    ratImage.removeEventListener('transitionend', changeImageSrc);
-                };
-
                 // Add a one-time listener for the end of the fade-out transition
-                ratImage.addEventListener('transitionend', changeImageSrc, { once: true });
+                ratImage.addEventListener('transitionend', changeImageAndTooltip, { once: true });
 
                 // Start the fade-out
                 ratImage.style.opacity = 0;
                  
             } else {
                  console.warn(`No counterpart found or same image, no transition: ${currentRatPath} in map:`, conversionMap);
+                 // Update tooltip immediately if no visual transition
+                 updateTooltip(currentMode);
             }
            
             // Update shirt data attributes (no transition needed here)
@@ -517,4 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Info Tooltip element not found');
     }
+
+    // --- Initial Setup --- 
+    // Set initial tooltip based on default mode and shirt
+    updateTooltip(currentMode);
+
 }); 
