@@ -27,60 +27,24 @@
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
 </head>
 <body>
-    <div class="container">
-        <header class="logo-container">
-            <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
-        </header>
-
-        <main class="shirts-container">
-            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png" data-shirt-name="Ratphex-T" data-model-size="L">
-            
-            <!-- Rat/Mouse Toggle Switch -->
-            <div class="toggle-container">
-                <input type="checkbox" id="ratMouseToggle" class="toggle-checkbox" checked>
-                <label for="ratMouseToggle" class="toggle-label">
-                    <span class="toggle-text toggle-rat">Rat</span>
-                    <span class="toggle-text toggle-mouse">Mouse</span>
-                    <span class="toggle-switch"></span>
-                </label>
-            </div>
-
-            <img src="/1Rat.png" alt="Rat wearing Shirt" class="rat-center" id="ratImage">
-            <!-- Minimal info tooltip icon -->
-            <span id="info-tooltip" data-tooltip="Model is 5ft 4&quot; and wears size S">?</span>
-            <p id="shirt-name">Ratphex-T</p>
-            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png" data-shirt-name="AnimalCollective-T" data-model-size="S">
-            <img src="/6Shirt.png" alt="Shirt 6" class="shirt middle-right" data-rat-src="/6Rat.png" data-shirt-name="RatwardScissor-T" data-model-size="XL">
-        </main>
-
-        <!-- Slide to Buy Container -->
-        <div id="slide-to-buy-container">
-            <div id="slider-fill"></div>
-            <div id="slider-handle">&gt;</div>
-            <span class="slider-text">Slide to buy</span>
-        </div>
-        <!-- End Slide to Buy Container -->
-
-        <!-- <button class="get-free-button">Get for free</button> --> <!-- Replaced by slider -->
+    <!-- Content will be added here -->
+    <div class="main-content">
+        <img src="/ticLOGO.png" alt="TIC Logo" class="index-logo">
+        <img src="/tvFrame.png" alt="TV Frame" class="tv-frame-image">
+        <a href="/characterSelection.html">
+            <button class="rattire-button">Rattire Now</button>
+        </a>
     </div>
 
-    <!-- Modal Structure -->
-    <div id="modalOverlay" class="modal-overlay">
-        <div id="emailModal" class="modal">
-            <div class="modal-content initial-state">
-                <button id="modalCloseX" class="modal-close-x">&times;</button>
-                <img id="modalRatImage" src="/1Rat.png" alt="Selected Rat" class="modal-rat-image">
-                <p class="modal-instruction">The <span id="modalShirtName">Ratphex-T</span> will be available soon!</p>
-                <button id="modalCloseButton" class="close-button">Close</button>
-            </div>
+    <!-- Video Overlay -->
+    <div id="videoOverlay" class="video-overlay">
+        <div class="video-overlay-content">
+            <button id="closeVideoOverlay" class="video-overlay-close">&times;</button>
+            <iframe id="youtubeVideo" width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
     </div>
-    <!-- End Modal Structure -->
+    <!-- End Video Overlay -->
 
-    <footer class="footer">
-        <a href="/dashboard.html" class="footer-link">Tracking Portal</a>
-    </footer>
-
-    <script type="module" src="./script.js"></script>
+    <script src="index.js"></script>
 </body>
 </html> 

@@ -37,7 +37,137 @@ function addSubmittedEmail(email) {
 }
 // --- End LocalStorage Helpers ---
 
+// --- Onboarding Logic ---
+const ONBOARDING_STORAGE_KEY = 'hasVisitedTicWeb';
+
+function runOnboardingAnimation() {
+    const handElement = document.getElementById('onboarding-hand');
+    const instructionElement = document.getElementById('onboarding-instruction');
+    const firstShirt = document.querySelector('.shirt.bottom-left'); // Changed target to bottom-left shirt (3Shirt)
+    const ratElement = document.getElementById('ratImage');
+
+    if (!handElement || !instructionElement || !firstShirt || !ratElement) {
+        console.warn("Onboarding elements not found, skipping animation.");
+        return;
+    }
+
+    // Calculate positions
+    const firstShirtRect = firstShirt.getBoundingClientRect();
+    const ratRect = ratElement.getBoundingClientRect();
+    const containerRect = document.querySelector('.container').getBoundingClientRect();
+
+    // Adjust positions relative to the container/viewport
+    const startX = firstShirtRect.left + firstShirtRect.width * 0.5 - containerRect.left;
+    const startY = firstShirtRect.top + firstShirtRect.height * 0.5 - containerRect.top;
+    
+    // Target center of the rat
+    const endX = ratRect.left + ratRect.width * 0.5 - containerRect.left;
+    const endY = ratRect.top + ratRect.height * 0.5 - containerRect.top;
+    
+    // Calculate movement delta for animation
+    const moveX = endX - startX;
+    const moveY = endY - startY;
+
+    // Set initial position of hand and instruction
+    handElement.style.left = `${startX}px`;
+    handElement.style.top = `${startY}px`;
+    instructionElement.style.left = `${startX + 30}px`; // Offset instruction
+    instructionElement.style.top = `${startY - 40}px`; // Offset instruction
+
+    // Update animation keyframes dynamically
+    const styleSheet = document.styleSheets[0]; // Assuming style.css is the first stylesheet
+    let ruleIndex = -1;
+    try {
+        for (let i = 0; i < styleSheet.cssRules.length; i++) {
+            if (styleSheet.cssRules[i].name === 'hand-guidance') {
+                ruleIndex = i;
+                break;
+            }
+        }
+
+        if (ruleIndex !== -1) {
+            const keyframesRule = styleSheet.cssRules[ruleIndex];
+            // Find the 75% and 90/100% keyframes to update transform
+             // Update 75% keyframe
+            const keyframe75 = keyframesRule.findRule('75%');
+            if (keyframe75) {
+                keyframe75.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
+            }
+            // Update 90% keyframe
+             const keyframe90 = keyframesRule.findRule('90%');
+             if (keyframe90) {
+                 keyframe90.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
+             }
+             // Update 100% keyframe
+             const keyframe100 = keyframesRule.findRule('100%');
+             if (keyframe100) {
+                 keyframe100.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
+             }
+
+        } else {
+            console.warn("Could not find @keyframes hand-guidance rule.");
+        }
+    } catch (e) {
+        console.error("Error accessing or modifying CSS rules:", e);
+        // Fallback or alternative method might be needed if CSSOM modification fails (e.g., CORS issues with external CSS)
+    }
+
+
+    // Make elements visible
+    handElement.style.display = 'block';
+    instructionElement.style.display = 'block';
+    setTimeout(() => { // Allow display block to render before adding class for transition
+        handElement.classList.add('visible');
+        instructionElement.classList.add('visible');
+    }, 50);
+
+    // Add animation class after a short delay
+    setTimeout(() => {
+        // Change circle to outline after delay (20% of 5s = 1000ms) + initial delay (500ms) = 1500ms
+        setTimeout(() => {
+            handElement.classList.add('grabbing'); // Add class to change style
+        }, 1000); // Updated delay to 1000ms (20% of 5s)
+
+        handElement.classList.add('animate');
+        
+        // Hide elements after animation finishes (5s duration + 0.5s delay)
+        setTimeout(() => {
+            handElement.classList.remove('visible');
+            instructionElement.classList.remove('visible');
+            // Optionally remove elements from DOM or set display none after transition
+            setTimeout(() => {
+                handElement.style.display = 'none';
+                instructionElement.style.display = 'none';
+                 handElement.classList.remove('animate'); // Clean up animation class
+                 handElement.classList.remove('grabbing'); // Reset style class
+            }, 500); // Match CSS transition duration
+        }, 5500); // Updated delay to 5500ms (5s duration + 0.5s delay)
+
+    }, 500); // Start animation slightly after appearing
+}
+
+function checkAndRunOnboarding() {
+    try {
+        if (localStorage.getItem(ONBOARDING_STORAGE_KEY)) {
+            console.log("User has visited before. Skipping onboarding animation.");
+            return; // Already visited
+        } else {
+            console.log("First visit detected. Running onboarding animation.");
+            localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+            runOnboardingAnimation();
+        }
+    } catch (e) {
+        console.error("LocalStorage access error:", e);
+        // Decide if animation should run if localStorage fails (e.g., private browsing)
+        // For now, let's run it if we can't check.
+        runOnboardingAnimation();
+    }
+}
+// --- End Onboarding Logic ---
+
 document.addEventListener('DOMContentLoaded', () => {
+    checkAndRunOnboarding(); // Check and run onboarding on load
+    
     const shirts = document.querySelectorAll('.shirt');
     const ratImage = document.getElementById('ratImage');
     const shirtNameElement = document.getElementById('shirt-name');

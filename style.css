@@ -275,6 +275,17 @@ body, html {
         margin: 0;
         padding: 0 10px; /* Add horizontal padding */
     }
+
+    /* Adjust main content layout for mobile */
+    .main-content {
+        justify-content: flex-start; /* Align items to the top */
+        padding-top: 5vh; /* Add some padding from the top */
+    }
+
+    /* Reduce logo size on mobile */
+    .index-logo {
+        max-width: 84px; /* 30% smaller for mobile */
+    }
 } 
 
 /* Modal Styles */
@@ -407,7 +418,7 @@ body, html {
 
 /* ... logo styles ... */
 
-/* ... shirts-container styles ... */ 
+/* ... shirts-container styles ... 
 
 /* --- Tooltip Styles --- */
 #info-tooltip {
@@ -659,13 +670,20 @@ body, html {
     .toggle-container {
         top: 15%; /* Specific vertical position for smaller mobile */
     }
+    #shirt-name {
+        top: 70%;
+    }
 }
 
-@media (max-width: 429px) {
+@media (min-width: 378px) and(max-width: 429px) {
+    #shirt-name {
+        top: 70%;
+    }
     .toggle-container {
         top: 19%; /* Specific vertical position for smaller mobile */
     }
 }
+
 
 /* --- Slide to Buy Styles --- */
 #slide-to-buy-container {
@@ -775,15 +793,216 @@ body, html {
 
 #shirt-name {
     position: absolute;
-    bottom: 20%; /* Adjusted position slightly lower */
+    bottom: 17%; /* Position below the rat image */
     left: 50%;
     transform: translateX(-50%);
-    font-size: 24px; /* Adjust font size as desired */
-    font-weight: 600; /* Changed to semi-bold (600) */
-    color: #333; /* Adjust color as desired */
+    color: #555; /* Subtle text color */
+    font-size: 1.1rem;
+    font-weight: 600; /* Restore semi-bold font weight */
     text-align: center;
-    z-index: 15; /* Ensure it's visible */
-    margin: 0; /* Remove default margin */
-    /* Removed padding-top as bottom positioning handles space */
-    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
+    z-index: 15; /* Above the rat */
+    /* Make unclickable/unselectable */
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* --- Onboarding Animation Styles --- */
+
+.onboarding-element {
+    position: absolute;
+    z-index: 200; /* Ensure it's above everything */
+    pointer-events: none; /* Prevent interaction */
+    opacity: 0; /* Start hidden */
+    transition: opacity 0.5s ease-in-out;
+}
+
+.onboarding-element.visible {
+    opacity: 1;
+}
+
+#onboarding-hand {
+    /* Style as a circle */
+    width: 25px; 
+    height: 25px;
+    border-radius: 50%;
+    /* Initial state: OUTLINED GREY */
+    background-color: transparent;
+    border: 2px solid rgba(128, 128, 128, 0.7); /* Grey border */
+    box-sizing: border-box; 
+    transition: background-color 0.2s ease, border-color 0.2s ease; 
+    transform-origin: center center;
+}
+
+/* State when 'grabbing': FILLED GREY */
+#onboarding-hand.grabbing {
+    background-color: rgba(128, 128, 128, 0.7); /* Grey fill */
+    border-color: transparent; /* Make border transparent when filled */
+}
+
+#onboarding-hand.animate {
+    animation: hand-guidance 5s ease-in-out 0.5s 1 forwards; /* Updated duration to 5s */
+}
+
+#onboarding-instruction {
+    /* Style similar to info-tooltip */
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    /* Position will be set by JS based on hand */
+    /* Placeholder starting position */
+    top: 30%; 
+    left: 25%; 
+}
+
+@keyframes hand-guidance {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    10% { /* Hover over shirt */
+        transform: translate(0, 0) scale(1.1);
+    }
+    20% { /* Point where it changes to outline (grabbing state) */
+        transform: translate(0, 0) scale(1); /* Back to normal scale */
+    }
+    25% { /* Start moving */
+        transform: translate(0, 0) scale(1);
+    }
+    75% { /* Move towards rat */
+        /* Target position needs to be calculated dynamically in JS */
+        /* Placeholder movement */
+        transform: translate(150px, 100px) scale(1); 
+        opacity: 1;
+    }
+    90%, 100% { /* Fade out at the end */
+        transform: translate(150px, 100px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* --- End Onboarding Animation Styles --- */
+
+/* Styles for the new index page content */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Ensure it takes full height */
+    padding-top: 100px; /* Add padding to prevent overlap with fixed logo */
+}
+
+.tv-frame-image {
+    max-width: 80%; /* Adjust as needed */
+    max-height: 70vh; /* Adjust as needed */
+    height: auto;
+    margin-bottom: 40px; /* Increased space between image and button */
+    animation: pulse-outline 2s infinite ease-out; /* Apply the pulsing animation */
+    cursor: pointer; /* Indicate it's clickable */
+}
+
+/* Style for the logo on the index page */
+.index-logo {
+    position: fixed; /* Fix position to the viewport */
+    top: 20px; /* Distance from the top */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Correct centering */
+    z-index: 1000; /* Ensure it's above other elements */
+    max-width: 120px; /* Reduced size by 20% */
+    height: auto;
+    /* margin-bottom: 20px; /* No longer needed as it's out of flow */ */
+}
+
+.rattire-button {
+    padding: 10px 25px; /* Adjusted padding for pill shape */
+    font-family: "Source Code Pro", monospace;
+    font-size: 1rem;
+    font-weight: bold; /* Make text bold */
+    cursor: pointer;
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #ccc;
+    border-radius: 50px; /* Make it pill-shaped */
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.rattire-button:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+}
+
+/* Keyframes for TV Frame outline animation */
+@keyframes pulse-outline {
+    0% {
+        box-shadow: 0 0 0 0 rgba(204, 204, 204, 0.4); /* Start with no shadow */
+    }
+    70% {
+        box-shadow: 0 0 10px 15px rgba(204, 204, 204, 0); /* Expand shadow and fade out */
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(204, 204, 204, 0); /* End with no shadow */
+    }
+}
+
+/* Video Overlay Styles */
+.video-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1100; /* Ensure it's above other content */
+}
+
+.video-overlay-content {
+    position: relative;
+    background-color: #000; /* Black background for the video container */
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    /* Responsive iframe container */
+    width: 90%;
+    max-width: 800px; /* Max width for the video */
+}
+
+.video-overlay-content iframe {
+    display: block; /* Remove extra space below iframe */
+    width: 100%;
+    aspect-ratio: 16 / 9; /* Maintain 16:9 aspect ratio */
+    height: auto; /* Calculate height automatically */
+    border: none; /* Remove iframe border */
+}
+
+.video-overlay-close {
+    position: absolute;
+    top: -15px; /* Position above the content box */
+    right: -15px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    line-height: 30px; /* Center the 'x' vertically */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.video-overlay-close:hover {
+    background-color: #eee;
+    color: #000;
 }
