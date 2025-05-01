@@ -864,6 +864,9 @@ body, html {
     0% {
         opacity: 1;
         transform: translate(0, 0) scale(1);
+        /* Initialize variables with fallback */
+        --hand-guidance-move-x: 150px; 
+        --hand-guidance-move-y: 100px;
     }
     10% { /* Hover over shirt */
         transform: translate(0, 0) scale(1.1);
@@ -874,14 +877,12 @@ body, html {
     25% { /* Start moving */
         transform: translate(0, 0) scale(1);
     }
-    75% { /* Move towards rat */
-        /* Target position needs to be calculated dynamically in JS */
-        /* Placeholder movement */
-        transform: translate(150px, 100px) scale(1); 
+    75% { /* Move towards rat using CSS variables */
+        transform: translate(var(--hand-guidance-move-x), var(--hand-guidance-move-y)) scale(1); 
         opacity: 1;
     }
-    90%, 100% { /* Fade out at the end */
-        transform: translate(150px, 100px) scale(1);
+    90%, 100% { /* Fade out at the end using CSS variables */
+        transform: translate(var(--hand-guidance-move-x), var(--hand-guidance-move-y)) scale(1);
         opacity: 0;
     }
 }
@@ -916,7 +917,7 @@ body, html {
     z-index: 1000; /* Ensure it's above other elements */
     max-width: 120px; /* Reduced size by 20% */
     height: auto;
-    /* margin-bottom: 20px; /* No longer needed as it's out of flow */ */
+    /* margin-bottom: 20px; */ /* No longer needed as it's out of flow */
 }
 
 .rattire-button {

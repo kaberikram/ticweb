@@ -75,44 +75,9 @@ function runOnboardingAnimation() {
     instructionElement.style.left = `${startX + 30}px`; // Offset instruction
     instructionElement.style.top = `${startY - 40}px`; // Offset instruction
 
-    // Update animation keyframes dynamically
-    const styleSheet = document.styleSheets[0]; // Assuming style.css is the first stylesheet
-    let ruleIndex = -1;
-    try {
-        for (let i = 0; i < styleSheet.cssRules.length; i++) {
-            if (styleSheet.cssRules[i].name === 'hand-guidance') {
-                ruleIndex = i;
-                break;
-            }
-        }
-
-        if (ruleIndex !== -1) {
-            const keyframesRule = styleSheet.cssRules[ruleIndex];
-            // Find the 75% and 90/100% keyframes to update transform
-             // Update 75% keyframe
-            const keyframe75 = keyframesRule.findRule('75%');
-            if (keyframe75) {
-                keyframe75.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
-            }
-            // Update 90% keyframe
-             const keyframe90 = keyframesRule.findRule('90%');
-             if (keyframe90) {
-                 keyframe90.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
-             }
-             // Update 100% keyframe
-             const keyframe100 = keyframesRule.findRule('100%');
-             if (keyframe100) {
-                 keyframe100.style.transform = `translate(${moveX}px, ${moveY}px) scale(1)`;
-             }
-
-        } else {
-            console.warn("Could not find @keyframes hand-guidance rule.");
-        }
-    } catch (e) {
-        console.error("Error accessing or modifying CSS rules:", e);
-        // Fallback or alternative method might be needed if CSSOM modification fails (e.g., CORS issues with external CSS)
-    }
-
+    // Set CSS Variables for the animation on the hand element
+    handElement.style.setProperty('--hand-guidance-move-x', `${moveX}px`);
+    handElement.style.setProperty('--hand-guidance-move-y', `${moveY}px`);
 
     // Make elements visible
     handElement.style.display = 'block';
