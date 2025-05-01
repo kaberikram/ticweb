@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shirts = document.querySelectorAll('.shirt');
     const ratImage = document.getElementById('ratImage');
     const shirtNameElement = document.getElementById('shirt-name');
+    const infoTooltip = document.getElementById('info-tooltip'); // Get tooltip span
     const getFreeButton = document.querySelector('.get-free-button');
 
     // Modal elements
@@ -48,16 +49,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('emailModal');
     const modalRatImage = document.getElementById('modalRatImage');
     const modalShirtName = document.getElementById('modalShirtName');
-    const emailInput = document.getElementById('emailInput');
-    const confirmButton = document.getElementById('confirmButton');
-    const closeButton = document.getElementById('closeButton');
+    const closeButton = document.getElementById('modalCloseButton'); // Changed ID
     const modalCloseX = document.getElementById('modalCloseX'); // Get the X button
-    const initialState = modal.querySelector('.initial-state');
-    const confirmedState = modal.querySelector('.confirmed-state');
-    const modalConfirmShirtName = document.getElementById('modalConfirmShirtName');
-    const instructionTooltip = document.getElementById('instruction-tooltip'); // Get tooltip
-    const preDeadlineMessage = document.getElementById('preDeadlineMessage'); // Get pre-deadline msg p
-    const postDeadlineMessage = document.getElementById('postDeadlineMessage'); // Get post-deadline msg p
+
+    // Rat/Mouse Toggle Elements
+    const ratMouseToggle = document.getElementById('ratMouseToggle');
+    let currentMode = 'mouse'; // Initial mode set to mouse
+
+    // Image Mappings (Reversed)
+    const imageMap = {
+        // Maps Rat (M) images to Mouse (original) images
+        ratToMouse: {
+            '/1RatM.png': '/1Rat.png', 
+            '/3RatM.png': '/3Rat.png',
+            '/6RatM.png': '/6Rat.png',
+            '/1RatHoverM.png': '/1RatHover.png',
+            '/3RatHoverM.png': '/3RatHover.png',
+            '/6RatHoverM.png': '/6RatHover.png'
+        },
+        // Maps Mouse (original) images to Rat (M) images
+        mouseToRat: {
+            '/1Rat.png': '/1RatM.png',
+            '/3Rat.png': '/3RatM.png',
+            '/6Rat.png': '/6RatM.png',
+            '/1RatHover.png': '/1RatHoverM.png',
+            '/3RatHover.png': '/3RatHoverM.png',
+            '/6RatHover.png': '/6RatHoverM.png'
+        }
+    };
+    const validHoverPaths = [
+        '/1RatHover.png', '/3RatHover.png', '/6RatHover.png',
+        '/1RatHoverM.png', '/3RatHoverM.png', '/6RatHoverM.png'
+    ];
+
+    // Slide-to-buy elements (added)
+    const sliderContainer = document.getElementById('slide-to-buy-container');
+    const sliderHandle = document.getElementById('slider-handle');
+
+    // Drag state variables (added for slider)
+    let isSliderDragging = false;
+    let sliderStartX = 0;
+    let sliderStartLeft = 0;
+    const sliderPadding = 5; // Match CSS padding/initial offset
 
     let activeShirt = null;
     let initialShirtPos = { left: '', top: '' };
@@ -67,46 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastY = 0;
     let isMoving = false;
     let moveTimeout;
-    let tooltipTimeout; // Variable for the hide timer
-    let tooltipVisible = false; // Track tooltip state
-
-    // --- Tooltip Logic --- 
-    function showTooltip() {
-        if (instructionTooltip) {
-             // Short delay before showing
-            setTimeout(() => {
-                instructionTooltip.classList.add('visible');
-                tooltipVisible = true;
-                 // Set timer to hide after a few seconds
-                tooltipTimeout = setTimeout(hideTooltip, 5000); // Hide after 5 seconds 
-            }, 500); // Show after 0.5 seconds
-        }
-    }
-
-    function hideTooltip() {
-        if (instructionTooltip && tooltipVisible) {
-            clearTimeout(tooltipTimeout); // Clear the auto-hide timer
-            instructionTooltip.classList.remove('visible');
-            tooltipVisible = false;
-        }
-    }
-
-    // Show tooltip initially
-    showTooltip();
-
-    // --- End Tooltip Logic --- 
+    let originalRatSrc = ''; // Store original rat image source
+    let isHoveringRat = false; // Track if currently hovering the rat with the specific shirt
+    // We will now determine hover source dynamically based on the current rat image
 
     shirts.forEach(shirt => {
         shirt.style.cursor = 'grab';
         
         // Mobile touch events
         shirt.addEventListener('touchstart', (e) => {
-            hideTooltip(); // Hide tooltip on interaction start
             handleStart(e); 
         }, { passive: false });
         // Desktop mouse events
         shirt.addEventListener('mousedown', (e) => {
-            hideTooltip(); // Hide tooltip on interaction start
             handleStart(e);
         });
     });
@@ -114,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleStart(e) {
         e.preventDefault();
         activeShirt = e.target;
+        originalRatSrc = ratImage.src; // Store the CURRENT rat image source (could be Rat or Mouse)
+        isHoveringRat = false; // Reset hover state
 
         // Store initial position
         const computedStyle = window.getComputedStyle(activeShirt);
@@ -173,6 +181,44 @@ document.addEventListener('DOMContentLoaded', () => {
         activeShirt.style.left = `${currentPos.x}px`;
         activeShirt.style.top = `${currentPos.y}px`;
 
+        // Check for collision with rat for hover effect
+        const shirtRect = activeShirt.getBoundingClientRect();
+        const ratRect = ratImage.getBoundingClientRect();
+        const collision = !(shirtRect.right < ratRect.left || 
+                          shirtRect.left > ratRect.right || 
+                          shirtRect.bottom < ratRect.top || 
+                          shirtRect.top > ratRect.bottom);
+
+        if (collision) {
+            const currentBaseSrc = originalRatSrc; // Use the src from when drag started
+            const currentDisplaySrc = ratImage.src;
+
+            // Determine expected hover suffix based on CURRENT mode
+            const hoverSuffix = currentMode === 'rat' ? 'HoverM.png' : 'Hover.png';
+            const isAlreadyHovering = currentDisplaySrc.endsWith(hoverSuffix);
+            
+            if (!isAlreadyHovering) {
+                // Extract base name (e.g., /1Rat or /1RatM)
+                let baseNameWithMaybeM = currentBaseSrc.substring(currentBaseSrc.lastIndexOf('/'), currentBaseSrc.lastIndexOf('.png'));
+                // Ensure we get the core name like /1Rat to construct hover path
+                let coreBaseName = baseNameWithMaybeM.replace('M', ''); 
+
+                const potentialHoverPath = coreBaseName + hoverSuffix;
+
+                // Check if this hover path is valid
+                if (validHoverPaths.includes(potentialHoverPath)) {
+                    // Use URL constructor for correct path relative to document
+                    ratImage.src = new URL(potentialHoverPath, window.location.href).pathname;
+                    isHoveringRat = true;
+                }
+            }
+        } else {
+            if (isHoveringRat) {
+                ratImage.src = originalRatSrc; // Revert to original image (Rat or Mouse version)
+                isHoveringRat = false;
+            }
+        }
+
         // Handle distortion effect
         const isMovingNow = Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
         if (isMovingNow && !isMoving) {
@@ -202,18 +248,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleEnd(e) {
         if (!activeShirt) return;
 
-        // Check for collision with rat
+        // Check for collision with rat on drop
         const shirtRect = activeShirt.getBoundingClientRect();
         const ratRect = ratImage.getBoundingClientRect();
-        const collision = !(shirtRect.right < ratRect.left || 
-                          shirtRect.left > ratRect.right || 
-                          shirtRect.bottom < ratRect.top || 
-                          shirtRect.top > ratRect.bottom);
+
+        // Calculate the center of the shirt
+        const shirtCenterX = shirtRect.left + shirtRect.width / 2;
+        const shirtCenterY = shirtRect.top + shirtRect.height / 2;
+
+        // Check if the center of the shirt is within the rat's bounding box
+        const collision = shirtCenterX >= ratRect.left &&
+                          shirtCenterX <= ratRect.right &&
+                          shirtCenterY >= ratRect.top &&
+                          shirtCenterY <= ratRect.bottom;
 
         if (collision) {
             const newRatSrc = activeShirt.getAttribute('data-rat-src');
             if (newRatSrc) {
-                ratImage.src = newRatSrc;
+                ratImage.src = newRatSrc; // Set final image (overwrites hover if necessary)
 
                 // Update the shirt name text using the data attribute
                 const shirtName = activeShirt.getAttribute('data-shirt-name');
@@ -224,11 +276,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     shirtNameElement.textContent = 'Unknown Shirt'; 
                 }
 
+                // Update tooltip text
+                const modelSize = activeShirt.getAttribute('data-model-size');
+                if (modelSize && infoTooltip) {
+                    infoTooltip.setAttribute('data-tooltip', `Model is 5ft 10" and wears size ${modelSize}`);
+                }
+
                 // Reset position
                 activeShirt.style.left = initialShirtPos.left;
                 activeShirt.style.top = initialShirtPos.top;
                 currentPos.x = parseInt(initialShirtPos.left) || 0;
                 currentPos.y = parseInt(initialShirtPos.top) || 0;
+            }
+        } else {
+             // No collision (drop elsewhere or cancelled)
+             // Reset shirt position
+            activeShirt.style.left = initialShirtPos.left;
+            activeShirt.style.top = initialShirtPos.top;
+            currentPos.x = parseInt(initialShirtPos.left) || 0;
+            currentPos.y = parseInt(initialShirtPos.top) || 0;
+
+            // Ensure rat image is reverted if hover was active
+            if (isHoveringRat) {
+                ratImage.src = originalRatSrc;
             }
         }
 
@@ -247,136 +317,96 @@ document.addEventListener('DOMContentLoaded', () => {
         document.removeEventListener('touchend', handleEnd);
         document.removeEventListener('touchcancel', handleEnd);
 
+        isHoveringRat = false; // Ensure hover state is reset
         activeShirt = null;
-        isMoving = false;
     }
 
-    // --- Modal Logic --- 
+    // --- Rat/Mouse Toggle Logic ---
+    if (ratMouseToggle) {
+        ratMouseToggle.addEventListener('change', (e) => {
+            const isMouseMode = e.target.checked; // true if switching TO Mouse (original images)
+            currentMode = isMouseMode ? 'mouse' : 'rat';
 
-    // Function to close the modal
+            console.log(`Switched mode to: ${currentMode}`);
+
+            const conversionMap = isMouseMode ? imageMap.ratToMouse : imageMap.mouseToRat;
+            const currentRatPath = new URL(ratImage.src).pathname;
+            const newRatPath = conversionMap[currentRatPath] || currentRatPath; 
+
+            // Only transition if the path is actually changing
+            if (newRatPath !== currentRatPath) {
+                // Function to run after fade-out completes
+                const changeImageSrc = () => {
+                    console.log(`Changing src to: ${newRatPath}`);
+                    ratImage.src = newRatPath; // Change the source
+                    ratImage.style.opacity = 1; // Fade back in
+                    // Clean up the listener to prevent it firing unexpectedly later
+                    ratImage.removeEventListener('transitionend', changeImageSrc);
+                };
+
+                // Add a one-time listener for the end of the fade-out transition
+                ratImage.addEventListener('transitionend', changeImageSrc, { once: true });
+
+                // Start the fade-out
+                ratImage.style.opacity = 0;
+                 
+            } else {
+                 console.warn(`No counterpart found or same image, no transition: ${currentRatPath} in map:`, conversionMap);
+            }
+           
+            // Update shirt data attributes (no transition needed here)
+            shirts.forEach(shirt => {
+                const currentDataSrc = shirt.getAttribute('data-rat-src');
+                const newDataSrc = conversionMap[currentDataSrc] || currentDataSrc;
+                 if (newDataSrc !== currentDataSrc) {
+                    shirt.setAttribute('data-rat-src', newDataSrc);
+                 } 
+                 // Removed console warning spam for data-src lookup failure
+            });
+        });
+    } else {
+        console.warn('Rat/Mouse toggle checkbox not found!');
+    }
+
+    // --- Modal Opening Logic --- 
+    // Extracted function to be called by button OR slider
+    function openEmailModal() {
+        const currentShirtName = shirtNameElement.textContent;
+        const currentRatSrc = ratImage.src;
+
+        modalShirtName.textContent = currentShirtName; // Update modal shirt name
+        modalRatImage.src = currentRatSrc; // Update modal rat image
+
+        // Simplified: Just display the modal
+        modalOverlay.style.display = 'flex';
+        // Disable body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Event listener for the original button (commented out as button is removed)
+    /*
+    if (getFreeButton) {
+        getFreeButton.addEventListener('click', openEmailModal);
+    } else {
+        console.error("Get Free Button not found");
+    }
+    */
+
+    // --- Modal Closing Logic ---
     function closeModal() {
         modalOverlay.style.display = 'none';
+        // Re-enable body scroll when modal is closed
+        document.body.style.overflow = ''; 
     }
 
-    // Show modal when 'Get for free' is clicked
-    getFreeButton.addEventListener('click', () => {
-        // Set the image in the modal to the currently displayed rat image
-        modalRatImage.src = ratImage.src;
-        // Set the T-shirt name in the modal instruction
-        modalShirtName.textContent = shirtNameElement.textContent;
-        
-        initialState.style.display = 'flex'; 
-        confirmedState.style.display = 'none';
-        emailInput.value = ''; // Clear previous email input
+    // Handle close button click (adjusted for new button ID)
+    if (closeButton) { // Check if button exists
+      closeButton.addEventListener('click', closeModal);
+    } else {
+      console.error("Modal Close Button not found");
+    }
 
-        // Reset form state (no need to check localStorage on open anymore)
-        emailInput.disabled = false;
-        confirmButton.disabled = false;
-        confirmButton.textContent = 'Confirm';
-
-        modalOverlay.style.display = 'flex';
-    });
-
-    // --- Deadline & Endpoint --- 
-    const deadline = new Date('2025-04-20T00:00:00+08:00');
-    const formspreeURL = 'https://formspree.io/f/mvgkwnpq';
-
-    // Handle confirm button click
-    confirmButton.addEventListener('click', () => {
-        const email = emailInput.value;
-        const chosenShirt = shirtNameElement.textContent;
-        const currentTime = new Date();
-
-        // Basic validation
-        if (!email || !email.includes('@')) { 
-            alert('Please enter a valid email address.');
-            return; 
-        }
-        
-        // *** Check if THIS specific email has been submitted from this browser ***
-        if (hasEmailBeenSubmitted(email)) {
-            alert('This email address has already been submitted from this browser.');
-            return; // Stop the submission process
-        }
-
-        // Determine which confirmation message to show *before* sending
-        const showPreDeadlineMsg = currentTime < deadline;
-
-        // --- Send data to Formspree --- 
-        confirmButton.disabled = true;
-        confirmButton.textContent = 'Submitting...';
-
-        const formData = { 
-            email: email, 
-            shirtChoice: chosenShirt, 
-            submittedAt: currentTime.toISOString()
-        }; 
-
-        fetch(formspreeURL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json' // Often helpful with Formspree
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            // Check if Formspree indicated success (usually status 200)
-            if (response.ok) {
-                return response.json(); // Parse success response (might contain confirmation)
-            } else {
-                // Try to parse error response from Formspree
-                return response.json().then(errorData => {
-                    throw new Error(errorData.error || 'Formspree submission failed.');
-                }).catch(() => {
-                    // Fallback if error response isn't JSON
-                    throw new Error('Formspree submission failed with status: ' + response.status);
-                });
-            }
-        })
-        .then(data => {
-            console.log('Formspree Success:', data);
-
-            // --- Submission Successful - Add email to local storage --- 
-            addSubmittedEmail(email); // Use the helper function
-
-            if (showPreDeadlineMsg) {
-                preDeadlineMessage.style.display = 'block';
-                postDeadlineMessage.style.display = 'none';
-                modalConfirmShirtName.textContent = chosenShirt;
-            } else {
-                preDeadlineMessage.style.display = 'none';
-                postDeadlineMessage.style.display = 'block';
-            }
-            // Switch to confirmed state view
-            initialState.style.display = 'none';
-            confirmedState.style.display = 'flex';
-        })
-        .catch((error) => {
-            // --- Network or Formspree error --- 
-            console.error('Submission Error:', error);
-            alert('Sorry, there was an error submitting your entry. Please try again. \nError: ' + error.message);
-        })
-        .finally(() => {
-            // --- Re-enable button if submission failed or wasn't attempted ---
-            // Check again in case the failure was the duplicate check
-            if (!hasEmailBeenSubmitted(email)) {
-                 confirmButton.disabled = false;
-                 confirmButton.textContent = 'Confirm';
-            } else {
-                 // Keep it disabled if this email is now marked as submitted
-                 // (Technically redundant due to the initial check, but safe)
-                 confirmButton.disabled = true; // Or just leave as 'Submitting...'? Maybe reset?
-                 confirmButton.textContent = 'Submitted'; // Or 'Confirmed'? Let's stick to Confirm
-                 emailInput.disabled = true; // Disable input too if submitted
-            }
-        });
-    });
-
-    // Handle close button click (from confirmed state)
-    closeButton.addEventListener('click', closeModal);
-
-    // Handle X button click (from initial state)
+    // Handle X button click (remains the same)
     modalCloseX.addEventListener('click', closeModal);
 
     // Optional: Close modal if clicking outside the modal content
@@ -385,4 +415,88 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }
     });
+
+    // --- Slide to Buy Logic (Added) ---
+    if (sliderHandle && sliderContainer) {
+        sliderHandle.addEventListener('mousedown', handleSliderStart);
+        sliderHandle.addEventListener('touchstart', handleSliderStart, { passive: false });
+    } else {
+        console.error('Slider elements not found!');
+    }
+
+    function handleSliderStart(e) {
+        isSliderDragging = true;
+        sliderHandle.classList.add('dragging');
+        sliderHandle.style.transition = 'none'; // Disable transition during drag
+
+        if (e.type === 'mousedown') {
+            sliderStartX = e.clientX;
+            document.addEventListener('mousemove', handleSliderMove);
+            document.addEventListener('mouseup', handleSliderEnd);
+        } else { // touchstart
+            e.preventDefault(); // Prevent page scroll
+            sliderStartX = e.touches[0].clientX;
+            document.addEventListener('touchmove', handleSliderMove, { passive: false });
+            document.addEventListener('touchend', handleSliderEnd);
+            document.addEventListener('touchcancel', handleSliderEnd);
+        }
+
+        // Use offsetLeft for reliable initial position
+        sliderStartLeft = sliderHandle.offsetLeft; 
+    }
+
+    function handleSliderMove(e) {
+        if (!isSliderDragging) return;
+        e.preventDefault(); // Prevent selection/scrolling
+
+        let currentX;
+        if (e.type === 'mousemove') {
+            currentX = e.clientX;
+        } else { // touchmove
+            currentX = e.touches[0].clientX;
+        }
+
+        const deltaX = currentX - sliderStartX;
+        let newLeft = sliderStartLeft + deltaX;
+
+        // Clamp position within bounds
+        const minLeft = sliderPadding;
+        const maxLeft = sliderContainer.offsetWidth - sliderHandle.offsetWidth - sliderPadding;
+        newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+
+        sliderHandle.style.left = `${newLeft}px`;
+    }
+
+    function handleSliderEnd(e) {
+        if (!isSliderDragging) return;
+        isSliderDragging = false;
+        sliderHandle.classList.remove('dragging');
+        sliderHandle.style.transition = 'left 0.2s ease-out'; // Re-enable transition for snap back
+
+        if (e.type === 'mousemove') {
+            document.removeEventListener('mousemove', handleSliderMove);
+            document.removeEventListener('mouseup', handleSliderEnd);
+        } else { // touchend/touchcancel
+            document.removeEventListener('touchmove', handleSliderMove);
+            document.removeEventListener('touchend', handleSliderEnd);
+            document.removeEventListener('touchcancel', handleSliderEnd);
+        }
+
+        // Check if slid far enough
+        const endThreshold = sliderContainer.offsetWidth - sliderHandle.offsetWidth - sliderPadding - 5; // 5px tolerance
+
+        if (sliderHandle.offsetLeft >= endThreshold) {
+            // Success! Trigger the modal.
+            console.log('Slide successful!');
+            openEmailModal(); 
+            // Snap back slightly delayed to allow modal to appear maybe?
+             setTimeout(() => {
+                sliderHandle.style.left = `${sliderPadding}px`; 
+             }, 100);
+        } else {
+            // Didn't slide far enough, snap back.
+            sliderHandle.style.left = `${sliderPadding}px`;
+        }
+    }
+    // --- End Slide to Buy Logic ---
 }); 

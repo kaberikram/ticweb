@@ -33,18 +33,34 @@
         </header>
 
         <main class="shirts-container">
-            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png" data-shirt-name="Ratphex-T">
-            <img src="/2Shirt.png" alt="Shirt 2" class="shirt top-right" data-rat-src="/2Rat.png" data-shirt-name="Ratvolution-T">
+            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png" data-shirt-name="Ratphex-T" data-model-size="L">
+            
+            <!-- Rat/Mouse Toggle Switch -->
+            <div class="toggle-container">
+                <input type="checkbox" id="ratMouseToggle" class="toggle-checkbox" checked>
+                <label for="ratMouseToggle" class="toggle-label">
+                    <span class="toggle-text toggle-rat">Rat</span>
+                    <span class="toggle-text toggle-mouse">Mouse</span>
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+
             <img src="/1Rat.png" alt="Rat wearing Shirt" class="rat-center" id="ratImage">
-            <div id="instruction-tooltip" class="tooltip">Drag a shirt onto the rat!</div>
+            <!-- Minimal info tooltip icon -->
+            <span id="info-tooltip" data-tooltip="Model is 5ft 4&quot; and wears size S">?</span>
             <p id="shirt-name">Ratphex-T</p>
-            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png" data-shirt-name="AnimalCollective-T">
-            <img src="/4Shirt.png" alt="Shirt 4" class="shirt bottom-right" data-rat-src="/4Rat.png" data-shirt-name="TimPeaks-T">
-            <img src="/5Shirt.png" alt="Shirt 5" class="shirt middle-left" data-rat-src="/5Rat.png" data-shirt-name="Ratph4x-T">
-            <img src="/6Shirt.png" alt="Shirt 6" class="shirt middle-right" data-rat-src="/6Rat.png" data-shirt-name="RatwardScissor-T">
+            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png" data-shirt-name="AnimalCollective-T" data-model-size="S">
+            <img src="/6Shirt.png" alt="Shirt 6" class="shirt middle-right" data-rat-src="/6Rat.png" data-shirt-name="RatwardScissor-T" data-model-size="XL">
         </main>
 
-        <button class="get-free-button">Get for free</button>
+        <!-- Slide to Buy Container -->
+        <div id="slide-to-buy-container">
+            <div id="slider-handle">&gt;</div>
+            <span class="slider-text">Slide to buy</span>
+        </div>
+        <!-- End Slide to Buy Container -->
+
+        <!-- <button class="get-free-button">Get for free</button> --> <!-- Replaced by slider -->
     </div>
 
     <!-- Modal Structure -->
@@ -53,99 +69,17 @@
             <div class="modal-content initial-state">
                 <button id="modalCloseX" class="modal-close-x">&times;</button>
                 <img id="modalRatImage" src="/1Rat.png" alt="Selected Rat" class="modal-rat-image">
-                <p class="modal-instruction">Get <span id="modalShirtName"></span> for free, enter your email we'll send if its the top pick!</p>
-                <input type="email" id="emailInput" placeholder="Email" class="email-input">
-                <button id="confirmButton" class="confirm-button">Confirm</button>
-            </div>
-            <div class="modal-content confirmed-state" style="display: none;">
-                 <!-- Pre-deadline message -->
-                 <p class="modal-confirmation-message" id="preDeadlineMessage">Got it! We'll email you by<br><strong>April 20, 2025</strong><br>if you're getting this<br><span id="modalConfirmShirtName"></span>.</p>
-                 <!-- Post-deadline message (initially hidden) -->
-                 <p class="modal-confirmation-message" id="postDeadlineMessage" style="display: none;">The deadline was<br><strong>April 20, 2025</strong>.<br>Thanks for your interest!<br>We'll keep you updated via email.</p>
-                <button id="closeButton" class="close-button">Close</button>
+                <p class="modal-instruction">The <span id="modalShirtName">Ratphex-T</span> will be available soon!</p>
+                <button id="modalCloseButton" class="close-button">Close</button>
             </div>
         </div>
     </div>
     <!-- End Modal Structure -->
 
     <footer class="footer">
-        <a href="/privacypolicy.html" class="footer-link">Privacy Policy</a>
-        <span class="footer-separator">|</span>
         <a href="/dashboard.html" class="footer-link">Tracking Portal</a>
-        <span class="footer-separator">|</span>
-        <a href="#" class="footer-link pre-order-link" id="preOrderLink">Pre-order Now</a>
     </footer>
 
     <script type="module" src="./script.js"></script>
-    <script>
-        async function updatePreOrderLink() {
-            try {
-                // Check for test parameter in URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const testRegion = urlParams.get('region');
-                
-                let country = '';
-                let region = '';
-
-                if (testRegion) {
-                    // Use test parameters if provided
-                    switch(testRegion.toUpperCase()) {
-                        case 'MY':
-                            country = 'MY';
-                            region = 'AS';
-                            break;
-                        case 'SEA':
-                            country = 'TH'; // Example SEA country
-                            region = 'AS';
-                            break;
-                        case 'WORLD':
-                            country = 'US'; // Example non-SEA country
-                            region = 'NA';
-                            break;
-                        default:
-                            // If invalid parameter, fetch real location
-                            const response = await fetch('https://ipapi.co/json/');
-                            const data = await response.json();
-                            country = data.country;
-                            region = data.continent_code;
-                    }
-                } else {
-                    // No test parameter, fetch real location
-                    const response = await fetch('https://ipapi.co/json/');
-                    const data = await response.json();
-                    country = data.country;
-                    region = data.continent_code;
-                }
-
-                const preOrderLink = document.getElementById('preOrderLink');
-                
-                // Define the links based on location
-                const links = {
-                    MY: 'https://buy.stripe.com/fZe4hQ5Wk04OfkYcMQ', // Malaysia
-                    AS: 'https://buy.stripe.com/5kA3dMesQ4l4a0E5kp', // Asia (SEA)
-                    default: 'https://buy.stripe.com/4gwbKi1G47xg0q4aEK' // Worldwide
-                };
-                
-                // Set the appropriate link
-                if (country === 'MY') {
-                    preOrderLink.href = links.MY;
-                    console.log('Using Malaysia link');
-                } else if (region === 'AS') {
-                    preOrderLink.href = links.AS;
-                    console.log('Using SEA link');
-                } else {
-                    preOrderLink.href = links.default;
-                    console.log('Using Worldwide link');
-                }
-            } catch (error) {
-                console.error('Error detecting location:', error);
-                // Default to worldwide link if location detection fails
-                document.getElementById('preOrderLink').href = 'https://buy.stripe.com/4gwbKi1G47xg0q4aEK';
-            }
-        }
-        
-        // Update the link when the page loads
-        window.addEventListener('load', updatePreOrderLink);
-    </script>
 </body>
 </html> 

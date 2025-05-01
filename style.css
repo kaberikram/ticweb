@@ -19,26 +19,28 @@ body, html {
     flex-direction: column;
     align-items: center;
     max-width: none; /* Remove max-width limitation */
-    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    /* background-image: radial-gradient(#e0e0e0 1px, transparent 1px); */
     background-size: 15px 15px;
     padding: 20px;
 }
 
 .logo-container {
-    width: 100%;
-    text-align: center;
-    padding: 20px 0; /* Added padding top and bottom */
+    /* width: 100%; Remove this if we want container to shrink */
+    /* text-align: center; Remove center alignment */
+    padding: 0; /* Remove padding or adjust as needed */
     position: fixed;
-    top: 2%; /* Moved down slightly from 0% */
-    left: 50%;
-    transform: translateX(-50%);
+    top: 1.5rem; /* Use rem for consistent spacing */
+    left: 1.5rem; /* Use rem for consistent spacing */
+    transform: none; /* Remove horizontal centering transform */
+    width: auto; /* Allow container to size based on logo */
+    z-index: 100; /* Ensure it's above other content */
 }
 
 .logo {
-    max-width: 105px;
+    max-width: 74px; /* Keep original desktop size or adjust */
     height: auto;
-    display: block; /* Ensure proper margin handling */
-    margin: 0 auto; /* Center the logo */
+    display: block; 
+    margin: 0; /* Remove auto margins */
 }
 
 .shirts-container {
@@ -52,12 +54,14 @@ body, html {
 
 .rat-center {
     position: absolute; /* Position relative to shirts-container */
-    max-width: 15.925%; /* Reduced by 30% from 22.75% */
+    max-width: 18%; /* Reduced by 30% from 22.75% */
     height: auto;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); /* Center the image */
     z-index: 10; /* Ensure rat is above shirts if overlapping */
+    opacity: 1; /* Start fully visible */
+    transition: opacity 0.3s ease-in-out; /* Add opacity transition */
 }
 
 .shirt {
@@ -185,7 +189,8 @@ body, html {
 
     .logo-container {
         position: fixed; /* Changed to fixed to ensure it stays visible */
-        top: 35px; /* Increased top spacing to avoid browser chrome */
+        top: 10px; /* Increased top spacing to avoid browser chrome */
+        left: 15%;
         z-index: 100;
         background-color: transparent;
         transform: translateX(-50%);
@@ -195,7 +200,7 @@ body, html {
     }
 
     .logo {
-        max-width: 105px; /* Made consistent with desktop size */
+        max-width: 60px; /* Example: Slightly smaller logo for mobile */
     }
 
     .shirts-container {
@@ -218,39 +223,30 @@ body, html {
 
     /* Update shirt positions for mobile */
     .top-left {
-        top: 20%; /* Keep top row */
-        left: 20%; /* Closer horizontally */
+        top: 25%; /* Moved up */
+        left: 5%; /* Moved right */
     }
 
-    .top-right {
-        top: 20%; /* Keep top row */
-        left: 55%; /* Closer horizontally */
+    /* .top-right is not used */
+
+    /* .middle-left is not used */
+
+    .middle-right { /* Corresponds to RatwardScissor-T */
+        top: 40%; /* Moved up */
+        left: 75%; /* Moved right */
     }
 
-    .middle-left {
-        top: 35%; /* Reduce vertical space */
-        left: 5%; /* Align horizontally with bottom */
+    .bottom-left { /* Corresponds to AnimalCollective-T */
+        top: 50%; /* Moved down */
+        left: 5%; /* Moved right */
     }
 
-    .middle-right {
-        top: 35%; /* Reduce vertical space */
-        left: 70%; /* Align horizontally with bottom */
-    }
-
-    .bottom-left {
-        top: 50%; /* Reduce vertical space */
-        left: 3%; /* Keep wide spread */
-    }
-
-    .bottom-right {
-        top: 50%; /* Reduce vertical space */
-        left: 72%; /* Keep wide spread */
-    }
+    /* .bottom-right is not used */
 
     .rat-center {
         position: absolute;
-        max-width: 42%;
-        top: 50%;
+        max-width: 70%;
+        top: 45%;
         left: 50%;
         transform: translate(-50%, -50%);
         margin: 0;
@@ -273,48 +269,6 @@ body, html {
         padding: 0 10px; /* Add horizontal padding */
     }
 } 
-
-.get-free-button {
-    position: fixed;
-    bottom: 10%; /* Moved button further down */
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: normal; /* Changed from bold */
-    color: #fff;
-    background-color: #222; /* Dark gray/black */
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    z-index: 100; /* Ensure it's above other elements */
-    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
-}
-
-.get-free-button:hover {
-    background-color: #444; /* Lighter gray on hover */
-}
-
-.get-free-button:active {
-    background-color: #000; /* Black on active/click */
-    transform: translateX(-50%) scale(0.98); /* Slight scale down */
-}
-
-#shirt-name {
-    position: absolute;
-    bottom: 20%; /* Adjusted position slightly lower */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 24px; /* Adjust font size as desired */
-    font-weight: 600; /* Changed to semi-bold (600) */
-    color: #333; /* Adjust color as desired */
-    text-align: center;
-    z-index: 15; /* Ensure it's visible */
-    margin: 0; /* Remove default margin */
-    /* Removed padding-top as bottom positioning handles space */
-    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
-}
 
 /* Modal Styles */
 .modal-overlay {
@@ -449,26 +403,55 @@ body, html {
 /* ... shirts-container styles ... */ 
 
 /* --- Tooltip Styles --- */
-#instruction-tooltip {
+#info-tooltip {
     position: absolute;
-    top: 58%; /* Position below the rat image (adjust as needed) */
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(51, 51, 51, 0.9); /* Dark semi-transparent background */
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: "Source Code Pro", monospace;
-    z-index: 20; /* Above rat, below shirts being dragged */
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.5s ease-in-out;
-    white-space: nowrap; /* Prevent wrapping */
-    pointer-events: none; /* Allow clicks to pass through */
+    top: 25%; /* Position near top of rat */
+    left: 55%; /* Position near right of rat */
+    transform: translate(-50%, -50%); /* Adjust centering */
+    width: 18px; /* Slightly adjust size for border */
+    height: 18px; /* Slightly adjust size for border */
+    color: rgba(0, 0, 0, 0.6); /* Match border color */
+    border: 1px solid rgba(0, 0, 0, 0.6); /* Added border */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px; /* Slightly adjust size */
+    font-weight: bold;
+    cursor: help;
+    z-index: 15; /* Above rat, potentially below dragged shirts */
+    transition: border-color 0.2s ease, color 0.2s ease; /* Update transition */
+    font-family: sans-serif; /* Use a standard font for the ? */
 }
 
-#instruction-tooltip.visible {
-    opacity: 1; /* Make visible */
+#info-tooltip:hover {
+    color: rgba(0, 0, 0, 0.9); /* Darken text on hover */
+    border-color: rgba(0, 0, 0, 0.9); /* Darken border on hover */
+}
+
+#info-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 120%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%); 
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: "Source Code Pro", monospace;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 20;
+}
+
+#info-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-close-x {
@@ -527,10 +510,6 @@ body, html {
 
 /* Mobile responsiveness for footer */
 @media (max-width: 768px) {
-    .get-free-button {
-        bottom: 60px;
-    }
-    
     .footer {
         bottom: 20px;
         gap: 10px;
@@ -539,4 +518,235 @@ body, html {
     .footer-link, .footer-separator {
         font-size: 12px;
     }
+
+    /* Correct placement for mobile info-tooltip */
+    #info-tooltip {
+        top: 25%;
+        left: 65%;
+    }
+}
+
+/* --- Toggle Switch Styles --- */
+
+.toggle-container {
+    position: absolute;
+    top: 19%; /* Adjust this value to position above the rat */
+    left: 50.5%;
+    transform: translateX(-50%);
+    z-index: 15; /* Ensure it's above the rat */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px; /* Further reduced margin */
+}
+
+.toggle-checkbox {
+    display: none; /* Hide the actual checkbox */
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space out text and switch */
+    background-color: #e0e0e0;
+    border-radius: 50px;
+    padding: 3px; /* Further reduced padding */
+    width: 70px; /* Further reduced width */
+    height: 19px; /* Further reduced height */
+    position: relative;
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-text {
+    font-size: 8px; /* Further reduced font size */
+    font-weight: bold;
+    color: #757575;
+    z-index: 1;
+    transition: color 0.3s ease;
+    padding: 0 5px; /* Further reduced base padding */
+    text-align: center; /* Center text within its space */
+    flex-grow: 1; /* Allow text to take space */
+}
+
+.toggle-mouse {
+    padding-left: 10px; /* Further reduced left padding */
+    padding-right: 1px; /* Keep right padding small */
+}
+
+.toggle-switch {
+    position: absolute;
+    background-color: #ffffff;
+    border-radius: 50px; /* Make it pill-shaped */
+    width: 32px; /* Further reduced width */
+    height: 19px; /* Further reduced height */
+    top: 3px; /* Further adjusted top position */
+    left: 3px; /* Further adjusted left position */
+    transition: left 0.3s ease, background-color 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    /* Ensure text inside switch is hidden or not applicable */
+    z-index: 0; /* Place behind text */
+}
+
+/* Styles when checkbox is checked (Mouse) */
+.toggle-checkbox:checked + .toggle-label .toggle-switch {
+    left: calc(100% - 35px); /* Further adjusted checked position */
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-rat {
+    color: #757575; /* Inactive color */
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-mouse {
+    color: #333; /* Active color - adjust if needed */
+}
+
+/* Styles when checkbox is unchecked (Rat) */
+.toggle-checkbox:not(:checked) + .toggle-label .toggle-rat {
+    color: #333; /* Active color */
+}
+
+.toggle-checkbox:not(:checked) + .toggle-label .toggle-mouse {
+    color: #757575; /* Inactive color */
+}
+
+/* Responsive adjustments for the toggle */
+@media (max-width: 767px) {
+    .toggle-container {
+        top: 21%; /* Reverted: General mobile vertical position */
+        /* Adjust margin or other properties if needed */
+    }
+
+    .toggle-label {
+        width: 58px; /* Further reduced width */
+        height: 16px; /* Further reduced height */
+        padding: 2px; /* Further reduced padding */
+    }
+
+    .toggle-text {
+        font-size: 7px; /* Further reduced font size (minimum) */
+        padding: 0 3px; /* Further reduced base padding */
+    }
+
+    .toggle-mouse {
+        padding-left: 6px; /* Further reduced left padding */
+        padding-right: 0px; /* Keep right padding zero */
+    }
+
+    .toggle-switch {
+        width: 29px; /* Further reduced width */
+        height: 16px; /* Further reduced height */
+        top: 2px; /* Further adjusted top position */
+        left: 2px; /* Further adjusted left position */
+    }
+
+    .toggle-checkbox:checked + .toggle-label .toggle-switch {
+        left: calc(100% - 31px); /* Further adjusted checked position */
+    }
+}
+
+/* Specific adjustment for smaller screens like iPhone SE */
+@media (max-width: 377px) {
+    .toggle-container {
+        top: 15%; /* Specific vertical position for smaller mobile */
+    }
+}
+
+/* --- Slide to Buy Styles --- */
+#slide-to-buy-container {
+    position: fixed;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px; /* Adjust width as needed */
+    height: 50px; /* Adjust height as needed */
+    background-color: #ddd; /* Track background */
+    border-radius: 25px; /* Pill shape */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    user-select: none; /* Prevent text selection during drag */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
+    z-index: 100;
+    cursor: default;
+}
+
+#slider-handle {
+    position: absolute;
+    left: 5px; /* Initial padding */
+    top: 5px;  /* Initial padding */
+    width: 40px; /* Width of the handle */
+    height: 40px; /* Height of the handle (should match container height minus padding*2) */
+    background-color: white; /* Changed handle color */
+    border-radius: 50%; /* Circle shape */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #aaa; /* Changed arrow color to be lighter/see-through */
+    font-size: 24px; /* Adjusted size for '>' */
+    font-weight: normal; /* Changed font weight */
+    cursor: grab; /* Indicate draggable */
+    z-index: 102;
+    transition: left 0.2s ease-out; /* For snap-back animation */
+}
+
+#slider-handle.dragging {
+    cursor: grabbing;
+    transition: none; /* Disable transition during drag for direct control */
+}
+
+.slider-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Source Code Pro", monospace;
+    font-size: 16px;
+    color: #666; /* Text color */
+    z-index: 101; /* Below handle */
+    pointer-events: none; /* Allow dragging through text */
+    padding-left: 15px; /* Decreased left padding */
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 767px) {
+    #slide-to-buy-container {
+        width: 200px;
+        height: 40px;
+        border-radius: 20px;
+        bottom: 12%; /* Adjust position slightly for mobile */
+    }
+    #slider-handle {
+        width: 32px;
+        height: 32px;
+        left: 4px;
+        top: 4px;
+        font-size: 20px; /* Adjusted size for '>' */
+    }
+    .slider-text {
+        font-size: 14px;
+        padding-left: 10px; /* Decreased left padding */
+    }
+}
+/* --- End Slide to Buy Styles --- */
+
+#shirt-name {
+    position: absolute;
+    bottom: 20%; /* Adjusted position slightly lower */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px; /* Adjust font size as desired */
+    font-weight: 600; /* Changed to semi-bold (600) */
+    color: #333; /* Adjust color as desired */
+    text-align: center;
+    z-index: 15; /* Ensure it's visible */
+    margin: 0; /* Remove default margin */
+    /* Removed padding-top as bottom positioning handles space */
+    font-family: "Source Code Pro", monospace; /* Apply Source Code Pro */
 }
