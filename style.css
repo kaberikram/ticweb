@@ -921,17 +921,19 @@ body, html {
 }
 
 .rattire-button {
-    padding: 10px 25px; /* Adjusted padding for pill shape */
+    padding: 10px 25px;
     font-family: "Source Code Pro", monospace;
-    font-size: 1rem;
-    font-weight: bold; /* Make text bold */
+    font-size: 16px; /* Match slider-text font size */
+    font-weight: normal; /* Changed from bold to normal to match slider-text */
     cursor: pointer;
-    background-color: #f0f0f0; /* Light grey background */
-    border: 1px solid #ccc;
-    border-radius: 50px; /* Make it pill-shaped */
+    background-color: #ddd;
+    border: none;
+    border-radius: 25px;
     text-decoration: none;
-    color: #333;
+    color: #666; /* Match slider-text color */
     transition: background-color 0.3s ease;
+    text-transform: none; /* Remove uppercase */
+    letter-spacing: normal; /* Remove letter spacing */
 }
 
 .rattire-button:hover {

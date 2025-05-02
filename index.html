@@ -25,15 +25,119 @@
     <meta name="twitter:title" content="TIC Corp.">
     <meta name="twitter:description" content="BEST RAT TEES ON THE INTERNET.">
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
+    
+    <style>
+        .tv-container {
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 448px; /* 80% of original 560px */
+            cursor: pointer;
+        }
+        
+        .tv-frame {
+            width: 100%;
+            height: auto;
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .tv-gif {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 72px; /* Increased from 60px by 20% */
+            height: 72px; /* Increased from 60px by 20% */
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .play-button:after {
+            content: '';
+            display: block;
+            width: 24px; /* Fixed width for the rounded triangle */
+            height: 24px; /* Fixed height for the rounded triangle */
+            border-radius: 3px; /* Rounded corners */
+            background-color: white;
+            clip-path: polygon(0 0, 0 100%, 100% 50%); /* Triangle shape with rounded corners */
+            margin-left: 4px; /* Adjust to center visually */
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .rattire-button-container {
+            margin-top: 40px; /* Add space between TV and button */
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .tv-container {
+                max-width: 358px;
+                width: 90%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .play-button {
+                width: 60px; /* Increased from 50px by 20% */
+                height: 60px; /* Increased from 50px by 20% */
+            }
+            
+            .play-button:after {
+                width: 20px; /* Smaller for mobile */
+                height: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Content will be added here -->
     <div class="main-content">
         <img src="/ticLOGO.png" alt="TIC Logo" class="index-logo">
-        <img src="/tvFrame.png" alt="TV Frame" class="tv-frame-image">
-        <a href="/characterSelection.html">
-            <button class="rattire-button">Rattire Now</button>
-        </a>
+        
+        <div class="tv-container" id="tvContainer">
+            <img src="/tv.gif" alt="TV Content" class="tv-gif">
+            <img src="/tvFrame.png" alt="TV Frame" class="tv-frame">
+            <div class="play-button"></div>
+        </div>
+        
+        <div class="rattire-button-container">
+            <a href="/characterSelection.html">
+                <button class="rattire-button">Rattire Now</button>
+            </a>
+        </div>
     </div>
 
     <!-- Video Overlay -->
@@ -46,5 +150,28 @@
     <!-- End Video Overlay -->
 
     <script type="module" src="/index.js"></script>
+    <script>
+        // Add click event listener to the TV container to preserve YouTube preview functionality
+        document.getElementById('tvContainer').addEventListener('click', function() {
+            // This assumes the original click handler was looking for a click on the TV frame
+            // If index.js was handling this differently, you may need to update that file instead
+            const videoOverlay = document.getElementById('videoOverlay');
+            const youtubeVideo = document.getElementById('youtubeVideo');
+            
+            // Set the YouTube video source with the provided URL
+            youtubeVideo.src = 'https://www.youtube.com/embed/QbNcKrUaLs0?si=h1010M_WYKn-ztuM&controls=0&autoplay=1';
+            
+            videoOverlay.style.display = 'flex';
+        });
+        
+        // Close video overlay when close button is clicked
+        document.getElementById('closeVideoOverlay').addEventListener('click', function() {
+            const videoOverlay = document.getElementById('videoOverlay');
+            const youtubeVideo = document.getElementById('youtubeVideo');
+            
+            videoOverlay.style.display = 'none';
+            youtubeVideo.src = '';  // Reset video source to stop playback
+        });
+    </script>
 </body>
 </html> 
