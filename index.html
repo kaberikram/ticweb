@@ -133,11 +133,13 @@
             <div class="play-button"></div>
         </div>
         
-        <div class="rattire-button-container">
-            <a href="/characterSelection.html">
-                <button class="rattire-button">Rattire Now</button>
-            </a>
+        <!-- Slide to Buy Container -->
+        <div id="slide-to-buy-container">
+            <div id="slider-fill"></div>
+            <div id="slider-handle">&gt;</div>
+            <span class="slider-text">Slide to enter</span>
         </div>
+        <!-- End Slide to Buy Container -->
     </div>
 
     <!-- Video Overlay -->
@@ -172,6 +174,144 @@
             videoOverlay.style.display = 'none';
             youtubeVideo.src = '';  // Reset video source to stop playback
         });
+
+        // Slider functionality
+        const sliderContainer = document.getElementById('slide-to-buy-container');
+        const sliderHandle = document.getElementById('slider-handle');
+        const sliderFill = document.getElementById('slider-fill');
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+
+        if (sliderHandle) {
+            sliderHandle.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                sliderContainer.classList.add('dragging'); // Add class for visual feedback
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            // Touch events for mobile
+             sliderHandle.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                sliderContainer.classList.add('dragging');
+                document.addEventListener('touchmove', onTouchMove, { passive: false }); // Use passive: false to prevent scrolling
+                document.addEventListener('touchend', onTouchEnd);
+            }, { passive: true }); // Allow default touch behavior initially
+        } else {
+            console.error("Slider handle not found");
+        }
+
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            handleMove(e.clientX);
+        }
+
+        function onTouchMove(e) {
+            if (!isDragging) return;
+            // Prevent page scroll while dragging slider
+             if (e.cancelable) e.preventDefault();
+            handleMove(e.touches[0].clientX);
+        }
+
+        function handleMove(clientX) {
+            currentX = clientX - startX;
+            const containerWidth = sliderContainer.offsetWidth;
+            const handleWidth = sliderHandle.offsetWidth;
+            const maxTranslateX = containerWidth - handleWidth;
+
+            // Clamp the translation within the container bounds
+            let translateX = Math.max(0, Math.min(currentX, maxTranslateX));
+
+            sliderHandle.style.transform = `translateX(${translateX}px)`;
+            sliderFill.style.width = `${translateX + handleWidth / 2}px`; // Adjust fill width
+
+            // Check if slider reached the end
+            if (translateX >= maxTranslateX - 5) { // Use a small threshold
+                completeSlideAction();
+            }
+        }
+
+        function onMouseUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
+            resetSlider();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+         function onTouchEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
+            resetSlider();
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        }
+
+        function resetSlider() {
+             // Only reset if not completed
+            const containerWidth = sliderContainer.offsetWidth;
+            const handleWidth = sliderHandle.offsetWidth;
+            const maxTranslateX = containerWidth - handleWidth;
+            const currentTranslateX = parseFloat(sliderHandle.style.transform.replace('translateX(', '').replace('px)', '')) || 0;
+
+            if (currentTranslateX < maxTranslateX - 5) {
+                sliderHandle.style.transition = 'transform 0.3s ease, width 0.3s ease';
+                sliderFill.style.transition = 'width 0.3s ease';
+                sliderHandle.style.transform = 'translateX(0px)';
+                sliderFill.style.width = `${handleWidth / 2}px`; // Reset fill width
+
+                // Remove transition after animation
+                setTimeout(() => {
+                    sliderHandle.style.transition = '';
+                    sliderFill.style.transition = '';
+                }, 300);
+            }
+        }
+
+        function completeSlideAction() {
+            console.log('Slide complete!');
+            // Add fade-out class to body
+            document.body.classList.add('fade-out');
+            
+            // Keep slider at the end visually after completion (optional)
+            const containerWidth = sliderContainer.offsetWidth;
+            const handleWidth = sliderHandle.offsetWidth;
+            sliderHandle.style.transform = `translateX(${containerWidth - handleWidth}px)`;
+            sliderFill.style.width = `${containerWidth}px`;
+
+            // Prevent further interaction after completion if needed
+            isDragging = false; // Ensure dragging stops
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+
+            // Delay navigation to allow fade-out animation
+            setTimeout(() => {
+                window.location.href = '/characterSelection.html';
+            }, 500); // Match the transition duration (0.5s)
+        }
     </script>
+    <script>
+      // Add hover logging for debugging
+      const rattireButton = document.querySelector('.rattire-button');
+      if (rattireButton) {
+        rattireButton.addEventListener('mouseenter', function() {
+          console.log('Mouse entered rattire-button');
+        });
+        rattireButton.addEventListener('mouseleave', function() {
+          console.log('Mouse left rattire-button');
+        });
+      } else {
+        console.error('Could not find .rattire-button element');
+      }
+    </script>
+
 </body>
 </html> 

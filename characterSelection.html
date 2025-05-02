@@ -26,7 +26,7 @@
     <meta name="twitter:description" content="BEST RAT TEES ON THE INTERNET.">
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
 </head>
-<body>
+<body class="fade-in">
     <div class="container">
         <header class="logo-container">
             <a href="/index.html">
@@ -93,5 +93,48 @@
     </footer>
 
     <script type="module" src="/script.js"></script>
+    <script>
+        // Handle loader visibility and content fade-in
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const body = document.body;
+
+            if (loadingIndicator) {
+                // Make it display: flex first so the opacity transition can happen
+                loadingIndicator.style.display = 'flex'; 
+
+                // Then add 'visible' class slightly later to trigger fade-in transition
+                setTimeout(() => {
+                    loadingIndicator.classList.add('visible');
+                }, 10); // Minimal delay
+
+            } else {
+                 console.error("Loading indicator not found!");
+            }
+
+            // Wait a bit for loader animation, then fade out loader and fade in content
+            setTimeout(() => {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.remove('visible'); // Start fade-out
+                     // Optionally remove the loader from DOM after fade out
+                    setTimeout(() => {
+                       if (loadingIndicator.parentNode) {
+                            loadingIndicator.parentNode.removeChild(loadingIndicator);
+                       }
+                    }, 500); // Match loading indicator transition duration (for fade-out)
+                }
+                // Remove fade-in class (which hides content) and add content-visible class to fade in content
+                body.classList.remove('fade-in');
+                body.classList.add('content-visible');
+
+            }, 1000); // Total time loader is visible (including fade-in/out)
+        });
+    </script>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+        <span id="loading-text" data-text="www.laughwithtic.com">www.laughwithtic.com</span>
+    </div>
+    <!-- End Loading Indicator -->
 </body>
 </html> 
