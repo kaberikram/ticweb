@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lookbook</title>
+    <link rel="stylesheet" href="/style.css"> <!-- Link shared stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <style>
+        /* Reset default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevent scrollbars */
+            font-family: "Source Code Pro", monospace; /* Use consistent font */
+            /* Custom cursor: Default (Circle outline + Up arrow) - Larger (40x40), Lighter Outline */
+            /* Note: JS will override this on the container based on position */
+            cursor: url('data:image/svg+xml;utf8,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20stroke%3D%22%23aaaaaa%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M12%208%20L10%2012%20L14%2012%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E') 20 20, auto;
+        }
+
+        /* Container for the slideshow */
+        #slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff; /* Changed to pure white */
+            /* In a real scenario, you'd set the background image here */
+            /* background-image: url('your-image.jpg'); */
+            /* background-size: cover; */
+            /* background-position: center; */
+        }
+
+        /* Individual slides */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0; /* Position all slides at the start */
+            width: 100%;
+            height: 100%;
+            opacity: 1; /* Keep slides opaque for transform */
+            transition: transform 0.5s ease-in-out; /* Transition the transform property */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            transform: translateX(100%); /* Start slides off-screen to the right */
+        }
+
+        /* Make the first slide visible */
+        .slide:first-child {
+            /* opacity: 1; NO LONGER NEEDED */
+            transform: translateX(0%); /* Bring the first slide into view */
+            /* Use z-index if stacking matters more explicitly, */
+            /* but opacity handles visibility here */
+        }
+
+        /* Placeholder background colors */
+        /* #slide1 { background-color: #dc2626; } Red */
+        /* #slide2 { background-color: #2563eb; } Blue */
+        /* #slide3 { background-color: #16a34a; } Green */
+        /* #slide4 { background-color: #ca8a04; } Yellow */
+
+        /* Image backgrounds */
+        #slide1 {
+            background-image: url('/slideshow1.png');
+            background-size: cover;
+            background-position: center;
+        }
+        #slide2 {
+            background-image: url('/slideshow2.png');
+            background-size: cover;
+            background-position: center;
+        }
+        #slide3 {
+            background-image: url('/slideshow3.png');
+            background-size: cover;
+            background-position: center;
+        }
+        /* #slide4 removed */
+
+        /* Style for potential navigation elements (add later if needed) */
+        /* .prev, .next { ... } */
+
+        /* Note: Clicking left/right to change slides requires JavaScript. */
+        /* This structure sets up the slides; JS would change the 'opacity' */
+        /* or use transforms (translateX) to create a sliding effect. */
+
+        /* Logo Styles (copied from style.css) - REMOVED, using linked style.css */
+        /* .logo-container { ... } */
+        /* .logo { ... } */
+        /* End Logo Styles */
+
+        /* Bottom Left Content Styles */
+        .slide-content {
+            position: absolute;
+            bottom: 10vh; /* Increased distance from bottom (was 2rem) */
+            left: 2rem;   /* Adjust spacing from left */
+            color: #111; /* Dark text color */
+            z-index: 50; /* Ensure it's above slide background */
+            display: flex;
+            flex-direction: column; /* Stack title and price/button row */
+            align-items: flex-start; /* Align items to the left */
+            /* gap: 1.5rem; Removed gap, will use margins */
+            font-family: "Source Code Pro", monospace; /* Use consistent font */
+        }
+
+        .slide-text-info {
+            /* display: flex; No longer needed as wrapper */
+            /* flex-direction: column; */
+            /* gap: 0.5rem; Removed gap */
+            margin-bottom: 1.5rem; /* Space below title (adjust as needed for '30% higher') */
+        }
+
+        .slide-title {
+            font-size: 1.8rem; /* Adjust size as needed */
+            font-weight: bold;
+            margin: 0; /* Remove default margins if any */
+        }
+
+        /* New row container for price and button */
+        .price-button-row {
+            display: flex;
+            align-items: center; /* Vertically align price and button */
+            gap: 1.5rem; /* Space between price and button */
+        }
+
+        .slide-price {
+            font-size: 1rem; /* Adjust size as needed */
+            color: #555; /* Slightly lighter color for price */
+            margin: 0; /* Remove default margins */
+        }
+
+        .slide-buy-button {
+            /* Copied from .nav-button in style.css */
+            padding: 8px 15px;
+            font-family: "Source Code Pro", monospace; /* Ensure font is consistent */
+            font-size: 14px;
+            text-decoration: none;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            cursor: pointer; /* Keep cursor pointer */
+            /* font-weight: normal; Implicit from lack of definition */
+            /* font-family: inherit; Use explicit font-family */
+        }
+
+        .slide-buy-button:hover {
+             /* Copied from .nav-button:hover in style.css */
+            background-color: #f0f0f0;
+            color: #000;
+            /* border-color: #333; Removed as not in source */
+        }
+        /* End Bottom Left Content Styles */
+
+    </style>
+</head>
+<body class="fade-in">
+    <!-- Logo Container - Updated to match characterSelection.html -->
+    <header class="logo-container">
+        <a href="/index.html"> <!-- Assuming index.html is the target -->
+            <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
+        </a>
+        <!-- Ratalog Button -->
+        <a href="/characterSelection.html" class="nav-button">Ratalog</a>
+        <!-- Lookbook Button (Active) -->
+        <a href="/lookbook.html" class="nav-button active">Lookbook</a>
+    </header>
+    <!-- End Logo Container -->
+
+    <div id="slideshow-container">
+        <div class="slide" id="slide1">
+            <div class="slide-content">
+                <div class="slide-text-info">
+                    <p class="slide-title">Ratphex-T</p>
+                </div>
+                <div class="price-button-row">
+                    <p class="slide-price">$20</p>
+                    <button class="slide-buy-button">Buy</button>
+                </div>
+            </div>
+        </div>
+        <div class="slide" id="slide2">
+             <div class="slide-content">
+                <div class="slide-text-info">
+                    <p class="slide-title">Ratphex-T</p>
+                </div>
+                 <div class="price-button-row">
+                    <p class="slide-price">$20</p>
+                    <button class="slide-buy-button">Buy</button>
+                </div>
+            </div>
+        </div>
+        <div class="slide" id="slide3">
+             <div class="slide-content">
+                <div class="slide-text-info">
+                    <p class="slide-title">Ratphex-T</p>
+                </div>
+                 <div class="price-button-row">
+                    <p class="slide-price">$20</p>
+                    <button class="slide-buy-button">Buy</button>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 4 removed -->
+
+        <!-- Navigation buttons would typically go here -->
+        <!-- Example:
+        <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+        <button class="next" onclick="changeSlide(1)">&#10095;</button>
+        -->
+        <!-- JS needed for onclick functionality -->
+    </div>
+
+    <!-- JavaScript would go here to handle the slide changes on click -->
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                 // Calculate the translation based on the current slide index
+                // Slide to the left for previous slides, right for next slides
+                slide.style.transform = `translateX(${(i - index) * 100}%)`;
+            });
+        }
+
+        function changeSlide(direction) {
+            currentSlideIndex = (currentSlideIndex + direction + totalSlides) % totalSlides;
+            showSlide(currentSlideIndex);
+        }
+
+        // Initial setup - handled by CSS :first-child rule now
+        // showSlide(currentSlideIndex);
+
+        // Add event listeners for clicks on the container
+        document.getElementById('slideshow-container').addEventListener('click', (e) => {
+            const containerWidth = window.innerWidth; // Or slideshowContainer.offsetWidth if padding/borders matter
+
+            // Check if the click was on the left or right half of the container
+            if (e.clientX < containerWidth / 2) {
+                // Clicked left side: Only go previous if NOT on the first slide
+                if (currentSlideIndex > 0) {
+                    changeSlide(-1);
+                }
+            } else {
+                // Clicked right side: Only go next if NOT on the last slide
+                if (currentSlideIndex < totalSlides - 1) {
+                    changeSlide(1);
+                }
+            }
+        });
+
+        // --- Dynamic Cursor Logic ---
+        const slideshowContainer = document.getElementById('slideshow-container');
+        const defaultCursor = 'url(\'data:image/svg+xml;utf8,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20stroke%3D%22%23aaaaaa%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M12%208%20L10%2012%20L14%2012%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E\') 20 20, auto';
+        const leftCursor = 'url(\'data:image/svg+xml;utf8,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20stroke%3D%22%23aaaaaa%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M16%2012%20L10%2010%20L10%2014%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E\') 20 20, auto';
+        const rightCursor = 'url(\'data:image/svg+xml;utf8,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20stroke%3D%22%23aaaaaa%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M8%2012%20L14%2010%20L14%2014%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E\') 20 20, auto';
+
+        if (slideshowContainer) {
+            slideshowContainer.addEventListener('mousemove', (e) => {
+                const rect = slideshowContainer.getBoundingClientRect();
+                const containerMidpointX = rect.left + rect.width / 2;
+
+                if (e.clientX < containerMidpointX) {
+                    // Mouse is on the left, show RIGHT arrow (inverted logic fix)
+                    slideshowContainer.style.cursor = rightCursor;
+                } else {
+                    // Mouse is on the right, show LEFT arrow (inverted logic fix)
+                    slideshowContainer.style.cursor = leftCursor;
+                }
+            });
+
+            slideshowContainer.addEventListener('mouseleave', () => {
+                // Reset to the default cursor defined in CSS for html/body
+                // Or explicitly set the default if needed
+                 slideshowContainer.style.cursor = ''; // Let CSS rule apply again
+                 // Alternatively: slideshowContainer.style.cursor = defaultCursor;
+            });
+        }
+        // --- End Dynamic Cursor Logic ---
+
+        // --- Stop Propagation on Buy Button Click ---
+        const buyButtons = document.querySelectorAll('.slide-buy-button');
+        buyButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent click from bubbling to the container
+                // Add actual buy button logic here (e.g., show modal, add to cart)
+                console.log('Buy button clicked!'); 
+            });
+        });
+        // --- End Stop Propagation Logic ---
+
+        // --- Loading Indicator Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const body = document.body;
+
+            if (loadingIndicator) {
+                // Make it display: flex first so the opacity transition can happen
+                loadingIndicator.style.display = 'flex'; 
+
+                // Then add 'visible' class slightly later to trigger fade-in transition
+                setTimeout(() => {
+                    loadingIndicator.classList.add('visible');
+                }, 10); // Minimal delay
+
+            } else {
+                 console.error("Loading indicator not found!");
+            }
+
+            // Wait a bit for loader animation, then fade out loader and fade in content
+            setTimeout(() => {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.remove('visible'); // Start fade-out
+                     // Optionally remove the loader from DOM after fade out
+                    setTimeout(() => {
+                       if (loadingIndicator.parentNode) {
+                            loadingIndicator.parentNode.removeChild(loadingIndicator);
+                       }
+                    }, 500); // Match loading indicator transition duration (for fade-out)
+                }
+                // Remove fade-in class (which hides content) and add content-visible class to fade in content
+                body.classList.remove('fade-in');
+                body.classList.add('content-visible');
+
+            }, 1000); // Total time loader is visible (including fade-in/out)
+        });
+        // --- End Loading Indicator Logic ---
+
+    </script>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+        <span id="loading-text" data-text="www.laughwithtic.com">www.laughwithtic.com</span>
+    </div>
+    <!-- End Loading Indicator -->
+</body>
+</html> 
