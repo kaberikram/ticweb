@@ -7,6 +7,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         characterSelection: resolve(__dirname, 'characterSelection.html'),
+        lookbook: resolve(__dirname, 'lookbook.html'),
         // Add other HTML pages here if needed in the future
       },
     },

@@ -38,6 +38,26 @@ function addSubmittedEmail(email) {
 }
 // --- End LocalStorage Helpers ---
 
+// --- Image Preloading Function ---
+function preloadImages(imageArray) {
+    // Create a new array to hold all the preloaded images
+    const preloadedImages = [];
+    
+    // For each image src in the array
+    for (let i = 0; i < imageArray.length; i++) {
+        // Create a new Image object
+        const img = new Image();
+        // Set the src to start loading
+        img.src = imageArray[i];
+        // Add to our array of preloaded images
+        preloadedImages.push(img);
+    }
+    
+    console.log(`Preloaded ${imageArray.length} images`);
+    return preloadedImages;
+}
+// --- End Image Preloading Function ---
+
 // --- Onboarding Logic ---
 const ONBOARDING_STORAGE_KEY = 'hasVisitedTicWeb';
 
@@ -183,6 +203,71 @@ document.addEventListener('DOMContentLoaded', () => {
         '/1RatHover.png', '/3RatHover.png', '/6RatHover.png',
         '/1RatHoverM.png', '/3RatHoverM.png', '/6RatHoverM.png'
     ];
+
+    // --- Preload Images ---
+    // Collect all image paths for preloading
+    const imagePaths = [];
+    
+    // Add shirt images
+    shirts.forEach(shirt => {
+        // Get the image URL using getAttribute
+        const shirtSrc = shirt.getAttribute('src');
+        const ratSrc = shirt.getAttribute('data-rat-src');
+        
+        if (shirtSrc) imagePaths.push(shirtSrc);
+        if (ratSrc) imagePaths.push(ratSrc);
+        
+        // Also add hover versions for both mouse and rat
+        if (ratSrc) {
+            // Extract base pattern (like "/1" from "/1Rat.png")
+            const basePattern = ratSrc.substring(0, ratSrc.indexOf('Rat'));
+            
+            // Generate both hover versions using the established patterns
+            const mouseHoverPath = `${basePattern}RatHover.png`;
+            const ratHoverPath = `${basePattern}RatHoverM.png`;
+            
+            imagePaths.push(mouseHoverPath);
+            imagePaths.push(ratHoverPath);
+        }
+    });
+    
+    // Add current rat image
+    if (ratImage) {
+        const ratSrc = ratImage.getAttribute('src');
+        if (ratSrc) imagePaths.push(ratSrc);
+    }
+    
+    // Add all images from imageMap
+    Object.values(imageMap).forEach(map => {
+        Object.keys(map).forEach(key => {
+            imagePaths.push(key);
+            imagePaths.push(map[key]);
+        });
+    });
+    
+    // Add all valid hover paths
+    validHoverPaths.forEach(path => {
+        imagePaths.push(path);
+    });
+    
+    // Remove duplicates and convert to absolute URLs
+    const uniqueImagePaths = [...new Set(imagePaths)].map(path => {
+        // Skip if path is empty or undefined
+        if (!path) return null;
+        
+        try {
+            // Ensure all paths are absolute by converting relative paths
+            return new URL(path, window.location.href).pathname;
+        } catch (e) {
+            console.warn('Error converting path to URL:', path, e);
+            return path; // Return original path as fallback
+        }
+    }).filter(Boolean); // Remove any null/undefined entries
+    
+    // Start preloading
+    const preloadedImages = preloadImages(uniqueImagePaths);
+    console.log(`All images preloaded for better performance (${uniqueImagePaths.length} images)`);
+    // --- End Preload Images ---
 
     // Slide-to-buy elements (added)
     const sliderContainer = document.getElementById('slide-to-buy-container');
@@ -342,13 +427,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check if this hover path is valid
                 if (validHoverPaths.includes(potentialHoverPath)) {
                     // Use URL constructor for correct path relative to document
-                    ratImage.src = new URL(potentialHoverPath, window.location.href).pathname;
+                    const fullPath = new URL(potentialHoverPath, window.location.href).pathname;
+                    
+                    // Use a cache-first approach - no transition needed as we're preloaded
+                    ratImage.src = fullPath;
                     isHoveringRat = true;
                 }
             }
         } else {
             if (isHoveringRat) {
-                ratImage.src = originalRatSrc; // Revert to original image (Rat or Mouse version)
+                // Revert to original image (Rat or Mouse version) - no transition needed as we're preloaded
+                ratImage.src = originalRatSrc;
                 isHoveringRat = false;
             }
         }
@@ -399,7 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (collision) {
             const newRatSrc = activeShirt.getAttribute('data-rat-src');
             if (newRatSrc) {
-                ratImage.src = newRatSrc; // Set final image (overwrites hover if necessary)
+                // Use correct full path
+                const fullPath = new URL(newRatSrc, window.location.href).pathname;
+                
+                // Set image directly - should be instant since we preloaded
+                ratImage.src = fullPath;
 
                 // Update the shirt name text using the data attribute
                 const shirtName = activeShirt.getAttribute('data-shirt-name');
@@ -468,7 +561,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Function to run after fade-out completes
             const changeImageAndTooltip = () => {
                 console.log(`Changing src to: ${newRatPath}`);
-                ratImage.src = newRatPath; // Change the source
+                // Use URL constructor for correct path in case path is relative
+                const fullPath = new URL(newRatPath, window.location.href).pathname;
+                
+                // Apply the image change - should be instant as we've preloaded
+                ratImage.src = fullPath;
                 ratImage.style.opacity = 1; // Fade back in
                 
                 // Update tooltip after image source is confirmed changed
