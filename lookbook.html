@@ -179,17 +179,7 @@
     <!-- End Logo Container -->
 
     <div id="slideshow-container">
-        <div class="slide" id="slide1">
-            <div class="slide-content">
-                <div class="slide-text-info">
-                    <p class="slide-title">Ratphex-T</p>
-                </div>
-                <div class="price-button-row">
-                    <p class="slide-price">$20</p>
-                    <button class="slide-buy-button">Buy</button>
-                </div>
-            </div>
-        </div>
+        <!-- Removed slide 1 -->
         <div class="slide" id="slide2">
              <div class="slide-content">
                 <div class="slide-text-info">
@@ -338,6 +328,42 @@
             }, 1000); // Total time loader is visible (including fade-in/out)
         });
         // --- End Loading Indicator Logic ---
+
+        // --- Swipe Support for Mobile Slideshow ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const swipeThreshold = 50; // Minimum px to be considered a swipe
+
+        if (slideshowContainer) {
+            slideshowContainer.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                }
+            });
+
+            slideshowContainer.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 1) {
+                    touchEndX = e.touches[0].clientX;
+                }
+            });
+
+            slideshowContainer.addEventListener('touchend', function(e) {
+                const deltaX = touchEndX - touchStartX;
+                if (Math.abs(deltaX) > swipeThreshold) {
+                    if (deltaX < 0 && currentSlideIndex < totalSlides - 1) {
+                        // Swipe left: next slide
+                        changeSlide(1);
+                    } else if (deltaX > 0 && currentSlideIndex > 0) {
+                        // Swipe right: previous slide
+                        changeSlide(-1);
+                    }
+                }
+                // Reset
+                touchStartX = 0;
+                touchEndX = 0;
+            });
+        }
+        // --- End Swipe Support ---
 
     </script>
 
