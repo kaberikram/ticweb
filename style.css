@@ -657,8 +657,7 @@ body.fade-out {
 /* Responsive adjustments for the toggle */
 @media (max-width: 767px) {
     .toggle-container {
-        top: 21%; /* Reverted: General mobile vertical position */
-        /* Adjust margin or other properties if needed */
+        top: 21%;
     }
 
     .toggle-label {
@@ -699,7 +698,7 @@ body.fade-out {
     }
 }
 
-@media (min-width: 378px) and(max-width: 429px) {
+@media (min-width: 378px) and (max-width: 429px) {
     #shirt-name {
         top: 70%;
     }
