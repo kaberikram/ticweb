@@ -610,11 +610,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentRatSrc = ratImage.src;
 
         modalShirtName.textContent = currentShirtName; // Update modal shirt name
-        modalRatImage.src = currentRatSrc; // Update modal rat image
+        // modalRatImage.src = currentRatSrc; // Remove this line, handled by setupFittingTypeSizeDropdowns
 
-        // Simplified: Just display the modal
+        // Set fitting type to mouse by default and update image
+        const fittingType = document.getElementById('fittingType');
+        if (fittingType) {
+            fittingType.value = 'mouse';
+            // Trigger change event to update image and sizes
+            fittingType.dispatchEvent(new Event('change'));
+        }
+
         modalOverlay.style.display = 'flex';
-        // Disable body scroll when modal is open
         document.body.style.overflow = 'hidden';
     }
 
@@ -771,4 +777,79 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set initial tooltip based on default mode and shirt
     updateTooltip(currentMode);
 
+    // Modal fitting type and size logic
+    function setupFittingTypeSizeDropdowns() {
+        const fittingType = document.getElementById('fittingType');
+        const sizeSelect = document.getElementById('sizeSelect');
+        const modalRatImage = document.getElementById('modalRatImage');
+        if (!fittingType || !sizeSelect || !modalRatImage) return;
+
+        // Set default to mouse
+        fittingType.value = 'mouse';
+
+        function updateSizeOptions() {
+            sizeSelect.innerHTML = '';
+            if (fittingType.value === 'rat') {
+                ['S', 'M', 'L', 'XL'].forEach(size => {
+                    const opt = document.createElement('option');
+                    opt.value = size;
+                    opt.textContent = size;
+                    sizeSelect.appendChild(opt);
+                });
+            } else {
+                ['S', 'M'].forEach(size => {
+                    const opt = document.createElement('option');
+                    opt.value = size;
+                    opt.textContent = size;
+                    sizeSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Update modalRatImage based on fitting type
+        function updateModalRatImage() {
+            // Get the current shirt name
+            const modalShirtName = document.getElementById('modalShirtName');
+            let shirtName = modalShirtName ? modalShirtName.textContent : '';
+            // Find the shirt element by name
+            const shirtElement = Array.from(document.querySelectorAll('.shirt')).find(shirt => shirt.getAttribute('data-shirt-name') === shirtName);
+            if (!shirtElement) return;
+            // Get the base rat src (mouse version)
+            let mouseSrc = shirtElement.getAttribute('data-rat-src');
+            // If in rat mode, swap to rat image (if available)
+            if (fittingType.value === 'rat') {
+                // Try to find the corresponding rat image (ends with M.png)
+                if (mouseSrc.endsWith('.png')) {
+                    let ratSrc = mouseSrc.replace(/Rat(\.png)$/,'RatM$1');
+                    // If the current src is already RatM, keep it
+                    if (mouseSrc.includes('RatM')) ratSrc = mouseSrc;
+                    modalRatImage.src = ratSrc;
+                } else {
+                    modalRatImage.src = mouseSrc;
+                }
+            } else {
+                // Mouse mode: always use the mouseSrc (should not have M)
+                if (mouseSrc.includes('RatM')) {
+                    let mouseSrcFixed = mouseSrc.replace('RatM', 'Rat');
+                    modalRatImage.src = mouseSrcFixed;
+                } else {
+                    modalRatImage.src = mouseSrc;
+                }
+            }
+        }
+
+        fittingType.addEventListener('change', () => {
+            updateSizeOptions();
+            updateModalRatImage();
+        });
+        updateSizeOptions(); // Set initial state
+        updateModalRatImage(); // Set initial image
+    }
+
+    // Call this when modal is shown
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupFittingTypeSizeDropdowns);
+    } else {
+        setupFittingTypeSizeDropdowns();
+    }
 }); 

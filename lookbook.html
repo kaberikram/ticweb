@@ -346,5 +346,117 @@
         <span id="loading-text" data-text="www.laughwithtic.com">www.laughwithtic.com</span>
     </div>
     <!-- End Loading Indicator -->
+
+    <!-- Modal Structure -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="emailModal" class="modal">
+            <div class="modal-content initial-state">
+                <button id="modalCloseX" class="modal-close-x">&times;</button>
+                <img id="modalRatImage" src="/1Rat.png" alt="Selected Rat" class="modal-rat-image">
+                <p class="modal-instruction">The <span id="modalShirtName">Ratphex-T</span> will be available soon!</p>
+                <div class="modal-selection">
+                  <div class="fitting-type-group">
+                    <label for="fittingType">Fitting Type:</label>
+                    <select id="fittingType" class="nav-button">
+                      <option value="rat">Rat</option>
+                      <option value="mouse">Mouse</option>
+                    </select>
+                  </div>
+                  <div class="size-group">
+                    <label for="sizeSelect">Size:</label>
+                    <select id="sizeSelect" class="nav-button">
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                    </select>
+                  </div>
+                </div>
+                <button id="modalCloseButton" class="close-button">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Structure -->
+    <script>
+    // Modal logic for Lookbook
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal elements
+        const modalOverlay = document.getElementById('modalOverlay');
+        const emailModal = document.getElementById('emailModal');
+        const modalRatImage = document.getElementById('modalRatImage');
+        const modalShirtName = document.getElementById('modalShirtName');
+        const closeButton = document.getElementById('modalCloseButton');
+        const modalCloseX = document.getElementById('modalCloseX');
+        const fittingType = document.getElementById('fittingType');
+        const sizeSelect = document.getElementById('sizeSelect');
+
+        // Always use Ratphex-T info for now
+        function openModal() {
+            modalShirtName.textContent = 'Ratphex-T';
+            // Default to mouse image
+            modalRatImage.src = '/1Rat.png';
+            if (fittingType) {
+                fittingType.value = 'mouse';
+                fittingType.dispatchEvent(new Event('change'));
+            }
+            modalOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        if (closeButton) closeButton.addEventListener('click', closeModal);
+        if (modalCloseX) modalCloseX.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(event) {
+            if (event.target === modalOverlay) closeModal();
+        });
+        // Setup fitting/size logic
+        function setupFittingTypeSizeDropdowns() {
+            if (!fittingType || !sizeSelect || !modalRatImage) return;
+            fittingType.value = 'mouse';
+            function updateSizeOptions() {
+                sizeSelect.innerHTML = '';
+                if (fittingType.value === 'rat') {
+                    ['S', 'M', 'L', 'XL'].forEach(size => {
+                        const opt = document.createElement('option');
+                        opt.value = size;
+                        opt.textContent = size;
+                        sizeSelect.appendChild(opt);
+                    });
+                } else {
+                    ['S', 'M'].forEach(size => {
+                        const opt = document.createElement('option');
+                        opt.value = size;
+                        opt.textContent = size;
+                        sizeSelect.appendChild(opt);
+                    });
+                }
+            }
+            function updateModalRatImage() {
+                // Always use /1Rat.png for mouse, /1RatM.png for rat
+                if (fittingType.value === 'rat') {
+                    modalRatImage.src = '/1RatM.png';
+                } else {
+                    modalRatImage.src = '/1Rat.png';
+                }
+            }
+            fittingType.addEventListener('change', function() {
+                updateSizeOptions();
+                updateModalRatImage();
+            });
+            updateSizeOptions();
+            updateModalRatImage();
+        }
+        setupFittingTypeSizeDropdowns();
+        // Attach to all buy buttons
+        document.querySelectorAll('.slide-buy-button').forEach(btn => {
+            btn.addEventListener('click', function(event) {
+                event.stopPropagation();
+                openModal();
+            });
+        });
+    });
+    </script>
 </body>
 </html> 
