@@ -3,40 +3,8 @@ import { inject } from "@vercel/analytics";
 
 inject();
 
-// --- LocalStorage Helper Functions ---
-const STORAGE_KEY = 'submittedTicEmails';
 
-function getSubmittedEmails() {
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-        try {
-            const emails = JSON.parse(storedData);
-            // Ensure it's an array
-            return Array.isArray(emails) ? emails : [];
-        } catch (e) {
-            console.error("Error parsing submitted emails from localStorage:", e);
-            return []; // Return empty array on error
-        }
-    } 
-    return []; // Return empty array if nothing stored
-}
 
-function hasEmailBeenSubmitted(email) {
-    if (!email) return false;
-    const submittedEmails = getSubmittedEmails();
-    return submittedEmails.includes(email.toLowerCase());
-}
-
-function addSubmittedEmail(email) {
-    if (!email) return;
-    const submittedEmails = getSubmittedEmails();
-    const lowerCaseEmail = email.toLowerCase();
-    if (!submittedEmails.includes(lowerCaseEmail)) {
-        submittedEmails.push(lowerCaseEmail);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(submittedEmails));
-    }
-}
-// --- End LocalStorage Helpers ---
 
 // --- Image Preloading Function ---
 function preloadImages(imageArray) {
@@ -53,7 +21,6 @@ function preloadImages(imageArray) {
         preloadedImages.push(img);
     }
     
-    console.log(`Preloaded ${imageArray.length} images`);
     return preloadedImages;
 }
 // --- End Image Preloading Function ---
@@ -266,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start preloading
     const preloadedImages = preloadImages(uniqueImagePaths);
-    console.log(`All images preloaded for better performance (${uniqueImagePaths.length} images)`);
     // --- End Preload Images ---
 
     // Slide-to-buy elements (added)
@@ -552,7 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const newMode = isMouseMode ? 'mouse' : 'rat';
             currentMode = newMode; // Update global mode state
 
-            console.log(`Switched mode to: ${currentMode}`);
 
             const conversionMap = isMouseMode ? imageMap.ratToMouse : imageMap.mouseToRat;
             const currentRatPath = new URL(ratImage.src).pathname;
@@ -560,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Function to run after fade-out completes
             const changeImageAndTooltip = () => {
-                console.log(`Changing src to: ${newRatPath}`);
                 // Use URL constructor for correct path in case path is relative
                 const fullPath = new URL(newRatPath, window.location.href).pathname;
                 
@@ -608,16 +572,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEmailModal() {
         const currentShirtName = shirtNameElement.textContent;
         const currentRatSrc = ratImage.src;
+        const modalShirtPriceElement = document.getElementById('modalShirtPrice');
+        const fittingType = document.getElementById('fittingType'); // Get fitting type dropdown
 
-        modalShirtName.textContent = currentShirtName; // Update modal shirt name
-        // modalRatImage.src = currentRatSrc; // Remove this line, handled by setupFittingTypeSizeDropdowns
+        modalShirtName.textContent = currentShirtName;
 
-        // Set fitting type to mouse by default and update image
-        const fittingType = document.getElementById('fittingType');
-        if (fittingType) {
-            fittingType.value = 'mouse';
+        // Calculate and display price
+        const price = currentShirtName.includes('Ratward') ? 3000 : 2000;
+        if (modalShirtPriceElement) {
+            modalShirtPriceElement.textContent = `$${(price / 100).toFixed(2)}`;
+        } else {
+            console.error('Modal price element not found!');
+        }
+
+        // Set default fitting type based on the CURRENT mode (rat or mouse)
+        if (fittingType) { 
+            // Note: `currentMode` variable must be accessible in this scope
+            fittingType.value = currentMode; 
             // Trigger change event to update image and sizes
             fittingType.dispatchEvent(new Event('change'));
+        } else {
+            console.error('Fitting type dropdown not found in modal!');
         }
 
         modalOverlay.style.display = 'flex';
@@ -640,11 +615,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = ''; 
     }
 
-    // Handle close button click (adjusted for new button ID)
-    if (closeButton) { // Check if button exists
-      closeButton.addEventListener('click', closeModal);
+    // Handle Add to Cart button click
+    if (closeButton) {
+      closeButton.addEventListener('click', () => {
+        // Disable button to prevent double-clicks
+        closeButton.disabled = true;
+
+        const itemName = modalShirtName.textContent;
+        const fitType = document.getElementById('fittingType').value;
+        const size = document.getElementById('sizeSelect').value;
+        const defaultPrice = itemName.includes('Ratward') ? 3000 : 2000; // $20 default, $30 for Ratward Scissor-T
+        // Build cart item
+        const cartItem = { name: itemName, fit: fitType, size: size, price: defaultPrice, quantity: 1 };
+        // Read existing cart
+        const existing = JSON.parse(localStorage.getItem('cart') || '[]');
+        existing.push(cartItem);
+        localStorage.setItem('cart', JSON.stringify(existing));
+
+        // Show confirmation & close after delay
+        closeButton.textContent = 'Added!';
+        setTimeout(() => {
+          // Reset button state without closing the modal
+          closeButton.textContent = 'Add to Cart';
+          closeButton.disabled = false;
+        }, 1200);
+      });
     } else {
-      console.error("Modal Close Button not found");
+      console.error("Add to Cart Button not found");
     }
 
     // Handle X button click (remains the same)
@@ -738,8 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endThreshold = sliderContainer.offsetWidth - sliderHandle.offsetWidth - sliderPadding - 5; // 5px tolerance
 
         if (sliderHandle.offsetLeft >= endThreshold) {
-            // Success! Trigger the modal.
-            console.log('Slide successful!');
+  
             openEmailModal(); 
             // Snap back slightly delayed, reset fill quickly
             if (sliderFill) sliderFill.style.width = '100%'; // Fill completely on success briefly

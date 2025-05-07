@@ -275,7 +275,6 @@
         }
 
         function completeSlideAction() {
-            console.log('Slide complete!');
             // Add fade-out class to body
             document.body.classList.add('fade-out');
             
@@ -294,23 +293,9 @@
 
             // Delay navigation to allow fade-out animation
             setTimeout(() => {
-                window.location.href = '/characterSelection.html';
+                window.location.href = '/ratalog.html';
             }, 500); // Match the transition duration (0.5s)
         }
-    </script>
-    <script>
-      // Add hover logging for debugging
-      const rattireButton = document.querySelector('.rattire-button');
-      if (rattireButton) {
-        rattireButton.addEventListener('mouseenter', function() {
-          console.log('Mouse entered rattire-button');
-        });
-        rattireButton.addEventListener('mouseleave', function() {
-          console.log('Mouse left rattire-button');
-        });
-      } else {
-        console.error('Could not find .rattire-button element');
-      }
     </script>
 
 </body>

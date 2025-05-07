@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thank You! | TIC Corp.</title>
+    <link rel="icon" type="image/png" href="/ticLOGO.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- Link shared stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Reset default styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* Prevent scrollbars */
+        font-family: "Source Code Pro", monospace; /* Use consistent font */
+        /* Custom cursor: Default (Circle outline + Up arrow) - Larger (40x40), Lighter Outline */
+        /* Note: JS will override this on the container based on position */
+        cursor: url("data:image/svg+xml;utf8,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20stroke%3D%22%23aaaaaa%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M12%208%20L10%2012%20L14%2012%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E")
+            20 20,
+          auto;
+      }
+
+      /* Thank You Container Styles */
+      .thank-you-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        text-align: center;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .thank-you-container h1 {
+        margin-bottom: 20px;
+        font-size: 28px;
+      }
+
+      .thank-you-container p {
+        margin-bottom: 15px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .thank-you-image {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+        border-radius: 4px;
+      }
+
+      .button-container {
+        margin-top: 25px;
+        max-width: 300px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .continue-shopping-btn {
+        display: block;
+        width: 100%;
+        padding: 12px 0;
+        background-color: #000;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: normal;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.2s ease;
+        margin-top: 10px;
+      }
+
+      .continue-shopping-btn:hover {
+        background-color: #333;
+      }
+    </style>
+  </head>
+  <body class="fade-in">
+    <!-- Logo Container - Updated to match characterSelection.html -->
+    <header class="logo-container">
+      <a href="/index.html">
+        <!-- Assuming index.html is the target -->
+        <img src="/ticLOGO.png" alt="TIC Logo" class="logo" />
+      </a>
+      <!-- Ratalog Button -->
+      <a href="/ratalog.html" class="nav-button">Ratalog</a>
+      <!-- Lookbook Button (Active) -->
+      <a href="/lookbook.html" class="nav-button">Lookbook</a>
+      <!-- Cart Button -->
+      <a href="/cart.html" class="nav-button">Cart</a>
+    </header>
+    <!-- End Logo Container -->
+
+    <!-- Thank You Message Container -->
+    <div class="thank-you-container">
+      <img src="/timBG.gif" alt="Rat Characters" class="thank-you-image">
+      <h1>Thank You For Your Order!</h1>
+      <p>Your payment was successful.</p>
+      <p>We've received your order and will process it shortly. You'll receive a confirmation email soon with your order number (e.g., #1234-5678). You can use this number to <a href="/trackingportal.html" target="_blank" style="text-decoration: underline;">track your order here</a>.</p>
+      <div class="button-container">
+        <a href="/index.html" class="continue-shopping-btn">Continue Shopping</a>
+      </div>
+    </div>
+    <!-- End Thank You Message Container -->
+
+   
+
+    <!-- JavaScript would go here to handle the slide changes on click -->
+    <script>
+      
+
+      // --- Loading Indicator Logic ---
+      document.addEventListener("DOMContentLoaded", () => {
+        const loadingIndicator = document.getElementById("loading-indicator");
+        const body = document.body;
+
+        if (loadingIndicator) {
+          // Make it display: flex first so the opacity transition can happen
+          loadingIndicator.style.display = "flex";
+
+          // Then add 'visible' class slightly later to trigger fade-in transition
+          setTimeout(() => {
+            loadingIndicator.classList.add("visible");
+          }, 10); // Minimal delay
+        } else {
+          console.error("Loading indicator not found!");
+        }
+
+        // Wait a bit for loader animation, then fade out loader and fade in content
+        setTimeout(() => {
+          if (loadingIndicator) {
+            loadingIndicator.classList.remove("visible"); // Start fade-out
+            // Optionally remove the loader from DOM after fade out
+            setTimeout(() => {
+              if (loadingIndicator.parentNode) {
+                loadingIndicator.parentNode.removeChild(loadingIndicator);
+              }
+            }, 500); // Match loading indicator transition duration (for fade-out)
+          }
+          // Remove fade-in class (which hides content) and add content-visible class to fade in content
+          body.classList.remove("fade-in");
+          body.classList.add("content-visible");
+        }, 1000); // Total time loader is visible (including fade-in/out)
+      });
+
+    </script>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+      <span id="loading-text" data-text="www.laughwithtic.com"
+        >www.laughwithtic.com</span
+      >
+    </div>
+ 
+  </body>
+</html>

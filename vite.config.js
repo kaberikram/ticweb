@@ -6,8 +6,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        characterSelection: resolve(__dirname, 'characterSelection.html'),
+        ratalog: resolve(__dirname, 'ratalog.html'),
         lookbook: resolve(__dirname, 'lookbook.html'),
+        cart: resolve(__dirname, 'cart.html'),
+        success: resolve(__dirname, 'success.html'),
         // Add other HTML pages here if needed in the future
       },
     },

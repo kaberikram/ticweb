@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratalog | TIC Corp.</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" type="image/png" href="/ticLOGO.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+
+    <meta name="description" content="BEST RAT TEES ON THE INTERNET.">
+    <link rel="canonical" href="https://www.laughwithtic.com/" />
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:title" content="TIC Corp.">
+    <meta property="og:description" content="BEST RAT TEES ON THE INTERNET.">
+    <meta property="og:image" content="https://www.laughwithtic.com/previewImage.jpg">
+    <meta property="og:url" content="https://www.laughwithtic.com/">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TIC Corp.">
+    <meta name="twitter:description" content="BEST RAT TEES ON THE INTERNET.">
+    <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
+</head>
+<body class="fade-in">
+    <div class="container">
+        <header class="logo-container">
+            <a href="/index.html">
+                <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
+            </a>
+            <!-- Ratalog Button (Active) -->
+            <a href="/ratalog.html" class="nav-button active">Ratalog</a>
+            <!-- Lookbook Button -->
+            <a href="/lookbook.html" class="nav-button">Lookbook</a>
+            <!-- Cart Button -->
+            <a href="/cart.html" class="nav-button">Cart</a>
+        </header>
+
+        <main class="shirts-container">
+            <img src="/1Shirt.png" alt="Shirt 1" class="shirt top-left" data-rat-src="/1Rat.png" data-shirt-name="Ratphex-T" data-model-size="L">
+            
+            <!-- Rat/Mouse Toggle Switch -->
+            <div class="toggle-container">
+                <input type="checkbox" id="ratMouseToggle" class="toggle-checkbox" checked>
+                <label for="ratMouseToggle" class="toggle-label">
+                    <span class="toggle-text toggle-rat">Rat</span>
+                    <span class="toggle-text toggle-mouse">Mouse</span>
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+
+            <img src="/1Rat.png" alt="Rat wearing Shirt" class="rat-center" id="ratImage">
+            <!-- Minimal info tooltip icon -->
+            <span id="info-tooltip" data-tooltip="Model is 5ft 4&quot; and wears size S">?</span>
+            <p id="shirt-name">Ratphex-T</p>
+            <img src="/3Shirt.png" alt="Shirt 3" class="shirt bottom-left" data-rat-src="/3Rat.png" data-shirt-name="AnimalCollective-T" data-model-size="S">
+            <img src="/6Shirt.png" alt="Shirt 6" class="shirt middle-right" data-rat-src="/6Rat.png" data-shirt-name="RatwardScissor-T" data-model-size="XL">
+        </main>
+
+        <!-- Onboarding Animation Elements -->
+        <div id="onboarding-hand" class="onboarding-element" style="display: none;">
+            <!-- This div will be styled as a circle -->
+        </div>
+        <div id="onboarding-instruction" class="onboarding-element onboarding-tooltip" style="display: none;">
+            Drag T-shirt to model
+        </div>
+        <!-- End Onboarding Animation Elements -->
+
+        <!-- Slide to Buy Container -->
+        <div id="slide-to-buy-container">
+            <div id="slider-fill"></div>
+            <div id="slider-handle">&gt;</div>
+            <span class="slider-text">Slide to buy</span>
+        </div>
+        <!-- End Slide to Buy Container -->
+
+        <!-- <button class="get-free-button">Get for free</button> --> <!-- Replaced by slider -->
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="emailModal" class="modal">
+            <div class="modal-content initial-state">
+                <button id="modalCloseX" class="modal-close-x">&times;</button>
+                <img id="modalRatImage" src="/1Rat.png" alt="Selected Rat" class="modal-rat-image">
+                <p class="modal-instruction"><span id="modalShirtName">Ratphex-T</span></p>
+                <p id="modalShirtPrice" class="modal-price"></p>
+                <div class="modal-selection">
+                  <div class="fitting-type-group">
+                    <label for="fittingType">Fitting Type:</label>
+                    <select id="fittingType" class="nav-button">
+                      <option value="rat">Rat</option>
+                      <option value="mouse">Mouse</option>
+                    </select>
+                  </div>
+                  <div class="size-group">
+                    <label for="sizeSelect">Size:</label>
+                    <select id="sizeSelect" class="nav-button">
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-links-row">
+                    <span class="disclaimer-link" data-tooltip="MADE-TO-ORDER:&#10;Please allow 2-3 weeks for printing and shipping.">Shipping Info</span>
+                    <button id="sizeGuideButton" class="size-guide-link">Size Guide</button>
+                </div>
+                <button id="modalCloseButton" class="close-button">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Structure -->
+
+    <!-- Size Guide Popup -->
+    <div id="sizeGuidePopup" class="size-guide-popup">
+        <div class="size-guide-content">
+            <button id="closeSizeGuide" class="size-guide-close">&times;</button>
+            <h3>Size Guide</h3>
+            
+            <div class="size-toggle-container">
+                <button class="size-toggle-btn active" data-size-type="rat">Rat</button>
+                <button class="size-toggle-btn" data-size-type="mouse">Mouse</button>
+            </div>
+            
+            <table class="size-guide-table" id="ratSizeTable">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>CHEST (Half)</th>
+                        <th>LENGTH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>S</td>
+                        <td>19"</td>
+                        <td>26"</td>
+                    </tr>
+                    <tr>
+                        <td>M</td>
+                        <td>20"</td>
+                        <td>27"</td>
+                    </tr>
+                    <tr>
+                        <td>L</td>
+                        <td>21"</td>
+                        <td>28"</td>
+                    </tr>
+                    <tr>
+                        <td>XL</td>
+                        <td>22"</td>
+                        <td>29"</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <table class="size-guide-table" id="mouseSizeTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>CHEST (Half)</th>
+                        <th>LENGTH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>S</td>
+                        <td>17"</td>
+                        <td>22"</td>
+                    </tr>
+                    <tr>
+                        <td>M</td>
+                        <td>15"</td>
+                        <td>20"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- End Size Guide Popup -->
+
+    <footer class="footer">
+        <a href="/trackingportal.html" class="footer-link" target="_blank" rel="noopener noreferrer">Tracking Portal</a>
+    </footer>
+
+    <script type="module" src="/script.js"></script>
+    <script>
+        // Handle loader visibility and content fade-in
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const body = document.body;
+
+            if (loadingIndicator) {
+                // Make it display: flex first so the opacity transition can happen
+                loadingIndicator.style.display = 'flex'; 
+
+                // Then add 'visible' class slightly later to trigger fade-in transition
+                setTimeout(() => {
+                    loadingIndicator.classList.add('visible');
+                }, 10); // Minimal delay
+
+            } else {
+                 console.error("Loading indicator not found!");
+            }
+
+            // Wait a bit for loader animation, then fade out loader and fade in content
+            setTimeout(() => {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.remove('visible'); // Start fade-out
+                     // Optionally remove the loader from DOM after fade out
+                    setTimeout(() => {
+                       if (loadingIndicator.parentNode) {
+                            loadingIndicator.parentNode.removeChild(loadingIndicator);
+                       }
+                    }, 500); // Match loading indicator transition duration (for fade-out)
+                }
+                // Remove fade-in class (which hides content) and add content-visible class to fade in content
+                body.classList.remove('fade-in');
+                body.classList.add('content-visible');
+
+            }, 1000); // Total time loader is visible (including fade-in/out)
+
+            // Size Guide functionality
+            const sizeGuideButton = document.getElementById('sizeGuideButton');
+            const sizeGuidePopup = document.getElementById('sizeGuidePopup');
+            const closeSizeGuide = document.getElementById('closeSizeGuide');
+            const ratSizeTable = document.getElementById('ratSizeTable');
+            const mouseSizeTable = document.getElementById('mouseSizeTable');
+            const sizeToggleBtns = document.querySelectorAll('.size-toggle-btn');
+            const fittingType = document.getElementById('fittingType');
+
+            if (sizeGuideButton && sizeGuidePopup && closeSizeGuide) {
+                // Show size guide when button is clicked
+                sizeGuideButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Set the current size table based on the selected fitting type
+                    if (fittingType) {
+                        const currentFittingType = fittingType.value;
+                        
+                        // Show the appropriate table based on current fitting type
+                        if (currentFittingType === 'rat') {
+                            ratSizeTable.style.display = 'table';
+                            mouseSizeTable.style.display = 'none';
+                            // Update toggle buttons
+                            sizeToggleBtns.forEach(btn => {
+                                if (btn.getAttribute('data-size-type') === 'rat') {
+                                    btn.classList.add('active');
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        } else {
+                            ratSizeTable.style.display = 'none';
+                            mouseSizeTable.style.display = 'table';
+                            // Update toggle buttons
+                            sizeToggleBtns.forEach(btn => {
+                                if (btn.getAttribute('data-size-type') === 'mouse') {
+                                    btn.classList.add('active');
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        }
+                    }
+                    
+                    sizeGuidePopup.style.display = 'flex';
+                });
+
+                // Close size guide when X is clicked
+                closeSizeGuide.addEventListener('click', function() {
+                    sizeGuidePopup.style.display = 'none';
+                });
+
+                // Close size guide when clicking outside the content
+                sizeGuidePopup.addEventListener('click', function(e) {
+                    if (e.target === sizeGuidePopup) {
+                        sizeGuidePopup.style.display = 'none';
+                    }
+                });
+                
+                // Handle size type toggle
+                if (sizeToggleBtns.length) {
+                    sizeToggleBtns.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            // Remove active class from all buttons
+                            sizeToggleBtns.forEach(b => b.classList.remove('active'));
+                            
+                            // Add active class to clicked button
+                            this.classList.add('active');
+                            
+                            // Show the appropriate table
+                            const sizeType = this.getAttribute('data-size-type');
+                            if (sizeType === 'rat') {
+                                ratSizeTable.style.display = 'table';
+                                mouseSizeTable.style.display = 'none';
+                            } else {
+                                ratSizeTable.style.display = 'none';
+                                mouseSizeTable.style.display = 'table';
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* Size Guide Popup Styles */
+        .size-guide-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .size-guide-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 90%;
+            width: 400px;
+            position: relative;
+        }
+
+        .size-guide-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .size-guide-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px #ddd;
+        }
+
+        .size-guide-table th, 
+        .size-guide-table td {
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .size-guide-table th:last-child,
+        .size-guide-table td:last-child {
+            border-right: none;
+        }
+
+        .size-guide-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .size-guide-table th {
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .size-guide-content h3 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        /* Size Toggle Buttons */
+        .size-toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .size-toggle-btn {
+            padding: 8px 15px;
+            background-color: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-family: "Source Code Pro", monospace;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .size-toggle-btn:first-child {
+            border-radius: 20px 0 0 20px;
+        }
+        
+        .size-toggle-btn:last-child {
+            border-radius: 0 20px 20px 0;
+        }
+        
+        .size-toggle-btn.active {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+        <span id="loading-text" data-text="www.laughwithtic.com">www.laughwithtic.com</span>
+    </div>
+    <!-- End Loading Indicator -->
+</body>
+</html> 

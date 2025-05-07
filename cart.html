@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Cart | TIC Corp.</title>
+    <link rel="icon" type="image/png" href="/ticLOGO.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- Link shared stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Reset default styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* Prevent scrollbars */
+        font-family: "Source Code Pro", monospace; /* Use consistent font */
+      }
+
+      /* Desktop-specific styles with media query */
+      @media (min-width: 768px) {
+        #cart-container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .cart-item-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 15px;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item-image {
+          max-width: 80px;
+          max-height: 80px;
+        }
+        
+        .cart-item-details {
+          flex: 1;
+          padding: 0 20px;
+        }
+        
+        #cart-total, #checkout-button {
+          margin-top: 20px;
+        }
+      }
+
+      /* Mouse trail styles */
+      .trail-image {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        pointer-events: none;
+        z-index: 9999;
+        transform-origin: center;
+        transition: transform 1s ease-out;
+      }
+
+      /* Checkout loading indicator */
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #333;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      .loading-text {
+        font-family: "Source Code Pro", monospace;
+        font-size: 18px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Logo Container - Updated to match characterSelection.html -->
+    <header class="logo-container">
+      <a href="/index.html">
+        <!-- Assuming index.html is the target -->
+        <img src="/ticLOGO.png" alt="TIC Logo" class="logo" />
+      </a>
+      <!-- Ratalog Button -->
+      <a href="/ratalog.html" class="nav-button">Ratalog</a>
+      <!-- Lookbook Button (Active) -->
+      <a href="/lookbook.html" class="nav-button">Lookbook</a>
+      <!-- Cart Button -->
+      <a href="/cart.html" class="nav-button active">Cart</a>
+    </header>
+    <!-- End Logo Container -->
+
+    <main class="container" id="cart-container">
+      <h1>Your Cart</h1>
+      <div id="cart-items"></div>
+      <p id="cart-total">Total: $0.00</p>
+      <button id="checkout-button" class="nav-button">Checkout</button>
+    </main>
+   
+    <!-- Loading overlay for checkout -->
+    <div class="loading-overlay" id="checkout-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Processing your order...</div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+      console.log('Cart page script loaded');
+      
+      // Mouse trail effect (desktop only)
+      if (window.innerWidth >= 768) {
+        const trailImages = ['/1Shirt.png', '/3Shirt.png', '/6Shirt.png'];
+        const trailElements = [];
+        const maxTrailLength = 15;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let mouseTrailInterval;
+        let trailIndex = 0;
+        let isMoving = false;
+        let moveTimeout;
+        
+        // Create trail elements in advance
+        for (let i = 0; i < maxTrailLength; i++) {
+          const img = document.createElement('img');
+          img.classList.add('trail-image');
+          img.style.transform = 'scale(0)';
+          img.style.display = 'none';
+          img.src = trailImages[i % trailImages.length];
+          document.body.appendChild(img);
+          trailElements.push(img);
+        }
+        
+        // Update mouse position and create trail
+        document.addEventListener('mousemove', (e) => {
+          // Only create trail if mouse has actually moved
+          if (lastMouseX !== e.clientX || lastMouseY !== e.clientY) {
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            
+            // Set moving state to true
+            isMoving = true;
+            
+            // Clear previous timeout
+            if (moveTimeout) {
+              clearTimeout(moveTimeout);
+            }
+            
+            // Set timer to detect when movement stops
+            moveTimeout = setTimeout(() => {
+              isMoving = false;
+            }, 100); // Consider mouse stopped after 100ms of no movement
+            
+            // Create trail at intervals only while moving
+            if (!mouseTrailInterval && isMoving) {
+              mouseTrailInterval = setInterval(() => {
+                // Stop interval if mouse is no longer moving
+                if (!isMoving) {
+                  clearInterval(mouseTrailInterval);
+                  mouseTrailInterval = null;
+                  return;
+                }
+                
+                const img = trailElements[trailIndex];
+                trailIndex = (trailIndex + 1) % maxTrailLength;
+                
+                // Reset image
+                img.style.display = 'block';
+                
+                // Position at current mouse coordinates with random offset
+                const randomOffsetX = (Math.random() - 0.5) * 20;
+                const randomOffsetY = (Math.random() - 0.5) * 20;
+                img.style.left = (lastMouseX + randomOffsetX - 40) + 'px';  
+                img.style.top = (lastMouseY + randomOffsetY - 40) + 'px';
+                
+                // Scale up quickly
+                setTimeout(() => {
+                  img.style.transform = 'scale(1.5)';
+                  
+                  // Then scale down quickly after a short display time
+                  setTimeout(() => {
+                    img.style.transform = 'scale(0)';
+                    // Remove from display after transition finishes
+                    setTimeout(() => {
+                      img.style.display = 'none';
+                    }, 4000);
+                  }, 500);
+                }, 10);
+              }, 200); // Create trail elements less frequently (was 100ms)
+            }
+          }
+        });
+        
+        // Clean up interval when user stops moving mouse
+        document.addEventListener('mouseleave', () => {
+          if (mouseTrailInterval) {
+            clearInterval(mouseTrailInterval);
+            mouseTrailInterval = null;
+          }
+          isMoving = false;
+        });
+      }
+      
+      // Render cart items and show total
+      function renderCart() {
+        const items = JSON.parse(localStorage.getItem('cart') || '[]');
+        const list = document.getElementById('cart-items');
+        const totalEl = document.getElementById('cart-total');
+        list.innerHTML = '';
+        let total = 0;
+        
+        items.forEach(({ name, fit, size, price, quantity, imageSrc }, index) => {
+          // Create a row for each cart item
+          const itemRow = document.createElement('div');
+          itemRow.classList.add('cart-item-row');
+          
+          // 1. Add Remove button (X)
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = '×'; // Use multiplication sign for X
+          removeBtn.classList.add('remove-item-btn');
+          removeBtn.dataset.index = index;
+          itemRow.appendChild(removeBtn);
+          
+          // 2. Image
+          const img = document.createElement('img');
+          img.classList.add('cart-item-image');
+          if (imageSrc) {
+            img.src = imageSrc;
+          } else if (name.includes('Ratphex')) {
+            img.src = '/1Shirt.png';
+          } else if (name.includes('AnimalCollective')) {
+            img.src = '/3Shirt.png';
+          } else if (name.includes('Ratward')) {
+            img.src = '/6Shirt.png';
+          } else {
+            img.src = '/placeholder.png'; // Fallback image
+          }
+          img.alt = name;
+          itemRow.appendChild(img);
+          
+          // 3. Details (Name, Fit, Size)
+          const detailsDiv = document.createElement('div');
+          detailsDiv.classList.add('cart-item-details');
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.classList.add('item-name');
+          nameSpan.textContent = name;
+          detailsDiv.appendChild(nameSpan);
+          
+          const variantSpan = document.createElement('span');
+          variantSpan.classList.add('item-variant');
+          variantSpan.textContent = `(${fit}, ${size})`;
+          detailsDiv.appendChild(variantSpan);
+          
+          itemRow.appendChild(detailsDiv);
+          
+          // 4. Price
+          const priceSpan = document.createElement('span');
+          priceSpan.classList.add('cart-item-price');
+          priceSpan.textContent = `$${(price/100).toFixed(2)}`;
+          itemRow.appendChild(priceSpan);
+          
+          list.appendChild(itemRow);
+          total += price * quantity;
+        });
+        totalEl.textContent = `Total: $${(total/100).toFixed(2)}`;
+      }
+      renderCart();
+      
+      // Handle Remove button clicks using event delegation
+      document.getElementById('cart-items').addEventListener('click', (event) => {
+        if (event.target.classList.contains('remove-item-btn')) {
+          const indexToRemove = parseInt(event.target.dataset.index, 10);
+          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          cart.splice(indexToRemove, 1); // Remove item at index
+          localStorage.setItem('cart', JSON.stringify(cart));
+          renderCart(); // Re-render the cart
+        }
+      });
+      
+      // Initialize Stripe
+      const stripe = Stripe('pk_live_51QzsaZKauXLQMGFmKGhvfwBGIbDxssh2SvBciclIqPxHUeUePsGfh6N1HyJPi8qPkWfh5lygQF3Kqn8zYKyotZVp0049an1gjN');
+      const checkoutBtn = document.getElementById('checkout-button');
+      const loadingOverlay = document.getElementById('checkout-loading');
+      
+      if (!checkoutBtn) {
+        console.error('checkout-button not found');
+      } else {
+        checkoutBtn.addEventListener('click', async () => {
+          console.log('Checkout clicked');
+          // Show loading overlay
+          loadingOverlay.style.display = 'flex';
+          
+          try {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            console.log('Cart payload:', cart);
+            const resp = await fetch('/api/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cart })
+            });
+            if (!resp.ok) {
+              console.error('Network response was not ok', resp.status, await resp.text());
+              // Hide loading overlay on error
+              loadingOverlay.style.display = 'none';
+              return;
+            }
+            const { sessionId } = await resp.json();
+            console.log('Redirecting with sessionId:', sessionId);
+            
+            // The loading overlay will remain visible during redirect
+            const { error } = await stripe.redirectToCheckout({ sessionId });
+            if (error) {
+              console.error('Stripe redirect error:', error);
+              // Hide loading overlay if there's an error with redirect
+              loadingOverlay.style.display = 'none';
+            }
+          } catch (err) {
+            console.error('Error during checkout:', err);
+            // Hide loading overlay on error
+            loadingOverlay.style.display = 'none';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

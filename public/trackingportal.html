@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Portal | TIC Corp.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+        body {
+            font-family: "Source Code Pro", monospace;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .logo-container {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+
+        .logo {
+            width: 300px;
+            height: 300px;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            opacity: 1;
+            transform: scale(1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            object-fit: contain;
+        }
+
+        .frame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .frame-overlay.show {
+            opacity: 1;
+        }
+
+        .logo.fade-out {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .tracking-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tracking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin: 0 0 25px 0;
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #000;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 99px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            font-family: "Source Code Pro", monospace; /* Ensure consistent font */
+        }
+
+        button:hover {
+            background-color: #333;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .example-tracking {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .example-tracking p {
+            margin: 5px 0;
+        }
+
+        /* Order Status Styles */
+        .order-status {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-details {
+            margin-bottom: 35px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Styles for order detail paragraphs (Desktop & Mobile) */
+        .order-details p {
+            margin: 10px 0;
+            font-size: 15px;
+            /* display: flex; Removed for block behavior */
+        }
+
+        .order-details p strong {
+            color: #000000;
+            display: block; /* Make label take its own line */
+            font-weight: bold;
+            margin-bottom: 5px; /* Space between label and value */
+        }
+
+        /* Ensure itemDetails span respects newlines and wraps */
+        #itemDetails {
+            white-space: pre-wrap; /* Respect newlines from sheet for both desktop & mobile */
+            word-break: break-word; 
+            display: block; /* Ensure it takes its own block space below the label */
+        }
+
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 60px 0;
+            padding: 0 12px;
+        }
+
+        .status-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-dot {
+            width: 28px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-dot .check-icon {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.active {
+            background: #000;
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .status-dot.active .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .status-label {
+            font-size: 13px;
+            text-align: center;
+            color: #555;
+            font-weight: 500;
+            max-width: 100px;
+            line-height: 1.3;
+        }
+
+        /* Progress bar styling */
+        .progress-track {
+            position: absolute;
+            top: 14px; /* Center with dots */
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            z-index: 1;
+            border-radius: 3px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(to right, #000, #333);
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .tracking-info {
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 35px;
+        }
+
+        .tracking-info h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .tracking-info p {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .track-another {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 99px;
+            background: #000000;
+            transition: all 0.2s ease;
+        }
+
+        .track-another:hover {
+            background: #eee;
+            text-decoration: none;
+        }
+
+        /* Styles for tracking number and copy button */
+        .tracking-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Aligns button to the far right */
+            margin-bottom: 10px; /* Space before raw data or carrier link */
+        }
+
+        .tracking-line p {
+            margin: 0; /* Remove default paragraph margin */
+        }
+
+        .copy-btn {
+            width: 20%;
+            background-color: #000000;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px; /* Ensures some space if not pushed by justify-content */
+            transition: background-color 0.2s, color 0.2s;
+            font-family: "Source Code Pro", monospace; /* Ensure consistent font */
+            color: white; /* Added to make text visible on black background */
+        }
+
+        .copy-btn:hover {
+            background-color: #e0e0e0;
+            color: black; /* Ensure text is visible on hover */
+        }
+
+        .copy-btn.copied {
+            background-color: #28a745; /* Green for success */
+            color: white;
+            border-color: #28a745;
+        }
+
+        #orderStatus {
+            display: none;
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 0 10px;
+            }
+
+            .tracking-card,
+            .order-status {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+            input[type="text"],
+            button {
+                padding: 14px;
+                font-size: 15px;
+            }
+
+            .order-header {
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 10px; 
+            }
+
+            .order-header h2 {
+                margin-bottom: 5px; 
+            }
+
+            .track-another {
+                align-self: flex-start; 
+                padding: 8px 14px; 
+            }
+
+            /* Mobile specific styles for order-details (already good) */
+            .order-details p {
+                font-size: 14px;
+                 /* display: block; is already default or inherited */
+            }
+
+            .order-details strong {
+                /* min-width: auto; Already block, so min-width less relevant here */
+                /* display: block; Already set above for all views */ 
+                margin-bottom: 3px; /* Slightly less margin for mobile */
+                /* font-weight: bold; Already set above */
+            }
+            
+            #itemDetails {
+                /* white-space: pre-wrap; Already set above for all views */
+                /* word-break: break-word; Already set above */
+                /* display: block; Already set above */
+            }
+
+            .status-timeline {
+                margin: 40px 0; 
+                padding: 0 5px;
+            }
+
+            .status-label {
+                font-size: 11px; 
+                max-width: 80px;
+            }
+
+            .tracking-line {
+                flex-direction: column; 
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .copy-btn {
+                width: auto; 
+                padding: 6px 10px;
+                align-self: flex-start;
+            }
+
+            .tracking-info {
+                padding: 20px;
+                margin-top: 25px;
+            }
+
+            .tracking-info p,
+            .tracking-info pre {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/ticPortalLogo.png" alt="TIC Tracking Portal" class="logo" id="logoImage">
+        <img src="/FrameOverlay.png" alt="Frame" class="frame-overlay" id="frameOverlay">
+    </div>
+    
+    <div class="container">
+        <div class="tracking-card">
+            <h2>Enter your receipt number</h2>
+            <div class="input-group">
+                <input type="text" id="trackingNumber" placeholder="e.g. #1217-3499">
+                <button onclick="checkOrderStatus()">Track Order</button>
+            </div>
+        </div>
+
+        <div id="orderStatus" class="order-status">
+            <div class="order-header">
+                <h2>Order <span id="orderNumber"></span></h2>
+                <a href="#" class="track-another" onclick="resetTracking()">Track another order</a>
+            </div>
+            
+            <div class="order-details">
+                <p><strong>Status:</strong> <span id="statusValue"></span></p>
+                <p><strong>Order Date:</strong> <span id="orderDate"></span></p>
+                <p><strong>Items:</strong> <span id="itemDetails"></span></p>
+            </div>
+
+            <div class="status-timeline">
+                <div class="progress-track">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="status-step">
+                    <div class="status-dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div class="status-label">Order Received</div>
+                </div>
+                <div class="status-step">
+                    <div class="status-dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div class="status-label">Making Your Order</div>
+                </div>
+                <div class="status-step">
+                    <div class="status-dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div class="status-label">Shipped</div>
+                </div>
+            </div>
+
+            <div class="tracking-info">
+                <p id="trackingInfo"></p>
+                <a href="#" id="carrierTrackingLink" target="_blank"></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkOrderStatus() {
+            const trackingNumber = document.getElementById('trackingNumber').value.trim();
+            const orderStatus = document.getElementById('orderStatus');
+            const trackingCard = document.querySelector('.tracking-card');
+            const logoImage = document.getElementById('logoImage');
+            const frameOverlay = document.getElementById('frameOverlay');
+            
+            if (!trackingNumber) {
+                alert('Please enter a receipt number');
+                return;
+            }
+
+            // Animate logo change
+            logoImage.classList.add('fade-out');
+            setTimeout(() => {
+                logoImage.src = '/packingRat.gif';
+                logoImage.classList.remove('fade-out');
+                frameOverlay.classList.add('show');
+            }, 500);
+
+            // Show loading state
+            orderStatus.style.display = 'block';
+            trackingCard.style.display = 'none';
+            document.getElementById('orderNumber').textContent = 'Loading...';
+            
+            fetchTrackingStatus(trackingNumber);
+        }
+
+        async function fetchTrackingStatus(trackingNumber) {
+            try {
+                // Google Apps Script Web App URL
+                const webAppUrl = 'https://script.google.com/macros/s/AKfycbzzmkTAj4wl-aZUhzvjLKbor60XGrKye_isVB5lTWo8gD_jQZrNDk-M0MEMzn0ZqDbD/exec';
+                const response = await fetch(`${webAppUrl}?trackingNumber=${encodeURIComponent(trackingNumber)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Log raw data from sheets (only visible in console)
+                
+                if (data.status !== 'not found') {
+                    // Update order details
+                    document.getElementById('orderNumber').textContent = trackingNumber;
+                    document.getElementById('statusValue').textContent = data.status;
+                    
+                    let displayDate = new Date().toLocaleDateString(); 
+                    if (data.orderDate) {
+                        const sheetDate = new Date(data.orderDate);
+                        if (!isNaN(sheetDate.getTime())) {
+                            displayDate = sheetDate.toLocaleDateString();
+                        }
+                    }
+                    document.getElementById('orderDate').textContent = displayDate;
+                    
+                    // Display Item Details
+                    document.getElementById('itemDetails').textContent = data.items || "Details not available";
+                    
+                    const shippingTrackingNumber = data.trackingNumber || 'Not yet assigned';
+                    let copyButtonHTML = '';
+                    if (shippingTrackingNumber !== 'Not yet assigned') {
+                        copyButtonHTML = `<button id="copyTrackingBtn" class="copy-btn" title="Copy tracking number">Copy</button>`;
+                    }
+                    
+                    let trackingInfoHTML = `
+                        <div class="tracking-line">
+                            <p><strong>Tracking Number:</strong> <span id="actualTrackingNumberText">${shippingTrackingNumber}</span></p>
+                            ${copyButtonHTML}
+                        </div>`;
+
+                    if (shippingTrackingNumber === 'Not yet assigned') {
+                        trackingInfoHTML += `<p>Shipping information will be available once your order has shipped.</p>`;
+                    }
+                    
+                    const carrierLinkElement = document.getElementById('carrierTrackingLink');
+                    if (data.carrierLink && shippingTrackingNumber !== 'Not yet assigned') { 
+                        carrierLinkElement.style.display = 'inline-block'; 
+                        carrierLinkElement.textContent = 'Track with shipping carrier';
+                        carrierLinkElement.href = data.carrierLink;
+                    } else {
+                        carrierLinkElement.style.display = 'none';
+                    }
+
+                    document.getElementById('trackingInfo').innerHTML = trackingInfoHTML;
+
+                    if (shippingTrackingNumber !== 'Not yet assigned') {
+                        const copyBtn = document.getElementById('copyTrackingBtn');
+                        if (copyBtn) {
+                            copyBtn.addEventListener('click', function() {
+                                const trackingNumberToCopy = document.getElementById('actualTrackingNumberText').textContent;
+                                navigator.clipboard.writeText(trackingNumberToCopy).then(() => {
+                                    copyBtn.textContent = 'Copied!';
+                                    copyBtn.classList.add('copied');
+                                    setTimeout(() => {
+                                        copyBtn.textContent = 'Copy';
+                                        copyBtn.classList.remove('copied');
+                                    }, 2000);
+                                }).catch(err => {
+                                    console.error('Failed to copy: ', err);
+                                    alert('Failed to copy tracking number.');
+                                });
+                            });
+                        }
+                    }
+                    
+                    updateStatusTimeline(data.status);
+                } else {
+                    document.getElementById('orderNumber').textContent = trackingNumber;
+                    document.getElementById('statusValue').textContent = 'Order Received';
+                    document.getElementById('orderDate').textContent = new Date().toLocaleDateString(); 
+                    document.getElementById('itemDetails').textContent = "Processing - check back soon";
+                    
+                    document.getElementById('trackingInfo').innerHTML = `
+                        <div class="tracking-line">
+                            <p><strong>Tracking Number:</strong> N/A</p>
+                        </div>
+                        <p>Shipping information will be available once your order has shipped.</p>
+                    `;
+                    
+                    document.getElementById('carrierTrackingLink').style.display = 'none';
+                    
+                    const dots = document.querySelectorAll('.status-dot');
+                    dots.forEach((dot, index) => {
+                        if (index === 0) {
+                            dot.style.backgroundColor = '#000';
+                            dot.classList.add('active');
+                        } else {
+                            dot.style.backgroundColor = '#ccc';
+                            dot.classList.remove('active');
+                        }
+                    });
+                    
+                    document.getElementById('progressBar').style.width = '12%';
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                resetTracking();
+                alert('Error fetching tracking data. Please try again.');
+            }
+        }
+
+        function updateStatusTimeline(status) {
+            // Convert status to lowercase for case-insensitive comparison
+            const currentStatus = status.toLowerCase();
+            
+            // Define the steps and their corresponding statuses
+            const steps = {
+                'order_received': ['order received', 'received', 'order_received', 'placed'],
+                'making_your_order': ['making your order', 'processing', 'in progress', 'preparing your order'],
+                'shipped': ['shipped', 'delivered', 'completed']
+            };
+            
+            // Find which step the current status belongs to
+            let currentStep = 0;
+            Object.entries(steps).forEach(([step, statuses], index) => {
+                if (statuses.some(s => currentStatus.includes(s))) {
+                    currentStep = index;
+                }
+            });
+
+          
+
+            // Update the dots
+            const dots = document.querySelectorAll('.status-dot');
+            dots.forEach((dot, index) => {
+                if (index <= currentStep) {
+                    dot.style.backgroundColor = '#000';
+                    dot.classList.add('active');
+                } else {
+                    dot.style.backgroundColor = '#ccc';
+                    dot.classList.remove('active');
+                }
+            });
+
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            if (currentStep === 0) {
+                progressBar.style.width = '12%'; // Small width for the first step to be visible
+            } else if (currentStep === 1) {
+                progressBar.style.width = '55%';
+            } else if (currentStep === 2) {
+                progressBar.style.width = '100%';
+            }
+        }
+
+        function resetTracking() {
+            const logoImage = document.getElementById('logoImage');
+            const frameOverlay = document.getElementById('frameOverlay');
+            
+            // Animate logo change back
+            logoImage.classList.add('fade-out');
+            frameOverlay.classList.remove('show');
+            setTimeout(() => {
+                logoImage.src = '/ticPortalLogo.png';
+                logoImage.classList.remove('fade-out');
+            }, 500);
+
+            // Reset form and hide status
+            document.getElementById('trackingNumber').value = '';
+            document.getElementById('orderStatus').style.display = 'none';
+            document.querySelector('.tracking-card').style.display = 'block';
+            
+            // Reset progress bar and dots
+            document.getElementById('progressBar').style.width = '10%';
+            const dots = document.querySelectorAll('.status-dot');
+            dots.forEach(dot => {
+                dot.style.backgroundColor = '#ccc';
+                dot.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>
