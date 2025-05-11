@@ -72,6 +72,8 @@ function runOnboardingAnimation() {
     setTimeout(() => { // Allow display block to render before adding class for transition
         handElement.classList.add('visible');
         instructionElement.classList.add('visible');
+        // --- FIX: Force reflow before adding animation class ---
+        void handElement.offsetWidth;
     }, 50);
 
     // Add animation class after a short delay
