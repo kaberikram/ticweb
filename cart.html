@@ -25,8 +25,13 @@
       body {
         height: 100%;
         width: 100%;
-        overflow: hidden; /* Prevent scrollbars */
-        font-family: "Source Code Pro", monospace; /* Use consistent font */
+        /* overflow: hidden;  Removed to allow scrolling */
+        font-family: "Source Code Pro", monospace;
+      }
+
+      #cart-items {
+        max-height: 60vh;
+        overflow-y: auto;
       }
 
       /* Desktop-specific styles with media query */
