@@ -26,8 +26,6 @@ function preloadImages(imageArray) {
 // --- End Image Preloading Function ---
 
 // --- Onboarding Logic ---
-const ONBOARDING_STORAGE_KEY = 'hasVisitedTicWeb';
-
 function runOnboardingAnimation() {
     const handElement = document.getElementById('onboarding-hand');
     const instructionElement = document.getElementById('onboarding-instruction');
@@ -100,28 +98,10 @@ function runOnboardingAnimation() {
 
     }, 500); // Start animation slightly after appearing
 }
-
-function checkAndRunOnboarding() {
-    try {
-        if (localStorage.getItem(ONBOARDING_STORAGE_KEY)) {
-            console.log("User has visited before. Skipping onboarding animation.");
-            return; // Already visited
-        } else {
-            console.log("First visit detected. Running onboarding animation.");
-            localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
-            runOnboardingAnimation();
-        }
-    } catch (e) {
-        console.error("LocalStorage access error:", e);
-        // Decide if animation should run if localStorage fails (e.g., private browsing)
-        // For now, let's run it if we can't check.
-        runOnboardingAnimation();
-    }
-}
 // --- End Onboarding Logic ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    checkAndRunOnboarding(); // Check and run onboarding on load
+    runOnboardingAnimation(); // Always run onboarding on load
     
     const shirts = document.querySelectorAll('.shirt');
     const ratImage = document.getElementById('ratImage');
