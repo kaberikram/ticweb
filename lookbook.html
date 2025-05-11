@@ -297,6 +297,17 @@
         margin-bottom: 15px;
       }
 
+      .virtual-try-on-link {
+        display: block;
+        text-align: center;
+        margin-top: 10px; /* Add some space above */
+        margin-bottom: 15px; /* Match h3 margin-bottom for spacing consistency */
+        color: #337ab7; /* Standard link color */
+        text-decoration: underline;
+        font-family: "Source Code Pro", monospace;
+        font-size: 14px; /* Match button font size */
+      }
+
       /* Size Toggle Buttons */
       .size-toggle-container {
         display: flex;
@@ -666,6 +677,7 @@
         <div class="size-guide-content">
             <button id="closeSizeGuide" class="size-guide-close">&times;</button>
             <h3>Size Guide</h3>
+            <a href="https://lens.snap.com/experience/e1466c58-8e4d-498d-b985-c9412b5fa38e" target="_blank" rel="noopener noreferrer" class="virtual-try-on-link">Virtual Try On</a>
             
             <div class="size-toggle-container">
                 <button class="size-toggle-btn active" data-size-type="rat">Rat</button>

@@ -196,19 +196,34 @@
         }
 
         .status-timeline {
-            display: flex;
-            justify-content: space-between;
             position: relative;
             margin: 60px 0;
-            padding: 0 12px;
+            padding: 0;
+            height: 80px; /* Fixed height to contain the elements */
         }
 
         .status-step {
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%); /* Center each step at its position */
             z-index: 2;
+            width: 100px; /* Fixed width for each step */
+        }
+
+        /* Position each step at specific percentages */
+        .status-step:nth-child(2) { /* First dot (after progress track) */
+            left: 10%; 
+        }
+        
+        .status-step:nth-child(3) { /* Middle dot */
+            left: 50%;
+        }
+        
+        .status-step:nth-child(4) { /* Last dot */
+            left: 90%;
         }
 
         .status-dot {
@@ -272,6 +287,46 @@
             background: linear-gradient(to right, #000, #333);
             border-radius: 3px;
             transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .processing-message {
+            background-color: #f8f9fa;
+            border-left: 4px solid #000;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .processing-message p {
+            margin: 0;
+        }
+
+        .contact-info {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .contact-info p {
+            margin: 0;
+        }
+
+        .contact-info a {
+            color: #000;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+
+        .contact-info a:hover {
+            text-decoration: none;
         }
 
         .tracking-info {
@@ -492,9 +547,17 @@
                 </div>
             </div>
 
+            <div id="processingMessage" class="processing-message" style="display: none;">
+                <p>We're currently crafting your order with care! Please allow up to 7 business days for production before shipping. Thank you for your patience.</p>
+            </div>
+
             <div class="tracking-info">
                 <p id="trackingInfo"></p>
                 <a href="#" id="carrierTrackingLink" target="_blank"></a>
+            </div>
+            
+            <div id="contactInfo" class="contact-info">
+                <p>Questions about your order? Contact us at <a href="mailto:laughwithtic@gmail.com">laughwithtic@gmail.com</a></p>
             </div>
         </div>
     </div>
@@ -559,69 +622,82 @@
                     // Display Item Details
                     document.getElementById('itemDetails').textContent = data.items || "Details not available";
                     
-                    const shippingTrackingNumber = data.trackingNumber || 'Not yet assigned';
-                    let copyButtonHTML = '';
-                    if (shippingTrackingNumber !== 'Not yet assigned') {
-                        copyButtonHTML = `<button id="copyTrackingBtn" class="copy-btn" title="Copy tracking number">Copy</button>`;
-                    }
-                    
-                    let trackingInfoHTML = `
-                        <div class="tracking-line">
-                            <p><strong>Tracking Number:</strong> <span id="actualTrackingNumberText">${shippingTrackingNumber}</span></p>
-                            ${copyButtonHTML}
-                        </div>`;
-
-                    if (shippingTrackingNumber === 'Not yet assigned') {
-                        trackingInfoHTML += `<p>Shipping information will be available once your order has shipped.</p>`;
-                    }
-                    
-                    const carrierLinkElement = document.getElementById('carrierTrackingLink');
-                    if (data.carrierLink && shippingTrackingNumber !== 'Not yet assigned') { 
-                        carrierLinkElement.style.display = 'inline-block'; 
-                        carrierLinkElement.textContent = 'Track with shipping carrier';
-                        carrierLinkElement.href = data.carrierLink;
-                    } else {
-                        carrierLinkElement.style.display = 'none';
-                    }
-
-                    document.getElementById('trackingInfo').innerHTML = trackingInfoHTML;
-
-                    if (shippingTrackingNumber !== 'Not yet assigned') {
-                        const copyBtn = document.getElementById('copyTrackingBtn');
-                        if (copyBtn) {
-                            copyBtn.addEventListener('click', function() {
-                                const trackingNumberToCopy = document.getElementById('actualTrackingNumberText').textContent;
-                                navigator.clipboard.writeText(trackingNumberToCopy).then(() => {
-                                    copyBtn.textContent = 'Copied!';
-                                    copyBtn.classList.add('copied');
-                                    setTimeout(() => {
-                                        copyBtn.textContent = 'Copy';
-                                        copyBtn.classList.remove('copied');
-                                    }, 2000);
-                                }).catch(err => {
-                                    console.error('Failed to copy: ', err);
-                                    alert('Failed to copy tracking number.');
-                                });
-                            });
+                    // Only show tracking information if status is not "Order Received"
+                    const lowerStatus = data.status.toLowerCase();
+                    if (!lowerStatus.includes('order received') && 
+                        !lowerStatus.includes('received') && 
+                        !lowerStatus.includes('placed')) {
+                        
+                        const shippingTrackingNumber = data.trackingNumber || 'Not yet assigned';
+                        let copyButtonHTML = '';
+                        if (shippingTrackingNumber !== 'Not yet assigned') {
+                            copyButtonHTML = `<button id="copyTrackingBtn" class="copy-btn" title="Copy tracking number">Copy</button>`;
                         }
+                        
+                        let trackingInfoHTML = `
+                            <div class="tracking-line">
+                                <p><strong>Tracking Number:</strong> <span id="actualTrackingNumberText">${shippingTrackingNumber}</span></p>
+                                ${copyButtonHTML}
+                            </div>`;
+                        
+                        // Add explanatory message when tracking number is not yet assigned
+                        if (shippingTrackingNumber === 'Not yet assigned') {
+                            trackingInfoHTML += `
+                            <div style="margin-top: 8px; font-size: 14px; color: #666;">
+                                <p>Shipping information will be available after your order has been shipped.</p>
+                            </div>`;
+                        }
+                        
+                        const carrierLinkElement = document.getElementById('carrierTrackingLink');
+                        if (data.carrierLink && shippingTrackingNumber !== 'Not yet assigned') { 
+                            carrierLinkElement.style.display = 'inline-block'; 
+                            carrierLinkElement.textContent = 'Track with shipping carrier';
+                            carrierLinkElement.href = data.carrierLink;
+                        } else {
+                            carrierLinkElement.style.display = 'none';
+                        }
+
+                        document.getElementById('trackingInfo').innerHTML = trackingInfoHTML;
+
+                        if (shippingTrackingNumber !== 'Not yet assigned') {
+                            const copyBtn = document.getElementById('copyTrackingBtn');
+                            if (copyBtn) {
+                                copyBtn.addEventListener('click', function() {
+                                    const trackingNumberToCopy = document.getElementById('actualTrackingNumberText').textContent;
+                                    navigator.clipboard.writeText(trackingNumberToCopy).then(() => {
+                                        copyBtn.textContent = 'Copied!';
+                                        copyBtn.classList.add('copied');
+                                        setTimeout(() => {
+                                            copyBtn.textContent = 'Copy';
+                                            copyBtn.classList.remove('copied');
+                                        }, 2000);
+                                    }).catch(err => {
+                                        console.error('Failed to copy: ', err);
+                                        alert('Failed to copy tracking number.');
+                                    });
+                                });
+                            }
+                        }
+                    } else {
+                        // Clear tracking info for "Order Received" status
+                        document.getElementById('trackingInfo').innerHTML = '';
+                        document.getElementById('carrierTrackingLink').style.display = 'none';
                     }
                     
                     updateStatusTimeline(data.status);
                 } else {
+                    // For newly received orders not yet in the database
                     document.getElementById('orderNumber').textContent = trackingNumber;
                     document.getElementById('statusValue').textContent = 'Order Received';
                     document.getElementById('orderDate').textContent = new Date().toLocaleDateString(); 
-                    document.getElementById('itemDetails').textContent = "Processing - check back soon";
+                    document.getElementById('itemDetails').textContent = "Processing";
                     
-                    document.getElementById('trackingInfo').innerHTML = `
-                        <div class="tracking-line">
-                            <p><strong>Tracking Number:</strong> N/A</p>
-                        </div>
-                        <p>Shipping information will be available once your order has shipped.</p>
-                    `;
+                    // Clear tracking info area (message will be shown via updateStatusTimeline)
+                    document.getElementById('trackingInfo').innerHTML = '';
                     
                     document.getElementById('carrierTrackingLink').style.display = 'none';
                     
+                    // Update status dots to show only first step active
                     const dots = document.querySelectorAll('.status-dot');
                     dots.forEach((dot, index) => {
                         if (index === 0) {
@@ -633,7 +709,10 @@
                         }
                     });
                     
-                    document.getElementById('progressBar').style.width = '12%';
+                    document.getElementById('progressBar').style.width = '10%';
+                    
+                    // Update status timeline with Order Received status
+                    updateStatusTimeline('Order Received');
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -661,8 +740,6 @@
                 }
             });
 
-          
-
             // Update the dots
             const dots = document.querySelectorAll('.status-dot');
             dots.forEach((dot, index) => {
@@ -674,15 +751,32 @@
                     dot.classList.remove('active');
                 }
             });
+            
+            // Show/hide processing message based on current step
+            const processingMessage = document.getElementById('processingMessage');
+            
+            // Check if we're in Order Received step
+            if (currentStep === 0) {
+                // For Order Received, show the same message as orders not in database
+                processingMessage.innerHTML = `<p><strong>Thank you for your order!</strong> Your order has been received and our rats will begin crafting it within 24 hours. Check back soon to see your order progress!</p>`;
+                processingMessage.style.display = 'block';
+            } 
+            else if (currentStep === 1) { // Making Your Order
+                processingMessage.innerHTML = `<p>We're currently crafting your order with care! Please allow up to 7 business days for production before shipping. Thank you for your patience.</p>`;
+                processingMessage.style.display = 'block';
+            } 
+            else {
+                processingMessage.style.display = 'none';
+            }
 
-            // Update progress bar
+            // Update progress bar with exact percentages matching our dot positions
             const progressBar = document.getElementById('progressBar');
             if (currentStep === 0) {
-                progressBar.style.width = '12%'; // Small width for the first step to be visible
+                progressBar.style.width = '10%'; // First dot at 10%
             } else if (currentStep === 1) {
-                progressBar.style.width = '55%';
+                progressBar.style.width = '50%'; // Middle dot at 50%
             } else if (currentStep === 2) {
-                progressBar.style.width = '100%';
+                progressBar.style.width = '100%'; // Last dot at 90%
             }
         }
 
@@ -702,6 +796,9 @@
             document.getElementById('trackingNumber').value = '';
             document.getElementById('orderStatus').style.display = 'none';
             document.querySelector('.tracking-card').style.display = 'block';
+            
+            // Hide processing message and contact info
+            document.getElementById('processingMessage').style.display = 'none';
             
             // Reset progress bar and dots
             document.getElementById('progressBar').style.width = '10%';

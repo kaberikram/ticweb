@@ -32,13 +32,18 @@
             align-items: center;
         }
 
-        .logo {
+        .logo-container {
             position: fixed;
             top: 20px;
             left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
             width: 150px;
             height: auto;
-            z-index: 1000;
         }
 
         .privacy-container {
@@ -115,7 +120,7 @@
             color: #fff;
             background-color: #222;
             border: none;
-            border-radius: 8px;
+            border-radius: 50px;
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease;
             z-index: 100;
@@ -146,7 +151,11 @@
     </style>
 </head>
 <body>
-    <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
+    <header class="logo-container">
+        <a href="/index.html">
+            <img src="/ticLOGO.png" alt="TIC Logo" class="logo">
+        </a>
+    </header>
     <div class="privacy-container">
         <h1>Privacy Policy</h1>
         <p>Effective Date: January 1, 2024</p>

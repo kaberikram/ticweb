@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeVideoOverlayButton = document.getElementById('closeVideoOverlay');
     const youtubeIframe = document.getElementById('youtubeVideo');
 
-    const youtubeVideoSrc = 'https://www.youtube.com/embed/QbNcKrUaLs0?si=h1010M_WYKn-ztuM&controls=0&autoplay=1'; // Added autoplay=1
+    const youtubeVideoSrc = 'https://www.youtube.com/embed/HMwTl6wHFsQ?si=rdN_Etzk-pp510JT&controls=0&autoplay=1'; // Updated link with autoplay and controls
 
     if (tvFrameImage && videoOverlay && closeVideoOverlayButton && youtubeIframe) {
         // Function to open the overlay
