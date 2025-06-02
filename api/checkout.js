@@ -70,6 +70,9 @@ export default async function handler(req, res) {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items,
+        phone_number_collection: {
+          enabled: true,
+        },
         mode: 'payment',
         shipping_address_collection: { allowed_countries: ['MY', 'SG', 'US'] },
         shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
