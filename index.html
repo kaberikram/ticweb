@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIC Corp.</title>
+    
     <link rel="stylesheet" href="/style.css">
     <link rel="icon" type="image/png" href="/ticLOGO.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,278 +26,108 @@
     <meta name="twitter:title" content="TIC Corp.">
     <meta name="twitter:description" content="BEST RAT TEES ON THE INTERNET.">
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
-    
-    <style>
-        .tv-container {
-            position: relative;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 448px; /* 80% of original 560px */
-            cursor: pointer;
-        }
-        
-        .tv-frame {
-            width: 100%;
-            height: auto;
-            position: relative;
-            z-index: 2;
-            pointer-events: none;
-        }
-        
-        .tv-gif {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            object-fit: cover;
-            pointer-events: none;
-        }
-        
-        .play-button {
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 72px; /* Increased from 60px by 20% */
-            height: 72px; /* Increased from 60px by 20% */
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 50%;
-            z-index: 3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .play-button:after {
-            content: '';
-            display: block;
-            width: 24px; /* Fixed width for the rounded triangle */
-            height: 24px; /* Fixed height for the rounded triangle */
-            border-radius: 3px; /* Rounded corners */
-            background-color: white;
-            clip-path: polygon(0 0, 0 100%, 100% 50%); /* Triangle shape with rounded corners */
-            margin-left: 4px; /* Adjust to center visually */
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.1);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .rattire-button-container {
-            margin-top: 40px; /* Add space between TV and button */
-        }
-        
-        /* Mobile responsiveness */
-        @media (max-width: 480px) {
-            .tv-container {
-                max-width: 358px;
-                width: 90%;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            
-            .play-button {
-                width: 60px; /* Increased from 50px by 20% */
-                height: 60px; /* Increased from 50px by 20% */
-            }
-            
-            .play-button:after {
-                width: 20px; /* Smaller for mobile */
-                height: 20px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- Content will be added here -->
-    <div class="main-content">
-        <img src="/ticLOGO.png" alt="TIC Logo" class="index-logo">
-        
-        <div class="tv-container" id="tvContainer">
-            <img src="/tv.gif" alt="TV Content" class="tv-gif">
-            <img src="/tvFrame.png" alt="TV Frame" class="tv-frame">
-            <div class="play-button"></div>
+    <header id="mainLogoHeader">
+        <img src="/rateryxLogo.png" alt="TIC Corp. Logo" class="header-logo">
+    </header>
+    <div class="gallery-container" id="galleryContainer">
+        <div class="gallery-scroll" id="galleryScroll">
+            <div class="gallery-item item-16-9">
+                <img src="/image1.png" alt="Gallery image 1" />
+            </div>
+            <div class="gallery-item item-9-16">
+                <img src="/image2.png" alt="Gallery image 2" />
+            </div>
+            <div class="gallery-item item-9-16">
+                <img src="/image3.png" alt="Gallery image 3" />
+            </div>
+            <div class="gallery-item item-16-9">
+                <img src="/image4.png" alt="Gallery image 4" />
+            </div>
+            <div class="gallery-item item-9-16">
+                <img src="/image5.png" alt="Gallery image 5" />
+            </div>
+
+            <div id="previousCollectionText">
+                Previous collection
+            </div>
+
+            <div class="gallery-spacer"></div>
         </div>
-        
-        <!-- Slide to Buy Container -->
-        <div id="slide-to-buy-container">
-            <div id="slider-fill"></div>
-            <div id="slider-handle">&gt;</div>
-            <span class="slider-text">Slide to enter</span>
-        </div>
-        <!-- End Slide to Buy Container -->
     </div>
 
-    <!-- Video Overlay -->
-    <div id="videoOverlay" class="video-overlay">
-        <div class="video-overlay-content">
-            <button id="closeVideoOverlay" class="video-overlay-close">&times;</button>
-            <iframe id="youtubeVideo" width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </div>
-    </div>
-    <!-- End Video Overlay -->
-
-    <script type="module" src="/index.js"></script>
     <script>
-        // Add click event listener to the TV container to preserve YouTube preview functionality
-        document.getElementById('tvContainer').addEventListener('click', function() {
-            // This assumes the original click handler was looking for a click on the TV frame
-            // If index.js was handling this differently, you may need to update that file instead
-            const videoOverlay = document.getElementById('videoOverlay');
-            const youtubeVideo = document.getElementById('youtubeVideo');
-            
-            // Set the YouTube video source with the provided URL
-            youtubeVideo.src = 'https://www.youtube.com/embed/HMwTl6wHFsQ?si=rdN_Etzk-pp510JT&controls=0&autoplay=1';
-            
-            videoOverlay.style.display = 'flex';
-        });
+        const galleryContainer = document.getElementById('galleryContainer')
+        const galleryScroll = document.getElementById('galleryScroll')
         
-        // Close video overlay when close button is clicked
-        document.getElementById('closeVideoOverlay').addEventListener('click', function() {
-            const videoOverlay = document.getElementById('videoOverlay');
-            const youtubeVideo = document.getElementById('youtubeVideo');
+        // Detect if mobile (using 768px breakpoint like CSS)
+        function isMobile() {
+            return window.innerWidth < 768
+        }
+        
+        // --- Scale Constants based on your new request ---
+        const SCALE_START = 1.3
+        const SCALE_MID = 1.7
+        const SCALE_END = 0.8
+    
+        // Original transition point (e.g., ~1331px)
+        const TRANSITION_END_POINT = 64 + 609 + 106 + 297.58 + 106 + 148.79
+        // New transition point for the 1.3 -> 1.7 phase. Using 1/4 of the total distance.
+        // Adjust this fraction (0.25) if you want the 1.7 peak sooner or later.
+        const TRANSITION_MID_POINT = TRANSITION_END_POINT * 0.25 
+        
+        function updateZoom() {
+            const currentScrollLeft = galleryContainer.scrollLeft
+            const mobile = isMobile()
             
-            videoOverlay.style.display = 'none';
-            youtubeVideo.src = '';  // Reset video source to stop playback
-        });
-
-        // Slider functionality
-        const sliderContainer = document.getElementById('slide-to-buy-container');
-        const sliderHandle = document.getElementById('slider-handle');
-        const sliderFill = document.getElementById('slider-fill');
-        let isDragging = false;
-        let startX = 0;
-        let currentX = 0;
-
-        if (sliderHandle) {
-            sliderHandle.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                startX = e.clientX;
-                sliderContainer.classList.add('dragging'); // Add class for visual feedback
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-
-            // Touch events for mobile
-             sliderHandle.addEventListener('touchstart', (e) => {
-                isDragging = true;
-                startX = e.touches[0].clientX;
-                sliderContainer.classList.add('dragging');
-                document.addEventListener('touchmove', onTouchMove, { passive: false }); // Use passive: false to prevent scrolling
-                document.addEventListener('touchend', onTouchEnd);
-            }, { passive: true }); // Allow default touch behavior initially
-        } else {
-            console.error("Slider handle not found");
-        }
-
-
-        function onMouseMove(e) {
-            if (!isDragging) return;
-            handleMove(e.clientX);
-        }
-
-        function onTouchMove(e) {
-            if (!isDragging) return;
-            // Prevent page scroll while dragging slider
-             if (e.cancelable) e.preventDefault();
-            handleMove(e.touches[0].clientX);
-        }
-
-        function handleMove(clientX) {
-            currentX = clientX - startX;
-            const containerWidth = sliderContainer.offsetWidth;
-            const handleWidth = sliderHandle.offsetWidth;
-            const maxTranslateX = containerWidth - handleWidth;
-
-            // Clamp the translation within the container bounds
-            let translateX = Math.max(0, Math.min(currentX, maxTranslateX));
-
-            sliderHandle.style.transform = `translateX(${translateX}px)`;
-            sliderFill.style.width = `${translateX + handleWidth / 2}px`; // Adjust fill width
-
-            // Check if slider reached the end
-            if (translateX >= maxTranslateX - 5) { // Use a small threshold
-                completeSlideAction();
-            }
-        }
-
-        function onMouseUp() {
-            if (!isDragging) return;
-            isDragging = false;
-            sliderContainer.classList.remove('dragging');
-            resetSlider();
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-         function onTouchEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            sliderContainer.classList.remove('dragging');
-            resetSlider();
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onTouchEnd);
-        }
-
-        function resetSlider() {
-             // Only reset if not completed
-            const containerWidth = sliderContainer.offsetWidth;
-            const handleWidth = sliderHandle.offsetWidth;
-            const maxTranslateX = containerWidth - handleWidth;
-            const currentTranslateX = parseFloat(sliderHandle.style.transform.replace('translateX(', '').replace('px)', '')) || 0;
-
-            if (currentTranslateX < maxTranslateX - 5) {
-                sliderHandle.style.transition = 'transform 0.3s ease, width 0.3s ease';
-                sliderFill.style.transition = 'width 0.3s ease';
-                sliderHandle.style.transform = 'translateX(0px)';
-                sliderFill.style.width = `${handleWidth / 2}px`; // Reset fill width
-
-                // Remove transition after animation
-                setTimeout(() => {
-                    sliderHandle.style.transition = '';
-                    sliderFill.style.transition = '';
-                }, 300);
-            }
-        }
-
-        function completeSlideAction() {
-            // Add fade-out class to body
-            document.body.classList.add('fade-out');
+            let scale
             
-            // Keep slider at the end visually after completion (optional)
-            const containerWidth = sliderContainer.offsetWidth;
-            const handleWidth = sliderHandle.offsetWidth;
-            sliderHandle.style.transform = `translateX(${containerWidth - handleWidth}px)`;
-            sliderFill.style.width = `${containerWidth}px`;
-
-            // Prevent further interaction after completion if needed
-            isDragging = false; // Ensure dragging stops
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onTouchEnd);
-
-            // Delay navigation to allow fade-out animation
-            setTimeout(() => {
-                window.location.href = '/ratalog.html';
-            }, 500); // Match the transition duration (0.5s)
+            if (currentScrollLeft <= TRANSITION_MID_POINT) {
+                // Phase 1: Interpolate from SCALE_START (1.3) to SCALE_MID (1.7)
+                const progress = Math.min(currentScrollLeft / TRANSITION_MID_POINT, 1)
+                const scaleRange = SCALE_MID - SCALE_START
+                scale = SCALE_START + (progress * scaleRange)
+                
+            } else if (currentScrollLeft <= TRANSITION_END_POINT) {
+                // Phase 2: Interpolate from SCALE_MID (1.7) to SCALE_END (0.8)
+                
+                // Calculate progress through the second phase only
+                const phase2Distance = TRANSITION_END_POINT - TRANSITION_MID_POINT
+                const scrollInPhase2 = currentScrollLeft - TRANSITION_MID_POINT
+                
+                const progress = Math.min(scrollInPhase2 / phase2Distance, 1)
+                const scaleRange = SCALE_MID - SCALE_END
+                
+                // Scale starts at SCALE_MID and decreases
+                scale = SCALE_MID - (progress * scaleRange)
+                
+            } else {
+                // Phase 3: Stay at SCALE_END (0.8) after the final transition point
+                scale = SCALE_END
+            }
+            
+            galleryScroll.style.transform = `scale(${scale})`
         }
+        
+        // Set initial scale based on device (using 1.3 for non-mobile)
+        const initialScaleOnLoad = isMobile() ? 1.5 : SCALE_START
+        galleryScroll.style.transform = `scale(${initialScaleOnLoad})`
+        
+        galleryContainer.addEventListener('scroll', updateZoom)
+        
+        // Update on resize to recalculate if needed
+        window.addEventListener('resize', function() {
+            updateZoom()
+            // Reset initial scale on resize if at the very start
+            const newInitialScaleOnLoad = isMobile() ? 1.5 : SCALE_START
+            if (galleryContainer.scrollLeft === 0) {
+                galleryScroll.style.transform = `scale(${newInitialScaleOnLoad})`
+            }
+        })
     </script>
-
+    <footer id="mainFooter">
+        <p class="footer-text">Copyright © 2025-World End TIC Corp. All rights reserves.</p>
+    </footer>
 </body>
 </html> 

@@ -3,13 +3,11 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff; /* Or any desired background */
-    overflow: hidden; /* Hide scrollbars if content exceeds viewport */
+    background-color: #000; /* Black background */
     font-family: "Source Code Pro", monospace;
     transition: opacity 0.5s ease-in-out; /* Add transition for fade effect */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Hide vertical scrollbar */
 }
 
 /* Style for initial fade-in state */
@@ -20,6 +18,126 @@ body.fade-in {
 /* Style for fade-out state */
 body.fade-out {
     opacity: 0;
+}
+
+/* --- Updated Sticky Logo Header Styles --- */
+
+#mainLogoHeader {
+    /* Position the header (KEEP THESE) */
+    position: fixed; 
+    top: -20px;       /* Slightly increase distance from the top */
+    left: 50%;       
+    transform: translateX(-50%); 
+    
+    /* Sizing and layering (KEEP THESE) */
+    width: auto;     /* Change to 'auto' so it only wraps the image */
+    padding: 0;      /* Remove all padding */
+    text-align: center;
+    z-index: 1000;
+    
+    /* **************************************** */
+    /* REMOVED BACKGROUND/BLUR FOR FLOATING EFFECT */
+    background-color: transparent; /* Changed from rgba(0, 0, 0, 0.7) */
+    backdrop-filter: none;         /* Removed the blur effect */
+    /* **************************************** */
+}
+
+.header-logo {
+    /* Scale the image down (KEEP THESE) */
+    width: 128px;
+    height: 128px;
+    display: block; 
+    margin: 0 auto; 
+}
+
+/* Responsive adjustment for mobile screens */
+@media (max-width: 768px) {
+    #mainLogoHeader {
+        top: 10px;    /* Less distance from the top on small screens */
+    }
+    
+    .header-logo {
+        width: 80px; 
+        height: 80px;
+    }
+}
+
+/* --- New Fixed Footer Styles --- */
+
+#mainFooter {
+    /* Positioning */
+    position: fixed; /* Makes it stick to the viewport */
+    bottom: 0;       /* Docks it at the bottom */
+    left: 0;         /* Starts from the left edge */
+    width: 100%;     /* Spans the entire width */
+    
+    /* Styling and Layering */
+    background-color: transparent; /* Keep it transparent to match the floating logo */
+    text-align: center;      /* Center the text content */
+    padding: 8px 0;          /* Small vertical padding */
+    z-index: 999;            /* Place it just below the main header (1000) */
+}
+
+.footer-text {
+    /* Text styling */
+    color: white; /* Required text color */
+    font-family: "Source Code Pro", monospace; /* Using the font from your <head> */
+    font-size: 12px; /* Required font size */
+    margin: 0; /* Important: Remove default paragraph margins */
+    padding: 0;
+}
+
+/* Responsive adjustments for mobile screens (Optional, but good practice) */
+@media (max-width: 768px) {
+    #mainFooter {
+        padding: 6px 0; /* Slightly less padding on mobile */
+    }
+    
+    .footer-text {
+        font-size: 10px; /* Slightly smaller font on mobile for readability */
+    }
+}
+
+
+/* --- Updated Rotated Text Styles --- */
+
+#previousCollectionText {
+    position: absolute;
+    /* ⬅️ IMPORTANT: Set LEFT position to push it far to the right. 
+       Use a value slightly less than the total width of all images + gaps.
+       You MUST adjust this value after testing! Example: 2500px */
+    left: 2500px; 
+    
+    /* Remove the 'right' property */
+    /* right: 50px; <-- REMOVE THIS */
+    
+    top: 50%; 
+    
+    /* Apply Rotation and Adjustment (KEEP THESE) */
+    transform-origin: 0 0; 
+    /* We rotate and then use translateY to vertically center the text */
+    transform: translateY(-50%) rotate(90deg);
+    
+    /* Styling (KEEP THESE) */
+    font-family: "Source Code Pro", monospace;
+    font-size: 14px; 
+    color: #FFF; 
+    white-space: nowrap; 
+    opacity: 0.6; 
+    pointer-events: none;
+}
+
+/* Note: On mobile, the widths change, so absolute positioning 
+   by pixel value is unreliable. We'll use a large percentage 
+   to approximate the end, but testing is still necessary. */
+@media (max-width: 768px) {
+    #previousCollectionText {
+        /* On mobile, use a large LEFT percentage (e.g., 500%) 
+           to ensure it is far past the initial screen view. */
+        left: 500%; 
+        font-size: 10px; 
+        opacity: 0.8; 
+    }
 }
 
 .container {
@@ -1512,4 +1630,112 @@ body.content-visible {
 
 .logo-container > a.nav-button:nth-of-type(4) { /* Cart */
   animation-delay: 0.8s;
+}
+
+/* Gallery Styles */
+.gallery-container {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.gallery-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari, Opera */
+}
+
+.gallery-scroll {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  align-items: center; /* Center items vertically */
+  gap: 106px; /* Gap between all images */
+  padding-left: 64px; /* Extra space at the start */
+  transform-origin: center center;
+  transition: transform 0.1s ease-out; /* Smooth zoom transition */
+}
+
+.gallery-spacer {
+  flex-shrink: 0;
+  width: 106px; /* Extra space at the end for smoother scroll */
+  height: 100%;
+}
+
+.gallery-item {
+  flex-shrink: 0;
+  background-color: #e0e0e0; /* Placeholder background color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: auto 0; /* Center vertically */
+  overflow: hidden; /* Ensure images don't overflow */
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Maintain aspect ratio and fill container */
+  display: block;
+}
+
+/* First image: 609x343 (16:9) */
+.gallery-item:nth-child(1) {
+  width: 609px;
+  height: 343px;
+}
+
+/* 9:16 images (2nd, 3rd, 5th): 297.58 x 529 */
+.item-9-16 {
+  width: 297.58px;
+  height: 529px;
+}
+
+/* Image 2: height changed to 343 */
+.gallery-item:nth-child(2) {
+  height: 343px;
+}
+
+/* 4th image: 609x343 (16:9) */
+.gallery-item:nth-child(4) {
+  width: 609px;
+  height: 343px;
+}
+
+/* Placeholder styling removed - images are now used */
+
+/* Special gap between images 2 and 3 (50px instead of 106px) */
+.gallery-item:nth-child(3) {
+  margin-left: -56px; /* Reduce gap by 56px (106 - 50 = 56) */
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  /* Scale down proportionally on mobile if needed */
+  .gallery-item:nth-child(1) {
+    width: 304.5px;
+    height: 171.5px;
+  }
+
+  .item-9-16 {
+    width: 148.79px;
+    height: 264.5px;
+  }
+
+  .gallery-item:nth-child(2) {
+    height: 171.5px; /* Scaled proportionally for mobile */
+  }
+
+  .gallery-item:nth-child(4) {
+    width: 304.5px;
+    height: 171.5px;
+  }
 }
