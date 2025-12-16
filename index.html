@@ -49,13 +49,13 @@
                 <img src="/image5.png" alt="Gallery image 5" />
             </div>
 
-            <div id="previousCollectionText">
-                Previous collection
-            </div>
-
             <div class="gallery-spacer"></div>
         </div>
     </div>
+
+    <a href="/ratalog.html" id="previousCollectionText">
+        Previous collection
+    </a>
 
     <script>
         const galleryContainer = document.getElementById('galleryContainer')
@@ -116,15 +116,57 @@
         
         galleryContainer.addEventListener('scroll', updateZoom)
         
+        // Show/hide previous collection text based on scroll position
+        const previousCollectionText = document.getElementById('previousCollectionText')
+        
+        function updatePreviousCollectionVisibility() {
+            const scrollLeft = galleryContainer.scrollLeft
+            const scrollWidth = galleryContainer.scrollWidth
+            const clientWidth = galleryContainer.clientWidth
+            const maxScroll = scrollWidth - clientWidth
+            
+            // Calculate where the spacer area starts (after all 5 images + gaps)
+            // For mobile, use scaled dimensions
+            let spacerStartPoint, threshold
+            if (isMobile()) {
+                // Mobile dimensions: padding: 32, image1: 304.5, gap: 53, image2: 148.79, gap: 25, image3: 148.79, gap: 53, image4: 304.5, gap: 53, image5: 148.79, gap: 53
+                spacerStartPoint = 32 + 304.5 + 53 + 148.79 + 25 + 148.79 + 53 + 304.5 + 53 + 148.79 + 53
+                threshold = 150 // Smaller threshold for mobile
+            } else {
+                // Desktop dimensions
+                spacerStartPoint = 64 + 609 + 106 + 297.58 + 50 + 297.58 + 106 + 609 + 106 + 297.58 + 106
+                threshold = 200
+            }
+            
+            // Show when scrolled into spacer area or near the end of scroll
+            const isInSpacerArea = scrollLeft >= (spacerStartPoint - threshold)
+            const isNearEnd = scrollLeft >= (maxScroll - threshold)
+            
+            if (isInSpacerArea || isNearEnd) {
+                previousCollectionText.style.opacity = '0.6'
+                previousCollectionText.style.pointerEvents = 'auto' // Enable clicking when visible
+                previousCollectionText.style.display = 'inline-flex' // Ensure it's displayed on mobile
+            } else {
+                previousCollectionText.style.opacity = '0'
+                previousCollectionText.style.pointerEvents = 'none' // Disable clicking when hidden
+            }
+        }
+        
+        galleryContainer.addEventListener('scroll', updatePreviousCollectionVisibility)
+        
         // Update on resize to recalculate if needed
         window.addEventListener('resize', function() {
             updateZoom()
+            updatePreviousCollectionVisibility()
             // Reset initial scale on resize if at the very start
             const newInitialScaleOnLoad = isMobile() ? 1.5 : SCALE_START
             if (galleryContainer.scrollLeft === 0) {
                 galleryScroll.style.transform = `scale(${newInitialScaleOnLoad})`
             }
         })
+        
+        // Initial visibility check
+        updatePreviousCollectionVisibility()
     </script>
     <footer id="mainFooter">
         <p class="footer-text">Copyright © 2025-World End TIC Corp. All rights reserves.</p>
