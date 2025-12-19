@@ -1635,7 +1635,7 @@ body.content-visible {
 
 .gallery-spacer {
   flex-shrink: 0;
-  width: 26px; /* Extra space at the end for smoother scroll */
+  width: 6px; /* Extra space at the end for smoother scroll */
   height: 100%;
 }
 
