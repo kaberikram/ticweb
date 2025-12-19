@@ -1,6 +1,8 @@
-require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const cors = require('cors');
+import 'dotenv/config';
+import Stripe from 'stripe';
+import cors from 'cors';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize cors middleware
 const corsHandler = cors();
