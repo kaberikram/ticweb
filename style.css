@@ -110,65 +110,6 @@ body.fade-out {
 }
 
 
-/* --- Updated Rotated Text Styles --- */
-
-#previousCollectionText {
-    position: fixed; /* Fixed to viewport */
-    right: 50px; /* Dock to the right edge of the screen */
-    top: 50%; 
-    transform: translateY(-50%); /* Vertically center */
-    
-    /* Button styling */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px; /* More generous padding: vertical (top/bottom) 24px, horizontal (left/right) 16px */
-    border: 1.5px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50px; /* Pill shape - more refined */
-    background-color: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px); /* Modern glass effect */
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    
-    /* Text styling */
-    font-family: "Source Code Pro", monospace;
-    font-size: 13px; 
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    color: #FFF; 
-    white-space: nowrap; 
-    opacity: 0; /* Start hidden, will be shown via JS */
-    pointer-events: none; /* Disable clicking when hidden, JS will enable when visible */
-    cursor: pointer;
-    z-index: 999; /* Same as footer */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth, modern transitions */
-    writing-mode: vertical-rl; /* Vertical text from top to bottom */
-    text-orientation: mixed;
-    min-height: fit-content;
-}
-
-#previousCollectionText:hover {
-    border-color: rgba(255, 255, 255, 1);
-    background-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    transform: translateY(-50%) scale(1.05);
-}
-
-#previousCollectionText:active {
-    transform: translateY(-50%) scale(0.98);
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    #previousCollectionText {
-        right: 20px; /* Smaller padding on mobile */
-        padding: 16px 12px; /* Smaller padding for mobile */
-        font-size: 12px;
-        opacity: 0; /* Start hidden, JS will control visibility */
-        display: inline-flex; /* Allow it to be shown via JS */
-    }
-}
-
 .container {
     position: relative;
     width: 100%; /* Changed from 80vw to 100% */
@@ -1694,7 +1635,7 @@ body.content-visible {
 
 .gallery-spacer {
   flex-shrink: 0;
-  width: 106px; /* Extra space at the end for smoother scroll */
+  width: 26px; /* Extra space at the end for smoother scroll */
   height: 100%;
 }
 
