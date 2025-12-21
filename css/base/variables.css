@@ -1,0 +1,181 @@
+/**
+ * CSS Custom Properties (Variables)
+ * Central configuration for theming and consistency
+ */
+
+:root {
+    /* ============================================
+       COLOR PALETTE
+       ============================================ */
+    
+    /* Primary Colors */
+    --color-black: #000;
+    --color-white: #fff;
+    
+    /* Grays */
+    --color-gray-100: #f5f5f5;
+    --color-gray-200: #eee;
+    --color-gray-300: #e0e0e0;
+    --color-gray-400: #ccc;
+    --color-gray-500: #aaa;
+    --color-gray-600: #888;
+    --color-gray-700: #666;
+    --color-gray-800: #555;
+    --color-gray-900: #333;
+    
+    /* Semantic Colors */
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-700);
+    --color-text-muted: var(--color-gray-800);
+    --color-text-light: var(--color-white);
+    
+    --color-bg-primary: var(--color-black);
+    --color-bg-secondary: var(--color-white);
+    --color-bg-overlay: rgba(0, 0, 0, 0.6);
+    --color-bg-overlay-light: rgba(255, 255, 255, 0.8);
+    
+    /* Interactive States */
+    --color-hover: var(--color-gray-200);
+    --color-active: var(--color-gray-300);
+    --color-focus: var(--color-gray-600);
+    
+    /* Accent Colors */
+    --color-success: #a5d6a7;
+    --color-error: #ef5350;
+    
+    /* ============================================
+       TYPOGRAPHY
+       ============================================ */
+    
+    --font-family-primary: "Source Code Pro", monospace;
+    --font-family-system: system-ui, -apple-system, sans-serif;
+    
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;   /* 12px */
+    --font-size-sm: 0.875rem;  /* 14px */
+    --font-size-base: 1rem;    /* 16px */
+    --font-size-md: 1.1rem;    /* 17.6px */
+    --font-size-lg: 1.25rem;   /* 20px */
+    --font-size-xl: 1.5rem;    /* 24px */
+    --font-size-2xl: 2rem;     /* 32px */
+    
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.7;
+    
+    /* ============================================
+       SPACING
+       ============================================ */
+    
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    --spacing-3xl: 64px;
+    
+    /* ============================================
+       BORDERS & RADIUS
+       ============================================ */
+    
+    --border-width: 1px;
+    --border-color: var(--color-gray-400);
+    --border-color-light: var(--color-gray-200);
+    
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 15px;
+    --radius-xl: 20px;
+    --radius-pill: 999px;
+    --radius-circle: 50%;
+    
+    /* ============================================
+       SHADOWS
+       ============================================ */
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 5px 15px rgba(0, 0, 0, 0.2);
+    --shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    
+    /* ============================================
+       TRANSITIONS
+       ============================================ */
+    
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+    --transition-spring: 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* ============================================
+       Z-INDEX SCALE
+       ============================================ */
+    
+    --z-base: 1;
+    --z-dropdown: 10;
+    --z-sticky: 100;
+    --z-fixed: 500;
+    --z-modal-backdrop: 900;
+    --z-modal: 1000;
+    --z-tooltip: 1100;
+    --z-loader: 9999;
+    
+    /* ============================================
+       BREAKPOINTS (for reference in JS)
+       ============================================ */
+    
+    --breakpoint-sm: 377px;
+    --breakpoint-md: 600px;
+    --breakpoint-lg: 768px;
+    --breakpoint-xl: 1024px;
+    
+    /* ============================================
+       COMPONENT-SPECIFIC SIZES
+       ============================================ */
+    
+    /* Logo */
+    --logo-size-desktop: 128px;
+    --logo-size-mobile: 80px;
+    --logo-size-nav: 74px;
+    --logo-size-nav-mobile: 60px;
+    
+    /* Gallery */
+    --gallery-gap: 106px;
+    --gallery-padding: 64px;
+    --gallery-image-width-16-9: 609px;
+    --gallery-image-height-16-9: 343px;
+    --gallery-image-width-9-16: 297.58px;
+    --gallery-image-height-9-16: 529px;
+    --gallery-image-size-square: 400px;
+    
+    /* Buttons */
+    --button-height: 50px;
+    --button-height-sm: 40px;
+    --button-padding-x: 25px;
+    --button-padding-y: 10px;
+    
+    /* Modal */
+    --modal-max-width: 400px;
+    --modal-padding: 30px;
+    --modal-padding-mobile: 15px;
+}
+
+/* ============================================
+   DARK THEME OVERRIDES (optional)
+   ============================================ */
+
+[data-theme="dark"] {
+    --color-text-primary: var(--color-white);
+    --color-text-secondary: var(--color-gray-400);
+    --color-bg-primary: var(--color-black);
+    --color-bg-secondary: var(--color-gray-900);
+}
+

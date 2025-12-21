@@ -1,0 +1,92 @@
+/**
+ * Footer Component Styles
+ * Main footer and footer links
+ */
+
+/* ============================================
+   MAIN FOOTER (Fixed)
+   ============================================ */
+
+#mainFooter {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    
+    background-color: transparent;
+    text-align: center;
+    padding: var(--spacing-sm) 0;
+    z-index: calc(var(--z-modal) - 1);
+}
+
+.footer-text {
+    color: var(--color-white);
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xs);
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================
+   FOOTER LINKS (Inner Pages)
+   ============================================ */
+
+.footer {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-modal);
+    width: 100%;
+    text-align: center;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-link {
+    color: var(--color-gray-900);
+    text-decoration: none;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+    transition: opacity var(--transition-normal);
+}
+
+.footer-link:hover {
+    opacity: 1;
+}
+
+.footer-separator {
+    color: var(--color-gray-900);
+    opacity: 0.4;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-primary);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    #mainFooter {
+        padding: 6px 0;
+    }
+    
+    .footer-text {
+        font-size: 10px;
+    }
+    
+    .footer {
+        bottom: 20px;
+        gap: 10px;
+    }
+    
+    .footer-link,
+    .footer-separator {
+        font-size: var(--font-size-xs);
+    }
+}
+

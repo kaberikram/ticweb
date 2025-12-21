@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIC Corp.</title>
     
-    <link rel="stylesheet" href="/style.css">
+    <!-- Styles (Modular CSS) -->
+    <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" type="image/png" href="/ticLOGO.png">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 
+    <!-- SEO Meta Tags -->
     <meta name="description" content="BEST RAT TEES ON THE INTERNET. New from TIC Corp: Rattire. Aura-friendly graphic tees parodying icons like Aphex Twin and Edward Scissorhands, all with a rat twist. We just do whatever we like.">
     <link rel="canonical" href="https://www.laughwithtic.com/" />
 
@@ -28,34 +32,111 @@
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
 </head>
 <body>
+    <!-- Header -->
     <header id="mainLogoHeader">
         <img src="/rateryxLogo.png" alt="TIC Corp. Logo" class="header-logo">
     </header>
-    <div class="gallery-container" id="galleryContainer">
+
+    <!-- Main Gallery -->
+    <div 
+        class="gallery-container" 
+        id="galleryContainer"
+        role="region"
+        aria-label="Image gallery"
+    >
         <div class="gallery-scroll" id="galleryScroll">
-            <div class="gallery-item item-16-9">
-                <img src="/image1.png" alt="Gallery image 1" />
+            <!-- 
+                AUTO-ORIENTATION GALLERY
+                Just add images - orientation is detected automatically!
+                
+                To add a new image:
+                1. Copy the template below
+                2. Change the src and alt text
+                3. The system will automatically detect if it's landscape or portrait
+            -->
+            
+            <!-- Template for new images (copy and modify):
+            <div class="gallery-item" data-auto-orient>
+                <img src="/your-image.png" alt="Description" loading="lazy" />
             </div>
-            <div class="gallery-item item-9-16">
-                <img src="/image2.png" alt="Gallery image 2" />
+            -->
+            
+            <div class="gallery-item" data-auto-orient data-index="1">
+                <img 
+                    src="/image1.png" 
+                    alt="Gallery image 1"
+                    loading="eager"
+                />
             </div>
-            <div class="gallery-item item-9-16">
-                <img src="/image3.png" alt="Gallery image 3" />
+            
+            <div class="gallery-item" data-auto-orient data-index="2">
+                <img 
+                    src="/image2.png" 
+                    alt="Gallery image 2"
+                    loading="lazy"
+                />
             </div>
-            <div class="gallery-item item-16-9">
-                <img src="/image4.png" alt="Gallery image 4" />
+            
+            <div class="gallery-item" data-auto-orient data-index="3">
+                <img 
+                    src="/image3.png" 
+                    alt="Gallery image 3"
+                    loading="lazy"
+                />
             </div>
-            <div class="gallery-item item-9-16">
-                <img src="/image5.png" alt="Gallery image 5" />
+            
+            <div class="gallery-item" data-auto-orient data-index="4">
+                <img 
+                    src="/image4.png" 
+                    alt="Gallery image 4"
+                    loading="lazy"
+                />
+            </div>
+            
+            <div class="gallery-item" data-auto-orient data-index="5">
+                <img 
+                    src="/image5.png" 
+                    alt="Gallery image 5"
+                    loading="lazy"
+                />
+            </div>
+            
+            <div class="gallery-item" data-auto-orient data-index="6">
+                <img 
+                    src="/image6.png" 
+                    alt="Gallery image 6"
+                    loading="lazy"
+                />
+            </div>
+            
+            <div class="gallery-item" data-auto-orient data-index="7">
+                <img 
+                    src="/image7.png" 
+                    alt="Gallery image 7"
+                    loading="lazy"
+                />
+            </div>
+            
+            <div class="gallery-item" data-auto-orient data-index="8">
+                <img 
+                    src="/image8.png" 
+                    alt="Gallery image 8"
+                    loading="lazy"
+                />
             </div>
 
-            <div class="gallery-spacer"></div>
+            <div class="gallery-spacer" aria-hidden="true"></div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="/gallery-auto.js" defer></script>
+    <script src="/gallery-scroll-converter.js" defer></script>
     <script src="/index.js" defer></script>
+
+    <!-- Footer -->
     <footer id="mainFooter">
         <p class="footer-text">Copyright © 2025-World End TIC Corp. All rights reserves.</p>
     </footer>
 </body>
-</html> 
+</html>

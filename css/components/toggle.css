@@ -1,0 +1,162 @@
+/**
+ * Toggle Switch Component Styles
+ * Rat/Mouse toggle and similar controls
+ */
+
+/* ============================================
+   TOGGLE CONTAINER
+   ============================================ */
+
+.toggle-container {
+    position: absolute;
+    top: 19%;
+    left: 50.5%;
+    transform: translateX(-50%);
+    z-index: var(--z-dropdown);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ============================================
+   TOGGLE INPUT (Hidden)
+   ============================================ */
+
+.toggle-checkbox {
+    display: none;
+}
+
+/* ============================================
+   TOGGLE LABEL (Track)
+   ============================================ */
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    background-color: var(--color-gray-300);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    width: 70px;
+    height: 19px;
+    position: relative;
+    cursor: pointer;
+    box-shadow: var(--shadow-inset);
+}
+
+/* ============================================
+   TOGGLE TEXT LABELS
+   ============================================ */
+
+.toggle-text {
+    font-size: 8px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-gray-600);
+    z-index: var(--z-base);
+    transition: color var(--transition-slow);
+    padding: 0 5px;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.toggle-mouse {
+    padding-left: 10px;
+    padding-right: 1px;
+}
+
+/* ============================================
+   TOGGLE SWITCH (Handle)
+   ============================================ */
+
+.toggle-switch {
+    position: absolute;
+    background-color: var(--color-white);
+    border-radius: var(--radius-pill);
+    width: 32px;
+    height: 19px;
+    top: 3px;
+    left: 3px;
+    transition: left var(--transition-slow), background-color var(--transition-slow);
+    box-shadow: var(--shadow-sm);
+    z-index: 0;
+}
+
+/* ============================================
+   TOGGLE STATES
+   ============================================ */
+
+/* Checked State (Mouse selected) */
+.toggle-checkbox:checked + .toggle-label .toggle-switch {
+    left: calc(100% - 35px);
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-rat {
+    color: var(--color-gray-600);
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-mouse {
+    color: var(--color-text-primary);
+}
+
+/* Unchecked State (Rat selected) */
+.toggle-checkbox:not(:checked) + .toggle-label .toggle-rat {
+    color: var(--color-text-primary);
+}
+
+.toggle-checkbox:not(:checked) + .toggle-label .toggle-mouse {
+    color: var(--color-gray-600);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767px) {
+    .toggle-container {
+        top: 21%;
+    }
+    
+    .toggle-label {
+        width: 58px;
+        height: 16px;
+        padding: 2px;
+    }
+    
+    .toggle-text {
+        font-size: 7px;
+        padding: 0 3px;
+    }
+    
+    .toggle-mouse {
+        padding-left: 6px;
+        padding-right: 0;
+    }
+    
+    .toggle-switch {
+        width: 29px;
+        height: 16px;
+        top: 2px;
+        left: 2px;
+    }
+    
+    .toggle-checkbox:checked + .toggle-label .toggle-switch {
+        left: calc(100% - 31px);
+    }
+}
+
+/* iPhone SE and smaller screens */
+@media (max-width: 377px) {
+    .toggle-container {
+        top: 15%;
+    }
+}
+
+@media (min-width: 378px) and (max-width: 429px) {
+    .toggle-container {
+        top: 19%;
+    }
+}
+
