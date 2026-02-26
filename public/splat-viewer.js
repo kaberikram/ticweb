@@ -104,9 +104,9 @@ function createLoader(container) {
   }
 }
 
-const GYRO_SENSITIVITY = 0.12
-const GYRO_LERP = 0.06
-const GYRO_MAX_OFFSET = 2.5
+const GYRO_SENSITIVITY = 0.07
+const GYRO_LERP = 0.05
+const GYRO_MAX_OFFSET = 1.5
 
 function clamp(v, min, max) {
   return v < min ? min : v > max ? max : v
@@ -146,7 +146,7 @@ function initGyroControls(container, splat, baseRot) {
     if (dBeta > 180) dBeta -= 360
     if (dBeta < -180) dBeta += 360
 
-    targetYaw = clamp(-dGamma * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
+    targetYaw = clamp(dGamma * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
     targetPitch = clamp(-dBeta * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
   }
 
@@ -189,17 +189,26 @@ function initGyroControls(container, splat, baseRot) {
   overlay.className = 'splat-gyro-prompt'
   overlay.innerHTML = `
     <div class="splat-gyro-prompt-box">
-      <p>Tilt your phone to<br>explore the view</p>
-      <button class="splat-gyro-prompt-btn">Enable</button>
+      <p>Enable motion controls?</p>
+      <div class="splat-gyro-prompt-actions">
+        <button class="splat-gyro-prompt-btn splat-gyro-yes">Yes</button>
+        <button class="splat-gyro-prompt-btn splat-gyro-no">No</button>
+      </div>
     </div>
   `
   wrap.appendChild(overlay)
 
-  overlay.querySelector('.splat-gyro-prompt-btn').addEventListener('click', async () => {
-    await enableGyro()
+  function dismiss() {
     overlay.classList.add('splat-gyro-prompt-hide')
     setTimeout(() => overlay.remove(), 500)
+  }
+
+  overlay.querySelector('.splat-gyro-yes').addEventListener('click', async () => {
+    await enableGyro()
+    dismiss()
   })
+
+  overlay.querySelector('.splat-gyro-no').addEventListener('click', dismiss)
 }
 
 async function fetchSogWithProgress(url, onProgress) {
