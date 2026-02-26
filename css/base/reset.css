@@ -49,9 +49,14 @@ body {
     transition: opacity 0.5s ease-in-out;
 }
 
-/* White background for non-gallery pages */
-body:not(:has(.gallery-container)) {
+/* White background for non-gallery pages (except home) */
+body:not(:has(.gallery-container)):not(.home) {
     background-color: var(--color-white) !important;
+    overflow-y: auto;
+}
+
+/* Home page: keep black background, allow scroll */
+body.home {
     overflow-y: auto;
 }
 
