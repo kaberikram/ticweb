@@ -55,9 +55,11 @@ body:not(:has(.gallery-container)):not(.home) {
     overflow-y: auto;
 }
 
-/* Home page: keep black background, allow scroll */
+/* Home page: keep black background, lock viewport */
 body.home {
-    overflow-y: auto;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
 }
 
 /* Fade states for page transitions */

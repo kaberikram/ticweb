@@ -10,7 +10,8 @@ import {
   Color,
   Entity,
   FILLMODE_NONE,
-  RESOLUTION_AUTO
+  RESOLUTION_AUTO,
+  Vec2
 } from 'playcanvas'
 
 const CONTAINER_ID = 'splat-viewer'
@@ -46,10 +47,93 @@ function resizeCanvas(canvas, app, container) {
   }
 }
 
-async function fetchSogAsArrayBuffer(url) {
+const LOADER_IMAGES = [
+  '/image0.webp',
+  '/image1.webp',
+  '/image2.webp',
+  '/image3.webp',
+  '/image4.webp',
+  '/image5.webp',
+  '/image6.webp',
+  '/image7.webp',
+  '/image8.webp'
+]
+const SLIDE_INTERVAL = 800
+
+function createLoader(container) {
+  const wrap = container.closest('.splat-viewer-wrap') || container
+  const el = document.createElement('div')
+  el.className = 'splat-loader'
+
+  const imagesHtml = LOADER_IMAGES.map((src, i) =>
+    `<img class="splat-loader-img${i === 0 ? ' active' : ''}" src="${src}" alt="" draggable="false" />`
+  ).join('')
+
+  el.innerHTML = `
+    <div class="splat-loader-slides">${imagesHtml}</div>
+    <div class="splat-loader-bar-wrap">
+      <div class="splat-loader-bar"></div>
+    </div>
+    <span class="splat-loader-pct">0</span>
+  `
+  wrap.appendChild(el)
+
+  const pctEl = el.querySelector('.splat-loader-pct')
+  const barEl = el.querySelector('.splat-loader-bar')
+  const imgs = el.querySelectorAll('.splat-loader-img')
+  let slideIdx = 0
+
+  const slideTimer = setInterval(() => {
+    imgs[slideIdx].classList.remove('active')
+    slideIdx = (slideIdx + 1) % imgs.length
+    imgs[slideIdx].classList.add('active')
+  }, SLIDE_INTERVAL)
+
+  return {
+    set(pct) {
+      const v = Math.min(100, Math.max(0, Math.round(pct)))
+      pctEl.textContent = v
+      barEl.style.width = v + '%'
+    },
+    done() {
+      clearInterval(slideTimer)
+      this.set(100)
+      el.classList.add('splat-loader-done')
+      setTimeout(() => el.remove(), 900)
+    }
+  }
+}
+
+async function fetchSogWithProgress(url, onProgress) {
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`)
-  return res.arrayBuffer()
+
+  const total = parseInt(res.headers.get('content-length') || '0', 10)
+  if (!total || !res.body) {
+    const buf = await res.arrayBuffer()
+    onProgress(100)
+    return buf
+  }
+
+  const reader = res.body.getReader()
+  const chunks = []
+  let received = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    received += value.byteLength
+    onProgress((received / total) * 100)
+  }
+
+  const buf = new Uint8Array(received)
+  let offset = 0
+  for (const chunk of chunks) {
+    buf.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return buf.buffer
 }
 
 async function initSplatViewer() {
@@ -82,15 +166,17 @@ async function initSplatViewer() {
   })
   resizeObserver.observe(container)
 
-  // Pre-fetch .sog so the full file is in memory (avoids "EOCDR not found" from truncated responses)
+  const loader = createLoader(container)
+
   let sogAsset
   try {
-    const arrayBuffer = await fetchSogAsArrayBuffer(sogUrl)
+    const arrayBuffer = await fetchSogWithProgress(sogUrl, (pct) => loader.set(pct))
     sogAsset = new Asset('splat', 'gsplat', { url: sogUrl, contents: arrayBuffer })
   } catch (err) {
     console.warn('Splat viewer: fetch failed, trying fallback SOG.', err)
     if (sogUrl !== FALLBACK_SOG_URL) {
-      const arrayBuffer = await fetchSogAsArrayBuffer(FALLBACK_SOG_URL)
+      loader.set(0)
+      const arrayBuffer = await fetchSogWithProgress(FALLBACK_SOG_URL, (pct) => loader.set(pct))
       sogAsset = new Asset('splat', 'gsplat', { url: FALLBACK_SOG_URL, contents: arrayBuffer })
     } else {
       throw err
@@ -102,17 +188,19 @@ async function initSplatViewer() {
     sogAsset
   ]
 
-  const loader = new AssetListLoader(assets, app.assets)
+  const assetLoader = new AssetListLoader(assets, app.assets)
 
   try {
     await new Promise((resolve, reject) => {
-      loader.load(() => resolve())
-      loader.on('error', (err) => reject(err))
+      assetLoader.load(() => resolve())
+      assetLoader.on('error', (err) => reject(err))
     })
   } catch (err) {
     console.error('Splat viewer: load error', err)
     throw err
   }
+
+  loader.done()
 
   // Camera: X right, Y up, Z back. Default (0,0,2.5) = 2.5 units in front of origin.
   const cameraPos = parseVec3('data-camera-position', [0, 0, 2.5])
@@ -121,11 +209,16 @@ async function initSplatViewer() {
   const cameraComp = camera.addComponent('camera')
   cameraComp.clearColor = new Color(0, 0, 0, 1)
   camera.addComponent('script')
-  camera.script.create('cameraControls')
+  const controls = camera.script.create('cameraControls')
+  controls.enablePan = false
+  controls.enableFly = false
+  controls.pitchRange = new Vec2(-5, 5)
+  controls.yawRange = new Vec2(-5, 5)
+  controls.zoomRange = new Vec2(0.4, 0.5)
   app.root.addChild(camera)
 
   // Splat: position and rotation (Euler X,Y,Z in degrees). Default rotation 0,180,180 faces camera.
-  const splatPos = parseVec3('data-splat-position', [-2.2, 0.3, -6])
+  const splatPos = parseVec3('data-splat-position', [-2.2, 0.3, -9])
   const splatRot = parseVec3('data-splat-rotation', [0, 180, 180])
   const splat = new Entity('Splat')
   splat.setPosition(splatPos[0], splatPos[1], splatPos[2])
