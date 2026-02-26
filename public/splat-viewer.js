@@ -104,52 +104,65 @@ function createLoader(container) {
   }
 }
 
-const GYRO_SENSITIVITY = 0.4
-const GYRO_DAMPING = 0.92
-const GYRO_PITCH_RANGE = [-5, 5]
-const GYRO_YAW_RANGE = [-5, 5]
+const GYRO_SENSITIVITY = 0.12
+const GYRO_LERP = 0.06
+const GYRO_MAX_OFFSET = 2.5
+
+function clamp(v, min, max) {
+  return v < min ? min : v > max ? max : v
+}
 
 function initGyroControls(container, splat, baseRot) {
   if (!window.DeviceOrientationEvent) return
 
   const wrap = container.closest('.splat-viewer-wrap') || container
   let gyroEnabled = false
-  let baseAlpha = null
-  let baseBeta = null
-  let currentYawOffset = 0
-  let currentPitchOffset = 0
-  let targetYawOffset = 0
-  let targetPitchOffset = 0
+
+  let refAlpha = null
+  let refBeta = null
+  let refGamma = null
+
+  let targetYaw = 0
+  let targetPitch = 0
+  let currentYaw = 0
+  let currentPitch = 0
 
   function onOrientation(e) {
-    if (e.alpha === null || e.beta === null) return
+    if (e.alpha === null || e.beta === null || e.gamma === null) return
 
-    if (baseAlpha === null) {
-      baseAlpha = e.alpha
-      baseBeta = e.beta
+    if (refAlpha === null) {
+      refAlpha = e.alpha
+      refBeta = e.beta
+      refGamma = e.gamma
     }
 
-    let deltaAlpha = e.alpha - baseAlpha
-    if (deltaAlpha > 180) deltaAlpha -= 360
-    if (deltaAlpha < -180) deltaAlpha += 360
+    // Use gamma (left/right tilt) for yaw — stable regardless of phone pitch
+    let dGamma = e.gamma - refGamma
+    if (dGamma > 180) dGamma -= 360
+    if (dGamma < -180) dGamma += 360
 
-    let deltaBeta = e.beta - baseBeta
-    if (deltaBeta > 180) deltaBeta -= 360
-    if (deltaBeta < -180) deltaBeta += 360
+    // Use beta (forward/back tilt) for pitch
+    let dBeta = e.beta - refBeta
+    if (dBeta > 180) dBeta -= 360
+    if (dBeta < -180) dBeta += 360
 
-    targetYawOffset = Math.max(GYRO_YAW_RANGE[0], Math.min(GYRO_YAW_RANGE[1], -deltaAlpha * GYRO_SENSITIVITY))
-    targetPitchOffset = Math.max(GYRO_PITCH_RANGE[0], Math.min(GYRO_PITCH_RANGE[1], -deltaBeta * GYRO_SENSITIVITY))
+    targetYaw = clamp(-dGamma * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
+    targetPitch = clamp(-dBeta * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
   }
 
   function update() {
     if (!gyroEnabled) return requestAnimationFrame(update)
 
-    currentYawOffset += (targetYawOffset - currentYawOffset) * (1 - GYRO_DAMPING)
-    currentPitchOffset += (targetPitchOffset - currentPitchOffset) * (1 - GYRO_DAMPING)
+    currentYaw += (targetYaw - currentYaw) * GYRO_LERP
+    currentPitch += (targetPitch - currentPitch) * GYRO_LERP
+
+    // Small values near zero — kill drift
+    if (Math.abs(currentYaw) < 0.001) currentYaw = 0
+    if (Math.abs(currentPitch) < 0.001) currentPitch = 0
 
     splat.setEulerAngles(
-      baseRot[0] + currentPitchOffset,
-      baseRot[1] + currentYawOffset,
+      baseRot[0] + currentPitch,
+      baseRot[1] + currentYaw,
       baseRot[2]
     )
 
