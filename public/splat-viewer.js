@@ -104,6 +104,91 @@ function createLoader(container) {
   }
 }
 
+const GYRO_SENSITIVITY = 0.4
+const GYRO_DAMPING = 0.92
+const GYRO_PITCH_RANGE = [-5, 5]
+const GYRO_YAW_RANGE = [-5, 5]
+
+function initGyroControls(container, splat, baseRot) {
+  if (!window.DeviceOrientationEvent) return
+
+  const wrap = container.closest('.splat-viewer-wrap') || container
+  let gyroEnabled = false
+  let baseAlpha = null
+  let baseBeta = null
+  let currentYawOffset = 0
+  let currentPitchOffset = 0
+  let targetYawOffset = 0
+  let targetPitchOffset = 0
+
+  function onOrientation(e) {
+    if (e.alpha === null || e.beta === null) return
+
+    if (baseAlpha === null) {
+      baseAlpha = e.alpha
+      baseBeta = e.beta
+    }
+
+    let deltaAlpha = e.alpha - baseAlpha
+    if (deltaAlpha > 180) deltaAlpha -= 360
+    if (deltaAlpha < -180) deltaAlpha += 360
+
+    let deltaBeta = e.beta - baseBeta
+    if (deltaBeta > 180) deltaBeta -= 360
+    if (deltaBeta < -180) deltaBeta += 360
+
+    targetYawOffset = Math.max(GYRO_YAW_RANGE[0], Math.min(GYRO_YAW_RANGE[1], -deltaAlpha * GYRO_SENSITIVITY))
+    targetPitchOffset = Math.max(GYRO_PITCH_RANGE[0], Math.min(GYRO_PITCH_RANGE[1], -deltaBeta * GYRO_SENSITIVITY))
+  }
+
+  function update() {
+    if (!gyroEnabled) return requestAnimationFrame(update)
+
+    currentYawOffset += (targetYawOffset - currentYawOffset) * (1 - GYRO_DAMPING)
+    currentPitchOffset += (targetPitchOffset - currentPitchOffset) * (1 - GYRO_DAMPING)
+
+    splat.setEulerAngles(
+      baseRot[0] + currentPitchOffset,
+      baseRot[1] + currentYawOffset,
+      baseRot[2]
+    )
+
+    requestAnimationFrame(update)
+  }
+
+  async function enableGyro() {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        const perm = await DeviceOrientationEvent.requestPermission()
+        if (perm !== 'granted') return
+      } catch { return }
+    }
+    gyroEnabled = true
+    window.addEventListener('deviceorientation', onOrientation)
+    requestAnimationFrame(update)
+  }
+
+  const needsPermission = typeof DeviceOrientationEvent.requestPermission === 'function'
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+  if (!isMobile) return
+
+  const overlay = document.createElement('div')
+  overlay.className = 'splat-gyro-prompt'
+  overlay.innerHTML = `
+    <div class="splat-gyro-prompt-box">
+      <p>Tilt your phone to<br>explore the view</p>
+      <button class="splat-gyro-prompt-btn">Enable</button>
+    </div>
+  `
+  wrap.appendChild(overlay)
+
+  overlay.querySelector('.splat-gyro-prompt-btn').addEventListener('click', async () => {
+    await enableGyro()
+    overlay.classList.add('splat-gyro-prompt-hide')
+    setTimeout(() => overlay.remove(), 500)
+  })
+}
+
 async function fetchSogWithProgress(url, onProgress) {
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`)
@@ -215,6 +300,8 @@ async function initSplatViewer() {
   controls.pitchRange = new Vec2(-5, 5)
   controls.yawRange = new Vec2(-5, 5)
   controls.zoomRange = new Vec2(0.4, 0.5)
+  controls.rotateDamping = 0.992
+  controls.rotateSpeed = 0.06
   app.root.addChild(camera)
 
   // Splat: position and rotation (Euler X,Y,Z in degrees). Default rotation 0,180,180 faces camera.
@@ -225,6 +312,8 @@ async function initSplatViewer() {
   splat.setEulerAngles(splatRot[0], splatRot[1], splatRot[2])
   splat.addComponent('gsplat', { asset: assets[1] })
   app.root.addChild(splat)
+
+  initGyroControls(container, splat, splatRot)
 }
 
 if (document.readyState === 'loading') {
