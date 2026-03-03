@@ -45,9 +45,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 30vh;
   background-color: var(--color-black);
   transition: opacity 0.8s ease;
+}
+
+@media (max-width: 768px) {
+  .splat-loader {
+    padding-bottom: 20vh;
+  }
 }
 
 .splat-loader-done {
@@ -132,7 +137,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 30vh;
+ 
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
