@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         if (item.name && item.name.toLowerCase().includes('ratée')) {
           unitAmount = 29900; // RATÉE — La Rat Féminine price
         } else if (item.name && item.name.toLowerCase().includes('jacket')) {
-          unitAmount = item.price || 25000; // TIC Jacket price (default $250)
+          unitAmount = item.price || 100; // TIC Jacket price (testing: $1.00)
         } else if (item.name && item.name.includes('Ratward')) {
           unitAmount = 3000; // RatwardScissor-T price
         } else {
@@ -71,6 +71,12 @@ export default async function handler(req, res) {
       // and process.env.NODE_ENV which could be 'production' or 'development'
       const origin = req.headers.origin || 'http://localhost:3000'; // Fallback for local dev if origin header isn't there
 
+      const itemsSummary = cart.map(item => {
+        let name = item.name;
+        if (item.size && item.size !== 'Standard') name += ` — ${item.size}`;
+        return `${name} x${item.quantity}`;
+      }).join(', ');
+
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items,
@@ -81,7 +87,15 @@ export default async function handler(req, res) {
         shipping_address_collection: { allowed_countries: ['MY', 'SG', 'US'] },
         shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
         success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/cart.html`
+        cancel_url: `${origin}/cart.html`,
+        metadata: {
+          items_summary: itemsSummary.substring(0, 500)
+        },
+        custom_text: {
+          submit: {
+            message: 'Track your order after delivery at [laughwithtic.com/trackingportal](https://www.laughwithtic.com/trackingportal)'
+          }
+        }
       });
 
       res.status(200).json({ sessionId: session.id });

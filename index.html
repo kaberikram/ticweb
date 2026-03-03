@@ -22,12 +22,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="BEST RAT TEES ON THE INTERNET. New from TIC Corp: Rattire. Aura-friendly graphic tees parodying icons like Aphex Twin and Edward Scissorhands, all with a rat twist. We just do whatever we like.">
+    <meta name="description" content="BEST RAT WEAR ON THE INTERNET. Rat'teryx Jacket – premium outdoor parody jacket. Made to order. Arc'teryx-inspired, rat-approved.">
+    <meta name="keywords" content="Rat'teryx, outdoor jacket, Arc'teryx parody, rat jacket, premium outdoor wear, best rat wear, TIC Corp, laughwithtic">
     <link rel="canonical" href="https://www.laughwithtic.com/" />
 
     <!-- Open Graph / Facebook Meta Tags -->
     <meta property="og:title" content="TIC Corp.">
-    <meta property="og:description" content="BEST RAT TEES ON THE INTERNET.">
+    <meta property="og:description" content="BEST RAT WEAR ON THE INTERNET.">
     <meta property="og:image" content="https://www.laughwithtic.com/previewImage.jpg">
     <meta property="og:url" content="https://www.laughwithtic.com/">
     <meta property="og:type" content="website">
@@ -35,7 +36,7 @@
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="TIC Corp.">
-    <meta name="twitter:description" content="BEST RAT TEES ON THE INTERNET.">
+    <meta name="twitter:description" content="BEST RAT WEAR ON THE INTERNET.">
     <meta name="twitter:image" content="https://www.laughwithtic.com/previewImage.jpg">
 </head>
 <body class="home">
@@ -73,32 +74,49 @@
                 <!-- Image Carousel -->
                 <div class="product-carousel">
                     <div class="carousel-images">
-                        <img src="/image0.webp" alt="Jacket view 1" class="carousel-img active" data-index="0">
-                        <img src="/image1.webp" alt="Jacket view 2" class="carousel-img" data-index="1">
-                        <img src="/image2.webp" alt="Jacket view 3" class="carousel-img" data-index="2">
-                        <img src="/image3.webp" alt="Jacket view 4" class="carousel-img" data-index="3">
+                        <img src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img active" data-index="0">
+                        <img src="/jacketCloseUp2.png" alt="Rat'teryx Jacket hood detail" class="carousel-img" data-index="1">
+                        <img src="/jacketCloseUp3.png" alt="Rat'teryx Jacket label" class="carousel-img" data-index="2">
+                        <img src="/jacketCloseup4.png" alt="Rat'teryx Jacket worn" class="carousel-img" data-index="3">
                     </div>
                     <button class="carousel-nav carousel-prev">&lt;</button>
                     <button class="carousel-nav carousel-next">&gt;</button>
-                    <div class="carousel-dots">
-                        <span class="dot active" data-index="0"></span>
-                        <span class="dot" data-index="1"></span>
-                        <span class="dot" data-index="2"></span>
-                        <span class="dot" data-index="3"></span>
+                    <div class="carousel-stepper" role="tablist" aria-label="Image steps">
+                        <button type="button" class="carousel-stepper-arrow carousel-prev" aria-label="Previous">&larr;</button>
+                        <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true">1</button>
+                        <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false">2</button>
+                        <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false">3</button>
+                        <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false">4</button>
+                        <button type="button" class="carousel-stepper-arrow carousel-next" aria-label="Next">&rarr;</button>
                     </div>
                 </div>
 
                 <!-- Product Details -->
                 <div class="product-details">
                     <h2 class="product-name">Rat'teryx Jacket</h2>
-                    <p class="product-price" data-price="8888">$88.88</p>
+                    <p class="product-price" data-price="100">$1.00</p>
 
-                    <!-- Size Guide Link -->
-                    <button class="size-guide-link" id="jacketSizeGuideBtn">Size Guide</button>
+                    <!-- Size Guide & Track Order Links -->
+                    <div class="product-links">
+                        <button class="size-guide-link" id="jacketSizeGuideBtn">Size Guide</button>
+                        <a href="https://www.laughwithtic.com/trackingportal" target="_blank" rel="noopener noreferrer" class="size-guide-link">Track your order</a>
+                    </div>
+
+                    <!-- Made to Order / Delivery Info -->
+                    <button type="button" class="product-info-toggle" id="deliveryInfoToggle" aria-expanded="false">
+                        <span class="product-info-toggle-label">Shipping & production info</span>
+                        <span class="product-info-toggle-icon">+</span>
+                    </button>
+                    <div class="product-info-panel" id="deliveryInfoPanel" hidden>
+                        <p>Made to order. 1–2 weeks for production, plus 2–3 weeks for global delivery.</p>
+                    </div>
 
                     <!-- Multi-Size Selector -->
                     <div class="size-selector">
-                        <label class="selector-label">Quantity</label>
+                        <div class="size-options-header">
+                            <span class="selector-label">Size</span>
+                            <span class="selector-label">Quantity</span>
+                        </div>
                         <div class="size-options">
                             <div class="size-row" data-size="S">
                                 <span class="size-label">S</span>
@@ -132,13 +150,20 @@
                                     <button class="qty-btn qty-plus">+</button>
                                 </div>
                             </div>
+                            <div class="size-row" data-size="2XL">
+                                <span class="size-label">2XL</span>
+                                <div class="qty-control">
+                                    <button class="qty-btn qty-minus">-</button>
+                                    <span class="qty-value">0</span>
+                                    <button class="qty-btn qty-plus">+</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Order Summary -->
                     <div class="order-summary">
                         <div class="summary-row total">
-                            <span id="totalItems">0 items</span>
                             <span id="totalPrice">$0</span>
                         </div>
                     </div>
@@ -161,7 +186,8 @@
                 <thead>
                     <tr>
                         <th>SIZE</th>
-                        <th>CHEST</th>
+                        <th>SHOULDER</th>
+                        <th>BUST</th>
                         <th>LENGTH</th>
                         <th>SLEEVE</th>
                     </tr>
@@ -169,27 +195,38 @@
                 <tbody>
                     <tr>
                         <td>S</td>
-                        <td>22"</td>
-                        <td>26"</td>
-                        <td>24"</td>
+                        <td>18.9"</td>
+                        <td>43.3"</td>
+                        <td>26.8"</td>
+                        <td>24.4"</td>
                     </tr>
                     <tr>
                         <td>M</td>
-                        <td>24"</td>
-                        <td>28"</td>
-                        <td>25"</td>
+                        <td>19.7"</td>
+                        <td>44.9"</td>
+                        <td>27.6"</td>
+                        <td>24.8"</td>
                     </tr>
                     <tr>
                         <td>L</td>
-                        <td>26"</td>
-                        <td>30"</td>
-                        <td>26"</td>
+                        <td>20.5"</td>
+                        <td>46.5"</td>
+                        <td>28.3"</td>
+                        <td>25.2"</td>
                     </tr>
                     <tr>
                         <td>XL</td>
-                        <td>28"</td>
-                        <td>32"</td>
-                        <td>27"</td>
+                        <td>21.3"</td>
+                        <td>48.0"</td>
+                        <td>29.1"</td>
+                        <td>25.6"</td>
+                    </tr>
+                    <tr>
+                        <td>2XL</td>
+                        <td>22.0"</td>
+                        <td>49.6"</td>
+                        <td>29.9"</td>
+                        <td>26.0"</td>
                     </tr>
                 </tbody>
             </table>
@@ -218,8 +255,8 @@
         const closeSizeGuide = document.getElementById('closeJacketSizeGuide');
         
         // Size Selection State
-        const sizeQuantities = { S: 0, M: 0, L: 0, XL: 0 };
-        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 8888;
+        const sizeQuantities = { S: 0, M: 0, L: 0, XL: 0, '2XL': 0 };
+        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 100;
         
         let currentSlide = 0;
 
@@ -242,6 +279,7 @@
             });
             carouselDots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
+                dot.setAttribute('aria-selected', i === index);
             });
             currentSlide = index;
         }
@@ -260,9 +298,8 @@
         function updateSummary() {
             const totalItems = Object.values(sizeQuantities).reduce((a, b) => a + b, 0);
             const totalCents = totalItems * pricePerItem;
-            const totalDollars = (totalCents / 100).toFixed(0);
+            const totalDollars = (totalCents / 100).toFixed(2);
             
-            document.getElementById('totalItems').textContent = totalItems;
             document.getElementById('totalPrice').textContent = `$${totalDollars}`;
             confirmBtn.disabled = totalItems === 0;
         }
@@ -300,7 +337,7 @@
                         size: size,
                         price: pricePerItem,
                         quantity: qty,
-                        imageSrc: '/image0.webp'
+                        imageSrc: '/jacketCloseup1.png'
                     });
                 }
             });
@@ -333,9 +370,8 @@
                     throw new Error(error.message || 'Checkout error');
                 }
 
-                // Redirect to Stripe Checkout
-                const stripe = Stripe('pk_live_51QzsaZKauXLQMGFmKGhvfwBGIbDxssh2SvBciclIqPxHUeUePsGfh6N1HyJPi8qPkWfh5lygQF3Kqn8zYKyotZVp0049an1gjN');
-                await stripe.redirectToCheckout({ sessionId });
+                // Open Stripe Checkout in a new tab
+                window.open(`https://checkout.stripe.com/pay/${sessionId}`, '_blank');
             } catch (err) {
                 console.error('Checkout error:', err);
                 alert('Unable to process checkout. Please try again.');
@@ -344,6 +380,17 @@
             }
         }
 
+        // Swipe to change image on mobile
+        let touchStartX = 0;
+        const carouselEl = document.querySelector('.product-carousel');
+        carouselEl.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        carouselEl.addEventListener('touchend', (e) => {
+            const delta = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(delta) > 40) delta < 0 ? nextSlide() : prevSlide();
+        }, { passive: true });
+
         // Event Listeners
         buyBtn.addEventListener('click', openModal);
         modalClose.addEventListener('click', closeModal);
@@ -351,11 +398,20 @@
             if (e.target === modalOverlay) closeModal();
         });
 
-        prevBtn.addEventListener('click', prevSlide);
-        nextBtn.addEventListener('click', nextSlide);
+        document.querySelectorAll('.carousel-prev').forEach(btn => btn.addEventListener('click', prevSlide));
+        document.querySelectorAll('.carousel-next').forEach(btn => btn.addEventListener('click', nextSlide));
 
         carouselDots.forEach((dot, index) => {
             dot.addEventListener('click', () => showSlide(index));
+        });
+
+        // Delivery Info Toggle
+        const deliveryToggle = document.getElementById('deliveryInfoToggle');
+        const deliveryPanel = document.getElementById('deliveryInfoPanel');
+        deliveryToggle.addEventListener('click', () => {
+            const isExpanded = deliveryToggle.getAttribute('aria-expanded') === 'true';
+            deliveryToggle.setAttribute('aria-expanded', !isExpanded);
+            deliveryPanel.hidden = isExpanded;
         });
 
         // Size Guide
