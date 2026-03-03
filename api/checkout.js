@@ -91,11 +91,6 @@ export default async function handler(req, res) {
         metadata: {
           items_summary: itemsSummary.substring(0, 500)
         },
-        custom_text: {
-          submit: {
-            message: 'Track your order after delivery at [laughwithtic.com/trackingportal](https://www.laughwithtic.com/trackingportal)'
-          }
-        }
       });
 
       res.status(200).json({ sessionId: session.id, url: session.url });

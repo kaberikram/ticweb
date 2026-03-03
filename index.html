@@ -233,6 +233,21 @@
         </div>
     </div>
 
+    <!-- Show Buy Button After Loading -->
+    <script>
+    (function() {
+        const btn = document.getElementById('buyJacketBtn');
+        const observer = new MutationObserver(() => {
+            if (!document.querySelector('.splat-loader')) {
+                setTimeout(() => btn.classList.add('visible'), 1000);
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        if (!document.querySelector('.splat-loader')) setTimeout(() => btn.classList.add('visible'), 1000);
+    })();
+    </script>
+
     <!-- Product Modal Script -->
     <script>
     (function() {
