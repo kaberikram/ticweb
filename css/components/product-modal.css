@@ -1,0 +1,511 @@
+/**
+ * Product Modal Component Styles
+ * Minimal black modal - no scroll, single page view
+ */
+
+/* ============================================
+   MODAL OVERLAY - Dark for Jacket Modal
+   ============================================ */
+
+#jacketModalOverlay {
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* ============================================
+   FLOATING BUY BUTTON - White Outline
+   ============================================ */
+
+.floating-buy-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 14px 28px;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: var(--font-size-sm, 13px);
+    font-weight: var(--font-weight-normal, 400);
+    color: var(--color-white, #fff);
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: var(--radius-pill, 50px);
+    cursor: pointer;
+    z-index: var(--z-floating, 100);
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.floating-buy-btn:hover {
+    border-color: var(--color-white, #fff);
+    color: var(--color-white, #fff);
+}
+
+@media (max-width: 600px) {
+    .floating-buy-btn {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        padding: 12px 20px;
+        font-size: 12px;
+    }
+}
+
+/* ============================================
+   PRODUCT MODAL - Black, Minimal, No Scroll
+   ============================================ */
+
+.product-modal {
+    background-color: var(--color-black, #000);
+    border-radius: var(--radius-lg, 12px);
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    overflow: hidden;
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-modal-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .product-modal-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 40vh 1fr;
+    }
+    
+    .product-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+}
+
+/* ============================================
+   PRODUCT CAROUSEL
+   ============================================ */
+
+.product-carousel {
+    position: relative;
+    background-color: var(--color-black, #000);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-images {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+}
+
+.carousel-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-img.active {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .carousel-images {
+        min-height: 200px;
+    }
+}
+
+/* Carousel Navigation */
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 14px;
+    color: var(--color-white, #fff);
+    cursor: pointer;
+    z-index: 10;
+    transition: border-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-nav:hover {
+    border-color: var(--color-white, #fff);
+}
+
+.carousel-prev {
+    left: 1rem;
+}
+
+.carousel-next {
+    right: 1rem;
+}
+
+@media (max-width: 768px) {
+    .carousel-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .carousel-prev {
+        left: 0.5rem;
+    }
+    
+    .carousel-next {
+        right: 0.5rem;
+    }
+}
+
+/* Carousel Dots */
+
+.carousel-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.dot:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.dot.active {
+    background-color: var(--color-white, #fff);
+}
+
+/* ============================================
+   PRODUCT DETAILS - Minimal, White Text
+   ============================================ */
+
+.product-details {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .product-details {
+        padding: 1rem;
+        gap: 0.5rem;
+    }
+}
+
+.product-name {
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: var(--font-size-lg, 18px);
+    font-weight: var(--font-weight-bold, 700);
+    color: var(--color-white, #fff);
+    margin: 0;
+}
+
+.product-price {
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: var(--font-size-base, 14px);
+    font-weight: var(--font-weight-normal, 400);
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.product-description {
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+}
+
+.product-description p {
+    margin: 0;
+}
+
+/* ============================================
+   SIZE GUIDE LINK - Minimal
+   ============================================ */
+
+#jacketSizeGuideBtn {
+    align-self: flex-start;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    transition: color 0.2s ease;
+}
+
+#jacketSizeGuideBtn:hover {
+    color: var(--color-white, #fff);
+}
+
+/* ============================================
+   SIZE SELECTOR - Compact Multi-Size
+   ============================================ */
+
+.size-selector {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.selector-label {
+    display: block;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 11px;
+    font-weight: var(--font-weight-normal, 400);
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.size-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.size-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0;
+}
+
+.size-label {
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 13px;
+    font-weight: var(--font-weight-normal, 400);
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 24px;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qty-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: transparent;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 14px;
+    color: var(--color-white, #fff);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.qty-btn:hover {
+    border-color: var(--color-white, #fff);
+}
+
+.qty-value {
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 13px;
+    color: var(--color-white, #fff);
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ============================================
+   ORDER SUMMARY - Minimal
+   ============================================ */
+
+.order-summary {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.35rem;
+}
+
+.summary-row.total {
+    font-weight: var(--font-weight-bold, 700);
+    color: var(--color-white, #fff);
+    font-size: 14px;
+    border-top: none;
+    padding-top: 0;
+    margin-bottom: 0;
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   CONFIRM BUTTON - White Outline Style
+   ============================================ */
+
+#confirmCheckoutBtn {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 14px 24px;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 13px;
+    font-weight: var(--font-weight-normal, 400);
+    color: var(--color-black, #000);
+    background-color: var(--color-white, #fff);
+    border: none;
+    border-radius: var(--radius-pill, 50px);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#confirmCheckoutBtn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+#confirmCheckoutBtn:disabled {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+}
+
+/* ============================================
+   MODAL CLOSE X - White
+   ============================================ */
+
+#jacketModalClose {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    z-index: 20;
+    transition: color 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+#jacketModalClose:hover {
+    color: var(--color-white, #fff);
+}
+
+/* ============================================
+   SIZE GUIDE POPUP - Black Theme Override
+   ============================================ */
+
+#jacketSizeGuidePopup {
+    z-index: calc(var(--z-modal, 200) + 10);
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+#jacketSizeGuidePopup .size-guide-content {
+    background-color: var(--color-black, #000);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--color-white, #fff);
+    border-radius: 8px;
+    padding: 24px;
+}
+
+#jacketSizeGuidePopup h3 {
+    color: var(--color-white, #fff);
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#jacketSizeGuidePopup .size-guide-table {
+    color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 12px;
+}
+
+#jacketSizeGuidePopup .size-guide-table th,
+#jacketSizeGuidePopup .size-guide-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 12px;
+    text-align: center;
+}
+
+#jacketSizeGuidePopup .size-guide-table th:last-child,
+#jacketSizeGuidePopup .size-guide-table td:last-child {
+    border-right: none;
+}
+
+#jacketSizeGuidePopup .size-guide-table tr:last-child td {
+    border-bottom: none;
+}
+
+#jacketSizeGuidePopup .size-guide-table th {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-white, #fff);
+    font-weight: normal;
+}
+
+#jacketSizeGuidePopup #closeJacketSizeGuide {
+    color: rgba(255, 255, 255, 0.5);
+    background: none;
+    border: none;
+    font-size: 24px;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#jacketSizeGuidePopup #closeJacketSizeGuide:hover {
+    color: var(--color-white, #fff);
+}

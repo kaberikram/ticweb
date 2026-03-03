@@ -122,6 +122,7 @@
     --z-base: 1;
     --z-dropdown: 10;
     --z-sticky: 100;
+    --z-floating: 150;
     --z-fixed: 500;
     --z-modal-backdrop: 900;
     --z-modal: 1000;
