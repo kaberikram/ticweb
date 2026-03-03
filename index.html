@@ -392,13 +392,12 @@
             }
         }
 
-        // Swipe to change image on mobile
+        // Swipe anywhere on modal to change image
         let touchStartX = 0;
-        const carouselEl = document.querySelector('.product-carousel');
-        carouselEl.addEventListener('touchstart', (e) => {
+        modal.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
         }, { passive: true });
-        carouselEl.addEventListener('touchend', (e) => {
+        modal.addEventListener('touchend', (e) => {
             const delta = e.changedTouches[0].clientX - touchStartX;
             if (Math.abs(delta) > 40) delta < 0 ? nextSlide() : prevSlide();
         }, { passive: true });
