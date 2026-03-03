@@ -13,6 +13,7 @@ import {
   RESOLUTION_AUTO,
   Vec2
 } from 'playcanvas'
+import { WebHaptics, defaultPatterns } from 'web-haptics'
 
 const CONTAINER_ID = 'splat-viewer'
 const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
@@ -112,6 +113,14 @@ function clamp(v, min, max) {
   return v < min ? min : v > max ? max : v
 }
 
+const haptics = new WebHaptics()
+
+const HAPTIC = {
+  success: () => haptics.trigger(defaultPatterns.success),
+  bump:    () => haptics.trigger(defaultPatterns.light),
+  buzz:    () => haptics.trigger(defaultPatterns.error),
+}
+
 function initGyroControls(container, splat, baseRot) {
   if (!window.DeviceOrientationEvent) return
 
@@ -126,6 +135,9 @@ function initGyroControls(container, splat, baseRot) {
   let targetPitch = 0
   let currentYaw = 0
   let currentPitch = 0
+
+  let atYawBoundary = false
+  let atPitchBoundary = false
 
   function onOrientation(e) {
     if (e.alpha === null || e.beta === null || e.gamma === null) return
@@ -146,8 +158,22 @@ function initGyroControls(container, splat, baseRot) {
     if (dBeta > 180) dBeta -= 360
     if (dBeta < -180) dBeta += 360
 
-    targetYaw = clamp(dGamma * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
-    targetPitch = clamp(-dBeta * GYRO_SENSITIVITY, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
+    const rawYaw = dGamma * GYRO_SENSITIVITY
+    const rawPitch = -dBeta * GYRO_SENSITIVITY
+
+    const newAtYawBoundary = Math.abs(rawYaw) >= GYRO_MAX_OFFSET
+    const newAtPitchBoundary = Math.abs(rawPitch) >= GYRO_MAX_OFFSET
+
+    // Fire bump haptic only on the leading edge of hitting the boundary
+    if ((newAtYawBoundary && !atYawBoundary) || (newAtPitchBoundary && !atPitchBoundary)) {
+      HAPTIC.bump()
+    }
+
+    atYawBoundary = newAtYawBoundary
+    atPitchBoundary = newAtPitchBoundary
+
+    targetYaw = clamp(rawYaw, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
+    targetPitch = clamp(rawPitch, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
   }
 
   function update() {
@@ -177,11 +203,11 @@ function initGyroControls(container, splat, baseRot) {
       } catch { return }
     }
     gyroEnabled = true
+    HAPTIC.success()
     window.addEventListener('deviceorientation', onOrientation)
     requestAnimationFrame(update)
   }
 
-  const needsPermission = typeof DeviceOrientationEvent.requestPermission === 'function'
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
   if (!isMobile) return
 
@@ -208,7 +234,10 @@ function initGyroControls(container, splat, baseRot) {
     dismiss()
   })
 
-  overlay.querySelector('.splat-gyro-no').addEventListener('click', dismiss)
+  overlay.querySelector('.splat-gyro-no').addEventListener('click', () => {
+    HAPTIC.buzz()
+    dismiss()
+  })
 }
 
 async function fetchSogWithProgress(url, onProgress) {
