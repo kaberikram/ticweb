@@ -98,7 +98,7 @@ export default async function handler(req, res) {
         }
       });
 
-      res.status(200).json({ sessionId: session.id });
+      res.status(200).json({ sessionId: session.id, url: session.url });
     } catch (err) {
       console.error('Error creating Stripe Checkout session:', err);
       // It's good practice to use a more generic error message for the client
