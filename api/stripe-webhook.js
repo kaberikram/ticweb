@@ -38,11 +38,24 @@ export default async function handler(req, res) {
     const session = event.data.object
 
     try {
-      const charges = await stripe.charges.list({
-        payment_intent: session.payment_intent,
-        limit: 1
-      })
-      const receiptNumber = charges.data[0]?.receipt_number || session.payment_intent
+      // Small delay to let Stripe generate the receipt number
+      await new Promise(r => setTimeout(r, 3000))
+
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        session.payment_intent,
+        { expand: ['latest_charge'] }
+      )
+
+      let receiptNumber = paymentIntent.latest_charge?.receipt_number
+
+      // If still not available, retry once more after a longer wait
+      if (!receiptNumber) {
+        await new Promise(r => setTimeout(r, 5000))
+        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge?.id || paymentIntent.latest_charge)
+        receiptNumber = charge.receipt_number
+      }
+
+      receiptNumber = receiptNumber || paymentIntent.id
 
       const itemsSummary = session.metadata?.items_summary || 'See Stripe dashboard'
       const orderDate = new Date(session.created * 1000).toLocaleDateString('en-US')
