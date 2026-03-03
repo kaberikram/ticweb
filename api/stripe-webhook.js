@@ -17,6 +17,21 @@ function buffer(req) {
   })
 }
 
+async function addOrderToSheet({ receiptNumber, status, trackingNumber, carrierLink, date, items }) {
+  await fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      receiptNumber: `#${receiptNumber}`,
+      status,
+      trackingNumber: trackingNumber || '',
+      carrierLink: carrierLink || '',
+      date,
+      items
+    })
+  })
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
@@ -34,46 +49,30 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`)
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object
+  if (event.type === 'charge.succeeded') {
+    const charge = event.data.object
+    const receiptNumber = charge.receipt_number
+
+    if (!receiptNumber) {
+      console.warn('charge.succeeded: receipt_number missing', charge.id)
+      return res.status(200).json({ received: true })
+    }
 
     try {
-      // Small delay to let Stripe generate the receipt number
-      await new Promise(r => setTimeout(r, 3000))
+      const paymentIntent = await stripe.paymentIntents.retrieve(charge.payment_intent)
+      const itemsSummary = paymentIntent.metadata?.items_summary || 'See Stripe dashboard'
+      const orderDate = new Date(charge.created * 1000).toLocaleDateString('en-US')
 
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        session.payment_intent,
-        { expand: ['latest_charge'] }
-      )
-
-      let receiptNumber = paymentIntent.latest_charge?.receipt_number
-
-      // If still not available, retry once more after a longer wait
-      if (!receiptNumber) {
-        await new Promise(r => setTimeout(r, 5000))
-        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge?.id || paymentIntent.latest_charge)
-        receiptNumber = charge.receipt_number
-      }
-
-      receiptNumber = receiptNumber || paymentIntent.id
-
-      const itemsSummary = session.metadata?.items_summary || 'See Stripe dashboard'
-      const orderDate = new Date(session.created * 1000).toLocaleDateString('en-US')
-
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          receiptNumber: `#${receiptNumber}`,
-          status: 'Order Received',
-          trackingNumber: '',
-          carrierLink: '',
-          date: orderDate,
-          items: itemsSummary
-        })
+      await addOrderToSheet({
+        receiptNumber,
+        status: 'Order Received',
+        trackingNumber: '',
+        carrierLink: '',
+        date: orderDate,
+        items: itemsSummary
       })
     } catch (err) {
-      console.error('Error processing checkout.session.completed:', err)
+      console.error('Error processing charge.succeeded:', err)
     }
   }
 

@@ -91,6 +91,11 @@ export default async function handler(req, res) {
         metadata: {
           items_summary: itemsSummary.substring(0, 500)
         },
+        payment_intent_data: {
+          metadata: {
+            items_summary: itemsSummary.substring(0, 500)
+          }
+        },
       });
 
       res.status(200).json({ sessionId: session.id, url: session.url });
