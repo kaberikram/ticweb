@@ -313,6 +313,10 @@ async function initSplatViewer() {
   app.setCanvasResolution(RESOLUTION_AUTO)
   app.start()
 
+  document.addEventListener('visibilitychange', () => {
+    app.autoRender = !document.hidden
+  })
+
   resizeCanvas(canvas, app, container)
 
   const resizeObserver = new ResizeObserver(() => {
