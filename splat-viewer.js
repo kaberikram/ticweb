@@ -108,6 +108,7 @@ function createLoader(container) {
 const GYRO_SENSITIVITY = 0.07
 const GYRO_LERP = 0.05
 const GYRO_MAX_OFFSET = 1.5
+const ORIENTATION_THROTTLE_MS = 33
 
 function clamp(v, min, max) {
   return v < min ? min : v > max ? max : v
@@ -138,8 +139,18 @@ function initGyroControls(container, splat, baseRot) {
 
   let atYawBoundary = false
   let atPitchBoundary = false
+  let lastOrientationTime = 0
+  let rafId = null
+
+  function scheduleUpdate() {
+    if (rafId === null) rafId = requestAnimationFrame(update)
+  }
 
   function onOrientation(e) {
+    const now = performance.now()
+    if (now - lastOrientationTime < ORIENTATION_THROTTLE_MS) return
+    lastOrientationTime = now
+
     if (e.alpha === null || e.beta === null || e.gamma === null) return
 
     if (refAlpha === null) {
@@ -174,17 +185,22 @@ function initGyroControls(container, splat, baseRot) {
 
     targetYaw = clamp(rawYaw, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
     targetPitch = clamp(rawPitch, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
+
+    scheduleUpdate()
   }
 
   function update() {
-    if (!gyroEnabled) return requestAnimationFrame(update)
+    rafId = null
+
+    const prevYaw = currentYaw
+    const prevPitch = currentPitch
 
     currentYaw += (targetYaw - currentYaw) * GYRO_LERP
     currentPitch += (targetPitch - currentPitch) * GYRO_LERP
 
-    // Small values near zero — kill drift
-    if (Math.abs(currentYaw) < 0.001) currentYaw = 0
-    if (Math.abs(currentPitch) < 0.001) currentPitch = 0
+    // Snap to target when close enough to stop drift
+    if (Math.abs(targetYaw - currentYaw) < 0.001) currentYaw = targetYaw
+    if (Math.abs(targetPitch - currentPitch) < 0.001) currentPitch = targetPitch
 
     splat.setEulerAngles(
       baseRot[0] + currentPitch,
@@ -192,7 +208,10 @@ function initGyroControls(container, splat, baseRot) {
       baseRot[2]
     )
 
-    requestAnimationFrame(update)
+    // Only re-schedule if values are still converging
+    if (currentYaw !== prevYaw || currentPitch !== prevPitch) {
+      rafId = requestAnimationFrame(update)
+    }
   }
 
   async function enableGyro() {
@@ -205,7 +224,6 @@ function initGyroControls(container, splat, baseRot) {
     gyroEnabled = true
     HAPTIC.success()
     window.addEventListener('deviceorientation', onOrientation)
-    requestAnimationFrame(update)
   }
 
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
@@ -241,7 +259,7 @@ function initGyroControls(container, splat, baseRot) {
 }
 
 async function fetchSogWithProgress(url, onProgress) {
-  const res = await fetch(url, { cache: 'no-store' })
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`)
 
   const total = parseInt(res.headers.get('content-length') || '0', 10)
