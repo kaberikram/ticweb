@@ -383,7 +383,7 @@
                     throw new Error(error.message || 'Checkout error');
                 }
 
-                window.open(url, '_blank');
+                window.location.href = url;
             } catch (err) {
                 console.error('Checkout error:', err);
                 alert('Unable to process checkout. Please try again.');
