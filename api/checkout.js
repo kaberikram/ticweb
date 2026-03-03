@@ -87,7 +87,7 @@ export default async function handler(req, res) {
         shipping_address_collection: { allowed_countries: ['MY', 'SG', 'US'] },
         shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
         success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/cart.html`,
+        cancel_url: `${origin}/`,
         metadata: {
           items_summary: itemsSummary.substring(0, 500)
         },
