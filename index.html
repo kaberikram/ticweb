@@ -295,7 +295,7 @@
             Object.entries(sizeQuantities).forEach(([size, qty]) => {
                 if (qty > 0) {
                     cart.push({
-                        name: 'TIC Jacket',
+                        name: "Rat'teryx Jacket",
                         fit: 'N/A',
                         size: size,
                         price: pricePerItem,
@@ -334,7 +334,7 @@
                 }
 
                 // Redirect to Stripe Checkout
-                const stripe = Stripe('pk_live_51RGgNCKauXLQMGFmwa6u0A4FA5TgMV0b2D2de7WdlnO0F4RcKRZ9CrWZ9Qzfsba3n64E6F3dDlwFEujw3VS9hwYz00MrzsFryTt');
+                const stripe = Stripe('pk_live_51QzsaZKauXLQMGFmKGhvfwBGIbDxssh2SvBciclIqPxHUeUePsGfh6N1HyJPi8qPkWfh5lygQF3Kqn8zYKyotZVp0049an1gjN');
                 await stripe.redirectToCheckout({ sessionId });
             } catch (err) {
                 console.error('Checkout error:', err);
