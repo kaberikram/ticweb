@@ -231,18 +231,69 @@
         </div>
     </div>
 
-    <!-- Show Buy Button After Loading -->
+    <!-- Show Buy Button After Loading + Countdown Lock (Malaysia time) -->
     <script>
     (function() {
         const btn = document.getElementById('buyJacketBtn');
+        if (!btn) return;
+
+        // Release time: 20 March 2026, 00:00 in Malaysia (UTC+8)
+        const releaseDateMs = new Date('2026-03-20T00:00:00+08:00').getTime();
+        let isReleased = false;
+        let countdownTimerId;
+
+        function formatTimeRemaining(ms) {
+            if (ms <= 0) return null;
+            const totalSeconds = Math.floor(ms / 1000);
+            const days = Math.floor(totalSeconds / (24 * 3600));
+            const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const parts = [];
+            if (days > 0) parts.push(days + 'd');
+            if (hours > 0 || days > 0) parts.push(hours.toString().padStart(2, '0') + 'h');
+            parts.push(minutes.toString().padStart(2, '0') + 'm');
+            parts.push(seconds.toString().padStart(2, '0') + 's');
+            return parts.join(' ');
+        }
+
+        function updateCountdown() {
+            const nowMs = Date.now();
+            const diff = releaseDateMs - nowMs;
+
+            if (diff <= 0) {
+                isReleased = true;
+                btn.classList.remove('locked');
+                btn.textContent = 'Buy Jacket';
+                if (countdownTimerId) clearInterval(countdownTimerId);
+                return;
+            }
+
+            btn.classList.add('locked');
+
+            const formatted = formatTimeRemaining(diff);
+            if (formatted) btn.textContent = 'Available to buy in\n' + formatted;
+        }
+
+        // Start countdown immediately
+        updateCountdown();
+        countdownTimerId = setInterval(updateCountdown, 1000);
+
+        // Observe loader completion to show button visually
         const observer = new MutationObserver(() => {
             if (!document.querySelector('.splat-loader')) {
                 setTimeout(() => btn.classList.add('visible'), 1000);
                 observer.disconnect();
             }
         });
+
         observer.observe(document.body, { childList: true, subtree: true });
-        if (!document.querySelector('.splat-loader')) setTimeout(() => btn.classList.add('visible'), 1000);
+
+        // Fallback if loader is already gone
+        if (!document.querySelector('.splat-loader')) {
+            setTimeout(() => btn.classList.add('visible'), 1000);
+        }
     })();
     </script>
 
@@ -357,8 +408,47 @@
             return cart;
         }
 
+        const releaseDateMsModal = new Date('2026-03-20T00:00:00+08:00').getTime();
+        let isCheckoutReleased = false;
+
+        function formatTimeRemainingModal(ms) {
+            if (ms <= 0) return null;
+            const totalSeconds = Math.floor(ms / 1000);
+            const days = Math.floor(totalSeconds / (24 * 3600));
+            const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const parts = [];
+            if (days > 0) parts.push(days + 'd');
+            if (hours > 0 || days > 0) parts.push(hours.toString().padStart(2, '0') + 'h');
+            parts.push(minutes.toString().padStart(2, '0') + 'm');
+            parts.push(seconds.toString().padStart(2, '0') + 's');
+            return parts.join(' ');
+        }
+
+        function updateModalCountdown() {
+            const nowMs = Date.now();
+            const diff = releaseDateMsModal - nowMs;
+
+            if (diff <= 0) {
+                isCheckoutReleased = true;
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Checkout';
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            const formatted = formatTimeRemainingModal(diff);
+            if (formatted) confirmBtn.textContent = 'Available to check out in\n' + formatted;
+        }
+
+        updateModalCountdown();
+        setInterval(updateModalCountdown, 1000);
+
         // Checkout Handler
         async function handleCheckout() {
+            if (!isCheckoutReleased) return;
             const cart = buildCart();
             if (cart.length === 0) return;
 
