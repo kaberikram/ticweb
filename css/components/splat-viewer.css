@@ -49,11 +49,7 @@
   transition: opacity 0.8s ease;
 }
 
-@media (max-width: 768px) {
-  .splat-loader {
-    padding-bottom: 10vh;
-  }
-}
+
 
 .splat-loader-done {
   opacity: 0;

@@ -237,6 +237,11 @@
         const btn = document.getElementById('buyJacketBtn');
         if (!btn) return;
 
+        // Force-reset visibility on load (handles refresh / bfcache cases)
+        btn.classList.remove('visible');
+        btn.style.opacity = '0';
+        btn.style.pointerEvents = 'none';
+
         // Release time: 20 March 2026, 00:00 in Malaysia (UTC+8)
         const releaseDateMs = new Date('2026-03-20T00:00:00+08:00').getTime();
         let isReleased = false;
@@ -280,20 +285,46 @@
         updateCountdown();
         countdownTimerId = setInterval(updateCountdown, 1000);
 
-        // Observe loader completion to show button visually
-        const observer = new MutationObserver(() => {
-            if (!document.querySelector('.splat-loader')) {
-                setTimeout(() => btn.classList.add('visible'), 1000);
-                observer.disconnect();
+        // Show button only after loader hits 100% and finishes
+        let hasShownBuyButton = false;
+        const startedAt = Date.now();
+
+        function maybeShowBuyButton() {
+            if (hasShownBuyButton) return;
+
+            const loader = document.querySelector('.splat-loader');
+
+            // If loader never appears but page has been up for a while, fallback
+            if (!loader) {
+                if (Date.now() - startedAt > 15000) {
+                    hasShownBuyButton = true;
+                    setTimeout(() => {
+                        btn.classList.add('visible');
+                        btn.style.opacity = '';
+                        btn.style.pointerEvents = '';
+                    }, 500);
+                }
+                return;
             }
-        });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+            const isDone = loader.classList.contains('splat-loader-done');
+            if (!isDone) return;
 
-        // Fallback if loader is already gone
-        if (!document.querySelector('.splat-loader')) {
-            setTimeout(() => btn.classList.add('visible'), 1000);
+            hasShownBuyButton = true;
+            setTimeout(() => {
+                // At this point the loader has hit 100% (has splat-loader-done).
+                // We don't wait for DOM removal so the button can appear ~0.5s after 100%.
+                btn.classList.add('visible');
+                btn.style.opacity = '';
+                btn.style.pointerEvents = '';
+            }, 500);
         }
+
+        // Poll for loader progress / completion
+        const buyBtnPollId = setInterval(() => {
+            maybeShowBuyButton();
+            if (hasShownBuyButton) clearInterval(buyBtnPollId);
+        }, 200);
     })();
     </script>
 
