@@ -11,7 +11,8 @@ const corsHandler = cors();
 // However, your current logic dynamically sets prices, so PRICE_LOOKUP might be unused.
 // const PRICE_LOOKUP = { ... };
 
-// Updated shipping rate IDs from environment (fallback to hardcoded defaults)
+// Shipping rate IDs from env. Stripe allows max 5 - we hard-cap.
+const MAX_SHIPPING_OPTIONS = 5;
 let shippingRateIds = process.env.SHIPPING_RATE_IDS
   ? process.env.SHIPPING_RATE_IDS.split(',').map(s => s.trim()).filter(Boolean)
   : [];
@@ -22,7 +23,7 @@ if (shippingRateIds.length === 0) {
     process.env.SHIPPING_RATE_ROW || 'shr_1RKj3YKauXLQMGFmQRMEkf2y'
   ];
 }
-const SHIPPING_RATE_IDS = shippingRateIds;
+const SHIPPING_RATE_IDS = shippingRateIds.slice(0, MAX_SHIPPING_OPTIONS);
 
 // Individual rate IDs for mapping
 const SHIPPING_RATE_MALAYSIA = process.env.SHIPPING_RATE_MALAYSIA || 'shr_1RKj1hKauXLQMGFmynhllfQW';
@@ -106,7 +107,7 @@ export default async function handler(req, res) {
         },
         mode: 'payment',
         shipping_address_collection: { allowed_countries: SHIPPING_ALLOWED_COUNTRIES },
-        shipping_options: SHIPPING_RATE_IDS.slice(0, 5).map(id => ({ shipping_rate: id })),
+        shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
         success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/`,
         metadata: {
