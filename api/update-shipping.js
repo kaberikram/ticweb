@@ -5,7 +5,8 @@ import cors from 'cors';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const corsHandler = cors();
 
-// Shipping rate IDs from env (max 5). Order: [0]=Malaysia, [1]=Singapore, [2]=Southeast Asia, [3]=East Asia, [4]=Rest of World
+// Shipping rate IDs from env (max 5).
+// Order: [0]=Malaysia, [1]=Southeast Asia (incl SG), [2]=East Asia, [3]=Australia/NZ, [4]=US/Canada + Europe/UK (ROW)
 const MAX_SHIPPING_OPTIONS = 5;
 let shippingRateIds = process.env.SHIPPING_RATE_IDS
   ? process.env.SHIPPING_RATE_IDS.split(',').map(s => s.trim()).filter(Boolean)
@@ -18,16 +19,17 @@ if (shippingRateIds.length === 0) {
 }
 const SHIPPING_RATE_IDS = shippingRateIds.slice(0, MAX_SHIPPING_OPTIONS);
 
-// Country code -> index into SHIPPING_RATE_IDS (0=Malaysia, 1=Singapore, 2=Southeast Asia, 3=East Asia, 4=ROW)
+// Country code -> index into SHIPPING_RATE_IDS (0=MY, 1=SEA incl SG, 2=EA, 3=AU/NZ, 4=ROW)
 const COUNTRY_TO_RATE_INDEX = {
   MY: 0,
   SG: 1,
-  TH: 2, ID: 2, PH: 2, VN: 2, KH: 2, LA: 2, MM: 2, BN: 2, TL: 2,
-  CN: 3, JP: 3, KR: 3, TW: 3, HK: 3, MO: 3, MN: 3,
+  TH: 1, ID: 1, PH: 1, VN: 1, KH: 1, LA: 1, MM: 1, BN: 1, TL: 1,
+  CN: 2, JP: 2, KR: 2, TW: 2, HK: 2, MO: 2, MN: 2,
+  AU: 3, NZ: 3,
   US: 4, CA: 4, GB: 4, IE: 4, FR: 4, DE: 4, ES: 4, IT: 4, NL: 4, BE: 4, LU: 4,
   DK: 4, SE: 4, FI: 4, NO: 4, IS: 4, CH: 4, AT: 4, PT: 4, GR: 4, PL: 4, CZ: 4,
   HU: 4, SK: 4, SI: 4, HR: 4, RO: 4, BG: 4, EE: 4, LV: 4, LT: 4, MT: 4, CY: 4,
-  AU: 4, NZ: 4
+  RU: 4
 };
 
 function getShippingRateIdForCountry(countryCode) {
