@@ -57,67 +57,67 @@
 
   <script>
     (function() {
-      const container = document.getElementById('checkout');
+      const container = document.getElementById('checkout')
 
       function showError(msg) {
-        container.innerHTML = '<p class="checkout-error">' + (msg || 'Checkout unavailable.') + '</p>';
+        container.innerHTML = '<p class="checkout-error">' + (msg || 'Checkout unavailable.') + '</p>'
       }
 
       async function getPublishableKey() {
         try {
-          const r = await fetch('/api/config');
-          const data = await r.json();
-          return data.stripePublishableKey || '';
+          const r = await fetch('/api/config')
+          const data = await r.json()
+          return data.stripePublishableKey || ''
         } catch (e) {
-          return '';
+          return ''
         }
       }
 
       async function initialize() {
-        const key = await getPublishableKey();
+        const key = await getPublishableKey()
         if (!key) {
-          showError('Missing Stripe key. Set STRIPE_PUBLISHABLE_KEY in your environment.');
-          return;
+          showError('Missing Stripe key. Set STRIPE_PUBLISHABLE_KEY in your environment.')
+          return
         }
 
-        const cartRaw = sessionStorage.getItem('checkoutCart');
+        const cartRaw = sessionStorage.getItem('checkoutCart')
         if (!cartRaw) {
-          showError('No cart found. <a href="/" style="color:#fff;">Start from the jacket page</a>.');
-          return;
+          showError('No cart found. <a href="/" style="color:#fff;">Start from the jacket page</a>.')
+          return
         }
 
-        let cart;
+        let cart
         try {
-          cart = JSON.parse(cartRaw);
+          cart = JSON.parse(cartRaw)
         } catch (e) {
-          showError('Invalid cart.');
-          return;
+          showError('Invalid cart.')
+          return
         }
 
         if (!Array.isArray(cart) || cart.length === 0) {
-          showError('Your cart is empty.');
-          return;
+          showError('Your cart is empty.')
+          return
         }
 
-        const stripe = Stripe(key);
+        const stripe = Stripe(key)
 
         const fetchClientSecret = async () => {
           const response = await fetch('/api/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cart, embedded: true })
-          });
+          })
           if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error?.message || err.error?.details || 'Could not start checkout');
+            const err = await response.json().catch(() => ({}))
+            throw new Error(err.error?.message || err.error?.details || 'Could not start checkout')
           }
-          const data = await response.json();
-          if (!data.clientSecret) throw new Error('No client secret returned');
-          return data.clientSecret;
-        };
+          const data = await response.json()
+          if (!data.clientSecret) throw new Error('No client secret returned')
+          return data.clientSecret
+        }
 
         const onShippingDetailsChange = async (event) => {
-          const { checkoutSessionId, shippingDetails } = event;
+          const { checkoutSessionId, shippingDetails } = event
           try {
             const response = await fetch('/api/update-shipping', {
               method: 'POST',
@@ -126,41 +126,41 @@
                 checkout_session_id: checkoutSessionId,
                 shipping_details: shippingDetails
               })
-            });
-            const data = await response.json().catch(() => ({}));
+            })
+            const data = await response.json().catch(() => ({}))
             if (!response.ok) {
               return Promise.resolve({
                 type: 'reject',
                 errorMessage: data.message || 'Could not update shipping.'
-              });
+              })
             }
             if (data.type === 'error') {
-              return Promise.resolve({ type: 'reject', errorMessage: data.message || 'Invalid address.' });
+              return Promise.resolve({ type: 'reject', errorMessage: data.message || 'Invalid address.' })
             }
-            return Promise.resolve({ type: 'accept' });
+            return Promise.resolve({ type: 'accept' })
           } catch (err) {
             return Promise.resolve({
               type: 'reject',
               errorMessage: err.message || 'Something went wrong.'
-            });
+            })
           }
-        };
+        }
 
         try {
           const checkout = await stripe.initEmbeddedCheckout({
             fetchClientSecret,
             onShippingDetailsChange
-          });
-          container.innerHTML = '';
-          checkout.mount('#checkout');
+          })
+          container.innerHTML = ''
+          checkout.mount('#checkout')
         } catch (err) {
-          console.error('Embedded Checkout init failed:', err);
-          showError(err.message || 'Failed to load checkout.');
+          console.error('Embedded Checkout init failed:', err)
+          showError(err.message || 'Failed to load checkout.')
         }
       }
 
-      initialize();
-    })();
+      initialize()
+    })()
   </script>
 </body>
 </html>

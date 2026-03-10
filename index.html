@@ -488,7 +488,7 @@
 
             try {
                 sessionStorage.setItem('checkoutCart', JSON.stringify(cart));
-                window.location.href = '/checkout.html';
+                window.location.href = '/checkout';
             } catch (err) {
                 console.error('Checkout error:', err);
                 alert('Unable to process checkout. Please try again.');
