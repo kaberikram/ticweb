@@ -106,7 +106,7 @@ export default async function handler(req, res) {
         },
         mode: 'payment',
         shipping_address_collection: { allowed_countries: SHIPPING_ALLOWED_COUNTRIES },
-        shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
+        shipping_options: SHIPPING_RATE_IDS.slice(0, 5).map(id => ({ shipping_rate: id })),
         success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/`,
         metadata: {
