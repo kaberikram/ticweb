@@ -477,7 +477,7 @@
         updateModalCountdown();
         setInterval(updateModalCountdown, 1000);
 
-        // Checkout Handler
+        // Checkout Handler (embedded checkout: cart stored, then redirect to checkout page)
         async function handleCheckout() {
             if (!isCheckoutReleased) return;
             const cart = buildCart();
@@ -487,27 +487,12 @@
             confirmBtn.textContent = 'Processing...';
 
             try {
-                const origin = window.location.origin;
-                const response = await fetch('/api/checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Checkout request failed');
-                }
-
-                const { url, error } = await response.json();
-                
-                if (error) {
-                    throw new Error(error.message || 'Checkout error');
-                }
-
-                window.location.href = url;
+                sessionStorage.setItem('checkoutCart', JSON.stringify(cart));
+                window.location.href = '/checkout.html';
             } catch (err) {
                 console.error('Checkout error:', err);
                 alert('Unable to process checkout. Please try again.');
+            } finally {
                 confirmBtn.disabled = false;
                 confirmBtn.textContent = 'Confirm & Checkout';
             }

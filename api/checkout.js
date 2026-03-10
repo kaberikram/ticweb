@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { cart } = req.body;
+      const { cart, embedded } = req.body;
       const line_items = cart.map(item => {
         let unitAmount;
         if (item.name && item.name.toLowerCase().includes('ratée')) {
@@ -99,28 +99,44 @@ export default async function handler(req, res) {
         return `${name} x${item.quantity}`;
       }).join(', ');
 
-      const session = await stripe.checkout.sessions.create({
+      const isEmbedded = embedded === true;
+
+      const sessionConfig = {
         payment_method_types: ['card'],
         line_items,
-        phone_number_collection: {
-          enabled: true,
-        },
+        phone_number_collection: { enabled: true },
         mode: 'payment',
         shipping_address_collection: { allowed_countries: SHIPPING_ALLOWED_COUNTRIES },
-        shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
-        success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/`,
-        metadata: {
-          items_summary: itemsSummary.substring(0, 500)
-        },
-        payment_intent_data: {
-          metadata: {
-            items_summary: itemsSummary.substring(0, 500)
-          }
-        },
-      });
+        metadata: { items_summary: itemsSummary.substring(0, 500) },
+        payment_intent_data: { metadata: { items_summary: itemsSummary.substring(0, 500) } },
+      };
 
-      res.status(200).json({ sessionId: session.id, url: session.url });
+      if (isEmbedded) {
+        sessionConfig.ui_mode = 'embedded';
+        sessionConfig.return_url = `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`;
+        sessionConfig.permissions = { update_shipping_details: 'server_only' };
+        sessionConfig.shipping_options = [
+          {
+            shipping_rate_data: {
+              display_name: 'Standard shipping',
+              type: 'fixed_amount',
+              fixed_amount: { amount: 0, currency: 'usd' }
+            }
+          }
+        ];
+      } else {
+        sessionConfig.success_url = `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`;
+        sessionConfig.cancel_url = `${origin}/`;
+        sessionConfig.shipping_options = SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id }));
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
+
+      if (isEmbedded) {
+        res.status(200).json({ clientSecret: session.client_secret });
+      } else {
+        res.status(200).json({ sessionId: session.id, url: session.url });
+      }
     } catch (err) {
       console.error('Error creating Stripe Checkout session:', err);
       // It's good practice to use a more generic error message for the client
