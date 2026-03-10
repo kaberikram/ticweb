@@ -243,7 +243,7 @@
         btn.style.pointerEvents = 'none';
 
         // Release time: 20 March 2026, 00:00 in Malaysia (UTC+8)
-        const releaseDateMs = new Date('2026-03-20T00:00:00+08:00').getTime();
+        const releaseDateMs = new Date('2025-03-04T00:00:00+08:00').getTime(); // TODO: change back to 2026-03-20 for launch
         let isReleased = false;
         let countdownTimerId;
 
@@ -439,7 +439,7 @@
             return cart;
         }
 
-        const releaseDateMsModal = new Date('2026-03-20T00:00:00+08:00').getTime();
+        const releaseDateMsModal = new Date('2025-03-04T00:00:00+08:00').getTime(); // TODO: change back to 2026-03-20 for launch
         let isCheckoutReleased = false;
 
         function formatTimeRemainingModal(ms) {

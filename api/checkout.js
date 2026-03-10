@@ -11,11 +11,32 @@ const corsHandler = cors();
 // However, your current logic dynamically sets prices, so PRICE_LOOKUP might be unused.
 // const PRICE_LOOKUP = { ... };
 
-// Updated shipping rate IDs from Stripe Dashboard
-const SHIPPING_RATE_IDS = [
-  'shr_1RKj1hKauXLQMGFmynhllfQW',  // Malaysia
-  'shr_1RKj3YKauXLQMGFmQRMEkf2y'   // Rest of world
-];
+// Updated shipping rate IDs from environment (fallback to hardcoded defaults)
+let shippingRateIds = process.env.SHIPPING_RATE_IDS
+  ? process.env.SHIPPING_RATE_IDS.split(',').map(s => s.trim()).filter(Boolean)
+  : [];
+
+if (shippingRateIds.length === 0) {
+  shippingRateIds = [
+    process.env.SHIPPING_RATE_MALAYSIA || 'shr_1RKj1hKauXLQMGFmynhllfQW',
+    process.env.SHIPPING_RATE_ROW || 'shr_1RKj3YKauXLQMGFmQRMEkf2y'
+  ];
+}
+const SHIPPING_RATE_IDS = shippingRateIds;
+
+// Individual rate IDs for mapping
+const SHIPPING_RATE_MALAYSIA = process.env.SHIPPING_RATE_MALAYSIA || 'shr_1RKj1hKauXLQMGFmynhllfQW';
+const SHIPPING_RATE_ROW = process.env.SHIPPING_RATE_ROW || 'shr_1RKj3YKauXLQMGFmQRMEkf2y';
+
+// Allowed shipping countries from environment (comma-separated list)
+let allowedCountries = process.env.SHIPPING_ALLOWED_COUNTRIES
+  ? process.env.SHIPPING_ALLOWED_COUNTRIES.split(',').map(s => s.trim()).filter(Boolean)
+  : [];
+
+if (allowedCountries.length === 0) {
+  allowedCountries = ['MY', 'SG', 'US'];
+}
+const SHIPPING_ALLOWED_COUNTRIES = allowedCountries;
 
 export default async function handler(req, res) {
   // Apply CORS middleware
@@ -84,7 +105,7 @@ export default async function handler(req, res) {
           enabled: true,
         },
         mode: 'payment',
-        shipping_address_collection: { allowed_countries: ['MY', 'SG', 'US'] },
+        shipping_address_collection: { allowed_countries: SHIPPING_ALLOWED_COUNTRIES },
         shipping_options: SHIPPING_RATE_IDS.map(id => ({ shipping_rate: id })),
         success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/`,
