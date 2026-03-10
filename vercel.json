@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/privacypolicy", "destination": "/privacypolicy.html" }
+    { "source": "/privacypolicy", "destination": "/privacypolicy.html" },
+    { "source": "/checkout", "destination": "/checkout.html" }
   ]
 } 
