@@ -313,14 +313,15 @@ function addStickerPlanes(app) {
     const matDream = makeMat(dreamAsset.resource)
     const matHere  = makeMat(hereAsset.resource)
 
-    // Scale down 20% from previous values (×0.8). Alternate textures across 6 stickers.
+    // Positions redistributed so both textures land within the portrait mobile viewport.
+    // Previous DreamSticker placements (x < -3) were off-screen left — pulled to x: -2.3 to -1.0.
     const configs = [
-      { pos: [-3.5,  2.1, -4.5], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream }, // upper-left
-      { pos: [-0.6,  0.7, -4.5], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere  }, // right
-      { pos: [-3.8, -0.4, -4.8], rot: [-90, 0,  -7], scale: [1.60, 1, 0.58], mat: matDream }, // lower-left
-      { pos: [-4.5,  0.2, -4.6], rot: [-90, 0,  12], scale: [1.44, 1, 0.52], mat: matHere  }, // left mid
-      { pos: [-4.0, -1.5, -5.0], rot: [-90, 0, -18], scale: [1.60, 1, 0.58], mat: matDream }, // left lower
-      { pos: [-0.3,  1.6, -4.2], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere  }, // upper-right
+      { pos: [-2.0,  2.0, -4.5], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream }, // upper-left
+      { pos: [-0.5,  0.8, -4.5], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere  }, // right
+      { pos: [-2.3, -0.3, -4.8], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream }, // mid-left
+      { pos: [-1.3,  1.4, -4.3], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere  }, // upper-center
+      { pos: [-1.1, -1.3, -5.0], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream }, // lower-center
+      { pos: [-0.2,  1.7, -4.2], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere  }, // upper-right
     ]
 
     configs.forEach(({ pos, rot, scale, mat }, i) => {
