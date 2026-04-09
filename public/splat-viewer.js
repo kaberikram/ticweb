@@ -285,38 +285,45 @@ async function fetchSogWithProgress(url, onProgress) {
 }
 
 function addStickerPlanes(app) {
-  const stickerAsset = new Asset('dreaming-sticker', 'texture', { url: '/DreamingSticker.png' })
-  app.assets.add(stickerAsset)
+  const dreamAsset = new Asset('dream-sticker', 'texture', { url: '/DreamSticker.webp' })
+  const hereAsset  = new Asset('here-sticker',  'texture', { url: '/AreyoureallyhereSticker.webp' })
+  app.assets.add(dreamAsset)
+  app.assets.add(hereAsset)
 
-  stickerAsset.ready((asset) => {
-    const tex = asset.resource
+  let loadedCount = 0
+  function onBothLoaded() {
+    if (++loadedCount < 2) return
 
-    // Shared material — emissive so no lights needed, UV flipped on V to fix upside-down texture
-    const mat = new StandardMaterial()
-    mat.emissiveMap = tex
-    mat.emissive = new Color(1, 1, 1)
-    mat.emissiveMapTiling = new Vec2(1, -1)
-    mat.emissiveMapOffset = new Vec2(0, 1)
-    mat.opacityMap = tex
-    mat.opacityMapTiling = new Vec2(1, -1)
-    mat.opacityMapOffset = new Vec2(0, 1)
-    mat.blendType = BLEND_NORMAL
-    mat.depthWrite = false
-    mat.cull = CULLFACE_NONE
-    mat.update()
+    function makeMat(tex) {
+      const mat = new StandardMaterial()
+      mat.emissiveMap = tex
+      mat.emissive = new Color(1, 1, 1)
+      mat.emissiveMapTiling = new Vec2(1, -1)
+      mat.emissiveMapOffset = new Vec2(0, 1)
+      mat.opacityMap = tex
+      mat.opacityMapTiling = new Vec2(1, -1)
+      mat.opacityMapOffset = new Vec2(0, 1)
+      mat.blendType = BLEND_NORMAL
+      mat.depthWrite = false
+      mat.cull = CULLFACE_NONE
+      mat.update()
+      return mat
+    }
 
-    // Plane faces camera when X-rotated -90°. Z-tilt gives the angled sticker feel.
-    // Y raised +0.8 from previous values. 2 new stickers on left, 1 random right.
+    const matDream = makeMat(dreamAsset.resource)
+    const matHere  = makeMat(hereAsset.resource)
+
+    // Scale down 20% from previous values (×0.8). Alternate textures across 6 stickers.
     const configs = [
-      { pos: [-3.5,  2.1, -4.5], rot: [-90, 0, -15], scale: [2.0, 1, 0.72] }, // upper-left
-      { pos: [-0.6,  0.7, -4.5], rot: [-90, 0,  10], scale: [2.0, 1, 0.72] }, // right
-      { pos: [-3.8, -0.4, -4.8], rot: [-90, 0,  -7], scale: [2.0, 1, 0.72] }, // lower-left
-      { pos: [-4.5,  0.2, -4.6], rot: [-90, 0,  12], scale: [1.8, 1, 0.65] }, // left mid   (new)
-      { pos: [-4.0, -1.5, -5.0], rot: [-90, 0, -18], scale: [2.0, 1, 0.72] }, // left lower (new)
-      { pos: [-0.3,  1.6, -4.2], rot: [-90, 0,   6], scale: [1.8, 1, 0.65] }, // upper-right (new)
+      { pos: [-3.5,  2.1, -4.5], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream }, // upper-left
+      { pos: [-0.6,  0.7, -4.5], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere  }, // right
+      { pos: [-3.8, -0.4, -4.8], rot: [-90, 0,  -7], scale: [1.60, 1, 0.58], mat: matDream }, // lower-left
+      { pos: [-4.5,  0.2, -4.6], rot: [-90, 0,  12], scale: [1.44, 1, 0.52], mat: matHere  }, // left mid
+      { pos: [-4.0, -1.5, -5.0], rot: [-90, 0, -18], scale: [1.60, 1, 0.58], mat: matDream }, // left lower
+      { pos: [-0.3,  1.6, -4.2], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere  }, // upper-right
     ]
 
-    configs.forEach(({ pos, rot, scale }, i) => {
+    configs.forEach(({ pos, rot, scale, mat }, i) => {
       const sticker = new Entity(`Sticker_${i}`)
       sticker.addComponent('render', { type: 'plane' })
       sticker.render.meshInstances[0].material = mat
@@ -325,9 +332,12 @@ function addStickerPlanes(app) {
       sticker.setLocalScale(scale[0], scale[1], scale[2])
       app.root.addChild(sticker)
     })
-  })
+  }
 
-  app.assets.load(stickerAsset)
+  dreamAsset.ready(onBothLoaded)
+  hereAsset.ready(onBothLoaded)
+  app.assets.load(dreamAsset)
+  app.assets.load(hereAsset)
 }
 
 async function initSplatViewer() {
