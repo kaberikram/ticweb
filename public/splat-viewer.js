@@ -316,11 +316,11 @@ function addStickerPlanes(app) {
     // All X positions kept in -1.0 to -0.2 range — the visible band on portrait mobile.
     // x < -1.0 is off-screen left based on observed viewport.
     const configs = [
-      { pos: [-0.5,  2.0, -2.2], rot: [-90, 0, -15], scale: [1.12, 1, 0.41], mat: matDream }, // close  → appears large
+      { pos: [-0.5,  2.9, -2.2], rot: [-90, 0, -15], scale: [1.12, 1, 0.41], mat: matDream }, // close  → appears large
       { pos: [ 0.3,  0.7, -5.8], rot: [-90, 0,  10], scale: [1.12, 1, 0.41], mat: matHere  }, // far    → appears small
-      { pos: [-0.4, -0.3, -3.8], rot: [-90, 0,  -8], scale: [1.12, 1, 0.41], mat: matDream }, // medium
+      { pos: [-0.4,  0.6, -3.8], rot: [-90, 0,  -8], scale: [1.12, 1, 0.41], mat: matDream }, // medium
       { pos: [-0.1,  1.3, -3.0], rot: [-90, 0,  13], scale: [1.01, 1, 0.36], mat: matHere  }, // close-medium → larger
-      { pos: [-0.2, -1.2, -5.2], rot: [-90, 0, -17], scale: [1.12, 1, 0.41], mat: matDream }, // far-medium → smaller
+      { pos: [-0.2, -0.3, -5.2], rot: [-90, 0, -17], scale: [1.12, 1, 0.41], mat: matDream }, // far-medium → smaller
       { pos: [ 0.5,  1.6, -4.4], rot: [-90, 0,   6], scale: [1.01, 1, 0.36], mat: matHere  }, // medium
     ]
 
