@@ -7,10 +7,13 @@ import {
   Application,
   Asset,
   AssetListLoader,
+  BLEND_NORMAL,
   Color,
+  CULLFACE_NONE,
   Entity,
   FILLMODE_NONE,
   RESOLUTION_FIXED,
+  StandardMaterial,
   Vec2
 } from 'playcanvas'
 
@@ -281,6 +284,45 @@ async function fetchSogWithProgress(url, onProgress) {
   return buf.buffer
 }
 
+function addStickerPlanes(app) {
+  const stickerAsset = new Asset('dreaming-sticker', 'texture', { url: '/DreamingSticker.png' })
+  app.assets.add(stickerAsset)
+
+  stickerAsset.ready((asset) => {
+    const tex = asset.resource
+
+    // Three sticker instances: [position, eulerAngles, scale]
+    // Plane is X-Z by default (normal +Y). Rotating X by -90 makes it face +Z (camera).
+    // Z-tilt gives the angled sticker look from the screenshot.
+    const configs = [
+      { pos: [-3.5,  1.3, -4.5], rot: [-90, 0, -15], scale: [2.0, 1, 0.72] }, // upper-left
+      { pos: [-0.6, -0.1, -4.5], rot: [-90, 0,  10], scale: [2.0, 1, 0.72] }, // right
+      { pos: [-3.8, -1.2, -4.8], rot: [-90, 0,  -7], scale: [2.0, 1, 0.72] }, // lower-left
+    ]
+
+    configs.forEach(({ pos, rot, scale }, i) => {
+      const mat = new StandardMaterial()
+      mat.emissiveMap = tex
+      mat.emissive = new Color(1, 1, 1)
+      mat.opacityMap = tex
+      mat.blendType = BLEND_NORMAL
+      mat.depthWrite = false
+      mat.cull = CULLFACE_NONE
+      mat.update()
+
+      const sticker = new Entity(`Sticker_${i}`)
+      sticker.addComponent('render', { type: 'plane' })
+      sticker.render.meshInstances[0].material = mat
+      sticker.setPosition(pos[0], pos[1], pos[2])
+      sticker.setEulerAngles(rot[0], rot[1], rot[2])
+      sticker.setLocalScale(scale[0], scale[1], scale[2])
+      app.root.addChild(sticker)
+    })
+  })
+
+  app.assets.load(stickerAsset)
+}
+
 async function initSplatViewer() {
   const container = document.getElementById(CONTAINER_ID)
   if (!container) return
@@ -374,6 +416,8 @@ async function initSplatViewer() {
   splat.setEulerAngles(splatRot[0], splatRot[1], splatRot[2])
   splat.addComponent('gsplat', { asset: assets[1] })
   app.root.addChild(splat)
+
+  addStickerPlanes(app)
 
   initGyroControls(container, splat, splatRot, app)
 }
