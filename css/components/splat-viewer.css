@@ -133,7 +133,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
- 
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -148,57 +147,61 @@
 .splat-gyro-prompt-box {
   text-align: center;
   font-family: var(--font-family-primary, 'Source Code Pro', monospace);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 28px 36px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0;
+  padding: 24px 32px;
+  max-width: 300px;
+  width: 80%;
 }
 
 .splat-gyro-prompt-box p {
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
-  margin: 0 0 20px 0;
+  font-size: 14px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  color: #000;
+  line-height: 1.4;
+  margin: 0 0 18px 0;
 }
 
 .splat-gyro-prompt-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
 }
 
 .splat-gyro-prompt-btn {
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  border-radius: 20px;
-  padding: 9px 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 0;
+  padding: 9px 24px;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
 .splat-gyro-yes {
+  background: #000;
   color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid #000;
 }
 
 .splat-gyro-yes:active {
-  background: rgba(255, 255, 255, 0.2);
+  background: #333;
+  border-color: #333;
 }
 
 .splat-gyro-no {
-  color: rgba(255, 255, 255, 0.45);
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
 }
 
 .splat-gyro-no:active {
-  color: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: #eee;
 }
