@@ -20,7 +20,7 @@ import {
 const CONTAINER_ID = 'splat-viewer'
 const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
-const MAX_DPR = 1.5
+const MAX_DPR = 1.0 // capped at 1× — on high-DPR phones 1.5 costs ~2.25× the pixels
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
@@ -358,13 +358,38 @@ async function initSplatViewer() {
     graphicsDeviceOptions: {
       antialias: false,
       powerPreference: 'low-power',
-      preserveDrawingBuffer: false
+      preserveDrawingBuffer: false,
+      alpha: false,          // no canvas transparency needed — removes compositing overhead
     }
   })
 
   app.setCanvasFillMode(FILLMODE_NONE)
   app.setCanvasResolution(RESOLUTION_FIXED)
   app.start()
+
+  // --- Thermal / battery optimizations ---
+
+  // 30fps cap: scene barely moves (±5° camera), imperceptible vs 60fps
+  app.setFramerateLimit(30)
+
+  // Pause rendering entirely when the tab is hidden or screen is locked
+  document.addEventListener('visibilitychange', () => {
+    app.autoRender = !document.hidden
+  })
+
+  // Idle detection: drop to 10fps after 5s of no touch/gyro, resume to 30fps on activity
+  let idleTimer = null
+  function resetIdleTimer() {
+    clearTimeout(idleTimer)
+    app.setFramerateLimit(30)
+    idleTimer = setTimeout(() => app.setFramerateLimit(10), 5000)
+  }
+  container.addEventListener('pointerdown',   resetIdleTimer, { passive: true })
+  container.addEventListener('pointermove',   resetIdleTimer, { passive: true })
+  window.addEventListener('deviceorientation', resetIdleTimer, { passive: true })
+  resetIdleTimer() // start 5s countdown immediately
+
+  // --- end optimizations ---
 
   resizeCanvas(canvas, app, container)
 
