@@ -20,7 +20,7 @@ import {
 const CONTAINER_ID = 'splat-viewer'
 const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
-const MAX_DPR = 1.5
+const MAX_DPR = 1.0
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
@@ -365,6 +365,7 @@ async function initSplatViewer() {
   app.setCanvasFillMode(FILLMODE_NONE)
   app.setCanvasResolution(RESOLUTION_FIXED)
   app.start()
+  app.setFramerateLimit(30)
 
   resizeCanvas(canvas, app, container)
 
