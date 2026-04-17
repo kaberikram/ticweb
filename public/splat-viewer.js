@@ -406,7 +406,7 @@ function addStickerPlanes(app) {
       { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,     matName: 'matHere'     },
       { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matNoitsnot, matName: 'matNoitsnot' },
       { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,     matName: 'matHere'     },
-      { pos: [ 0.30,  1.70, -4.80], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+      { pos: [ 1.50,  2.30, -7.30], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
       { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matPaycheck, matName: 'matPaycheck' },
     ]
 
