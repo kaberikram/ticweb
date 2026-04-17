@@ -397,12 +397,12 @@ function addStickerPlanes(app) {
     const matHere  = makeMat(hereAsset.resource)
 
     const configs = [
-      { pos: [-0.5,  2.0, -2.2], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [-0.1,  0.7, -5.8], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,  matName: 'matHere'  },
-      { pos: [-0.4, -0.3, -3.8], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [-0.5,  1.3, -3.0], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
-      { pos: [-0.2, -1.2, -5.2], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [ 0.1,  1.6, -4.4], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
+      { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,  matName: 'matHere'  },
+      { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
+      { pos: [ 0.30,  1.70, -4.80], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
     ]
 
     const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
