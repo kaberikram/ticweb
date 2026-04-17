@@ -284,6 +284,89 @@ async function fetchSogWithProgress(url, onProgress) {
   return buf.buffer
 }
 
+function initDebugPanel(entityData) {
+  if (!new URLSearchParams(window.location.search).has('debug')) return
+
+  let selected = 0
+  let step = 0.1
+
+  const panel = document.createElement('div')
+  panel.id = 'splat-debug'
+  panel.style.cssText = [
+    'position:fixed', 'bottom:0', 'left:0', 'right:0',
+    'background:#fff', 'border-top:2px solid #000',
+    'padding:12px 14px 20px', 'z-index:99999',
+    "font-family:'Source Code Pro',monospace", 'font-size:12px', 'color:#000',
+  ].join(';')
+  document.body.appendChild(panel)
+
+  const BTN = (label, extra = '') =>
+    `<button style="border:2px solid #000;background:#fff;color:#000;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;${extra}">${label}</button>`
+
+  function render() {
+    const { pos } = entityData[selected]
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:11px;letter-spacing:1px">STICKER DEBUG</strong>
+        <div style="display:flex;gap:5px">
+          ${entityData.map((d, i) => `<button data-sel="${i}" style="width:30px;height:30px;border:2px solid #000;background:${i===selected?'#000':'#fff'};color:${i===selected?'#fff':'#000'};font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">${i}</button>`).join('')}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:14px 1fr;gap:7px 10px;align-items:center;margin-bottom:10px">
+        ${['X','Y','Z'].map((axis, ai) => `
+          <span style="font-weight:700">${axis}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button data-axis="${ai}" data-dir="-1" style="width:36px;height:36px;border:2px solid #000;background:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1">-</button>
+            <span style="min-width:54px;text-align:center;font-weight:700;font-size:13px">${pos[ai].toFixed(2)}</span>
+            <button data-axis="${ai}" data-dir="1" style="width:36px;height:36px;border:2px solid #000;background:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1">+</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <span style="font-weight:700;font-size:11px;margin-right:2px">STEP</span>
+        ${[0.05, 0.1, 0.5, 1.0].map(s => `<button data-step="${s}" style="padding:5px 10px;border:2px solid #000;background:${s===step?'#000':'#fff'};color:${s===step?'#fff':'#000'};font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">${s}</button>`).join('')}
+      </div>
+
+      <button id="dbg-copy" style="width:100%;padding:11px;border:2px solid #000;background:#000;color:#fff;font-family:inherit;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer">
+        Copy All Positions
+      </button>
+    `
+
+    panel.querySelectorAll('[data-sel]').forEach(btn =>
+      btn.addEventListener('click', () => { selected = +btn.dataset.sel; render() })
+    )
+
+    panel.querySelectorAll('[data-axis]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        const ai = +btn.dataset.axis, dir = +btn.dataset.dir
+        entityData[selected].pos[ai] = parseFloat((entityData[selected].pos[ai] + dir * step).toFixed(3))
+        const [x, y, z] = entityData[selected].pos
+        entityData[selected].entity.setPosition(x, y, z)
+        render()
+      })
+    )
+
+    panel.querySelectorAll('[data-step]').forEach(btn =>
+      btn.addEventListener('click', () => { step = parseFloat(btn.dataset.step); render() })
+    )
+
+    document.getElementById('dbg-copy').addEventListener('click', () => {
+      const lines = entityData.map(({ pos, rot, scale, matName }) =>
+        `{ pos: [${pos.map(v => v.toFixed(2)).join(', ')}], rot: [${rot.join(', ')}], scale: [${scale.join(', ')}], mat: ${matName} },`
+      ).join('\n')
+      navigator.clipboard.writeText(lines).then(() => {
+        const btn = document.getElementById('dbg-copy')
+        btn.textContent = 'COPIED!'
+        setTimeout(() => { btn.textContent = 'Copy All Positions' }, 2000)
+      })
+    })
+  }
+
+  render()
+}
+
 function addStickerPlanes(app) {
   const dreamAsset = new Asset('dream-sticker', 'texture', { url: '/DreamSticker.webp' })
   const hereAsset  = new Asset('here-sticker',  'texture', { url: '/AreyoureallyhereSticker.webp' })
@@ -313,18 +396,16 @@ function addStickerPlanes(app) {
     const matDream = makeMat(dreamAsset.resource)
     const matHere  = makeMat(hereAsset.resource)
 
-    // All X positions kept in -1.0 to -0.2 range — the visible band on portrait mobile.
-    // x < -1.0 is off-screen left based on observed viewport.
     const configs = [
-      { pos: [-0.5,  2.0, -2.2], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream }, // close  → appears large
-      { pos: [-0.1,  0.7, -5.8], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere  }, // far    → appears small
-      { pos: [-0.4, -0.3, -3.8], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream }, // medium
-      { pos: [-0.5,  1.3, -3.0], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere  }, // close-medium → larger
-      { pos: [-0.2, -1.2, -5.2], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream }, // far-medium → smaller
-      { pos: [ 0.1,  1.6, -4.4], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere  }, // medium
+      { pos: [-0.5,  2.0, -2.2], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [-0.1,  0.7, -5.8], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,  matName: 'matHere'  },
+      { pos: [-0.4, -0.3, -3.8], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [-0.5,  1.3, -3.0], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
+      { pos: [-0.2, -1.2, -5.2], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
+      { pos: [ 0.1,  1.6, -4.4], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
     ]
 
-    configs.forEach(({ pos, rot, scale, mat }, i) => {
+    const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
       const sticker = new Entity(`Sticker_${i}`)
       sticker.addComponent('render', { type: 'plane' })
       sticker.render.meshInstances[0].material = mat
@@ -332,7 +413,10 @@ function addStickerPlanes(app) {
       sticker.setEulerAngles(rot[0], rot[1], rot[2])
       sticker.setLocalScale(scale[0], scale[1], scale[2])
       app.root.addChild(sticker)
+      return { entity: sticker, pos: [...pos], rot, scale, matName }
     })
+
+    initDebugPanel(entityData)
   }
 
   dreamAsset.ready(onBothLoaded)
