@@ -368,14 +368,17 @@ function initDebugPanel(entityData) {
 }
 
 function addStickerPlanes(app) {
-  const dreamAsset = new Asset('dream-sticker', 'texture', { url: '/DreamSticker.webp' })
-  const hereAsset  = new Asset('here-sticker',  'texture', { url: '/AreyoureallyhereSticker.webp' })
-  app.assets.add(dreamAsset)
-  app.assets.add(hereAsset)
+  const dreamAsset    = new Asset('dream-sticker',    'texture', { url: '/DreamSticker.webp' })
+  const hereAsset     = new Asset('here-sticker',     'texture', { url: '/AreyoureallyhereSticker.webp' })
+  const noitsnotAsset = new Asset('noitsnot-sticker', 'texture', { url: '/noitsnotSticker.webp' })
+  const paycheckAsset = new Asset('paycheck-sticker', 'texture', { url: '/paycheckisinSticker.webp' })
+
+  const allAssets = [dreamAsset, hereAsset, noitsnotAsset, paycheckAsset]
+  allAssets.forEach(a => app.assets.add(a))
 
   let loadedCount = 0
-  function onBothLoaded() {
-    if (++loadedCount < 2) return
+  function onAllLoaded() {
+    if (++loadedCount < allAssets.length) return
 
     function makeMat(tex) {
       const mat = new StandardMaterial()
@@ -393,16 +396,18 @@ function addStickerPlanes(app) {
       return mat
     }
 
-    const matDream = makeMat(dreamAsset.resource)
-    const matHere  = makeMat(hereAsset.resource)
+    const matDream    = makeMat(dreamAsset.resource)
+    const matHere     = makeMat(hereAsset.resource)
+    const matNoitsnot = makeMat(noitsnotAsset.resource)
+    const matPaycheck = makeMat(paycheckAsset.resource)
 
     const configs = [
-      { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,  matName: 'matHere'  },
-      { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
-      { pos: [ 0.30,  1.70, -4.80], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream, matName: 'matDream' },
-      { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matHere,  matName: 'matHere'  },
+      { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+      { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,     matName: 'matHere'     },
+      { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matNoitsnot, matName: 'matNoitsnot' },
+      { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,     matName: 'matHere'     },
+      { pos: [ 0.30,  1.70, -4.80], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+      { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matPaycheck, matName: 'matPaycheck' },
     ]
 
     const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
@@ -419,10 +424,7 @@ function addStickerPlanes(app) {
     initDebugPanel(entityData)
   }
 
-  dreamAsset.ready(onBothLoaded)
-  hereAsset.ready(onBothLoaded)
-  app.assets.load(dreamAsset)
-  app.assets.load(hereAsset)
+  allAssets.forEach(a => { a.ready(onAllLoaded); app.assets.load(a) })
 }
 
 async function initSplatViewer() {
