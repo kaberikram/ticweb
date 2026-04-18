@@ -1,7 +1,9 @@
 import '/style.css'; // Import the main stylesheet
 import { inject } from "@vercel/analytics";
+import { initUiTapFeedback } from './ui-tap-feedback.js';
 
 inject();
+initUiTapFeedback();
 
 
 

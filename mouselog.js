@@ -1,7 +1,9 @@
 import '/mouselog.css'; // Import the mouselog specific stylesheet
 import { inject } from "@vercel/analytics";
+import { initUiTapFeedback } from './ui-tap-feedback.js';
 
 inject();
+initUiTapFeedback();
 
 // --- Image Preloading Function ---
 function preloadImages(imageArray) {
