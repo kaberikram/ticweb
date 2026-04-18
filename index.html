@@ -71,16 +71,14 @@
             <button id="jacketModalClose" class="modal-close-x">&times;</button>
             
             <div class="product-modal-content">
-                <!-- Circular Spinwheel Carousel -->
+                <!-- 3-Circle Carousel -->
                 <div class="product-carousel">
-                    <button type="button" class="carousel-side-arrow carousel-prev" aria-label="Previous">&#8249;</button>
-                    <div class="carousel-circle-wrap" id="carouselCircle">
-                        <img src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img active" data-index="0">
+                    <div class="carousel-circle-track" id="carouselCircle">
+                        <img src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img" data-index="0">
                         <img src="/jacketCloseUp2.png" alt="Rat'teryx Jacket hood detail" class="carousel-img" data-index="1">
                         <img src="/jacketCloseUp3.png" alt="Rat'teryx Jacket label" class="carousel-img" data-index="2">
                         <img src="/jacketCloseup4.png" alt="Rat'teryx Jacket worn" class="carousel-img" data-index="3">
                     </div>
-                    <button type="button" class="carousel-side-arrow carousel-next" aria-label="Next">&#8250;</button>
                 </div>
 
                 <!-- Dot indicators -->
@@ -325,8 +323,15 @@
         function openModal() {
             selectedSize = null;
             selectedQty = 1;
+            currentSlide = 0;
             document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('active'));
             document.getElementById('qtyDisplay').textContent = '1';
+            // Set initial positions without transition
+            carouselImages.forEach(img => { img.style.transition = 'none'; });
+            applyPositions();
+            requestAnimationFrame(() => {
+                carouselImages.forEach(img => { img.style.transition = ''; });
+            });
             updateCheckoutBtn();
             modalOverlay.style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -339,45 +344,30 @@
         }
 
         // Carousel Functions
-        function showSlide(index, direction) {
-            if (index === currentSlide) return;
-            const dir = direction || (index > currentSlide ? 'next' : 'prev');
-
-            const currentImg = carouselImages[currentSlide];
-            const nextImg = carouselImages[index];
-
-            // Snap next image to enter position instantly (no transition)
-            nextImg.classList.remove('active', 'spin-exit-left', 'spin-exit-right');
-            nextImg.classList.add(dir === 'next' ? 'spin-enter-right' : 'spin-enter-left');
-
-            // Force reflow so the snap is applied before transitions re-enable
-            void nextImg.getBoundingClientRect();
-
-            // Animate current out, next in
-            currentImg.classList.remove('active');
-            currentImg.classList.add(dir === 'next' ? 'spin-exit-left' : 'spin-exit-right');
-            nextImg.classList.remove('spin-enter-right', 'spin-enter-left');
-            nextImg.classList.add('active');
-
-            // Clean up exit classes after animation
-            setTimeout(() => {
-                currentImg.classList.remove('spin-exit-left', 'spin-exit-right');
-            }, 500);
-
-            carouselDots.forEach((dot, i) => {
-                dot.classList.toggle('active', i === index);
-                dot.setAttribute('aria-selected', i === index);
+        function applyPositions() {
+            const n = carouselImages.length;
+            const leftIdx  = (currentSlide - 1 + n) % n;
+            const rightIdx = (currentSlide + 1) % n;
+            carouselImages.forEach((img, i) => {
+                img.classList.remove('pos-center', 'pos-left', 'pos-right');
+                if (i === currentSlide) img.classList.add('pos-center');
+                else if (i === leftIdx)  img.classList.add('pos-left');
+                else if (i === rightIdx) img.classList.add('pos-right');
             });
+            carouselDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSlide);
+                dot.setAttribute('aria-selected', i === currentSlide);
+            });
+        }
+
+        function showSlide(index) {
+            if (index === currentSlide) return;
             currentSlide = index;
+            applyPositions();
         }
 
-        function nextSlide() {
-            showSlide((currentSlide + 1) % carouselImages.length, 'next');
-        }
-
-        function prevSlide() {
-            showSlide((currentSlide - 1 + carouselImages.length) % carouselImages.length, 'prev');
-        }
+        function nextSlide() { showSlide((currentSlide + 1) % carouselImages.length); }
+        function prevSlide() { showSlide((currentSlide - 1 + carouselImages.length) % carouselImages.length); }
 
         // Update checkout button text/state
         function updateCheckoutBtn() {
@@ -512,6 +502,14 @@
 
         carouselDots.forEach((dot, index) => {
             dot.addEventListener('click', () => showSlide(index));
+        });
+
+        // Tap side circles to navigate
+        carouselImages.forEach(img => {
+            img.addEventListener('click', () => {
+                if (img.classList.contains('pos-left'))  prevSlide();
+                if (img.classList.contains('pos-right')) nextSlide();
+            });
         });
 
         // Delivery Info Toggle

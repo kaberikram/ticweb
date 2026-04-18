@@ -161,97 +161,75 @@
 }
 
 /* ============================================
-   CIRCULAR CAROUSEL
+   3-CIRCLE CAROUSEL
    ============================================ */
 
 .product-carousel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem 1rem 0;
+    width: 100%;
+    padding: 1.75rem 0 0;
     flex-shrink: 0;
 }
 
-.carousel-circle-wrap {
+/* Full-width track; overflow:hidden clips the peeking side circles */
+.carousel-circle-track {
     position: relative;
-    width: min(220px, 56vw);
-    aspect-ratio: 1 / 1;
-    border-radius: 50%;
+    width: 100%;
+    height: 178px;
     overflow: hidden;
-    background: #111;
-    flex-shrink: 0;
-    /* Promotes to GPU layer so border-radius clips 3D children correctly on Safari */
-    transform: translateZ(0);
 }
 
+/* Each image is its own circle, positioned from center */
 .carousel-img {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
     object-fit: cover;
+    top: 50%;
+    left: 50%;
+    /* Default: hidden (no position class) */
+    transform: translate(-50%, -50%) scale(0.15);
     opacity: 0;
-    pointer-events: none;
-    transform: perspective(700px) rotateY(0deg);
-    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+    transition: transform 0.42s cubic-bezier(0.35, 0, 0.25, 1),
+                opacity 0.32s ease;
     will-change: transform, opacity;
+    pointer-events: none;
+    cursor: default;
 }
 
-.carousel-img.active {
+/* Center: large, full opacity */
+.carousel-img.pos-center {
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
-    transform: perspective(700px) rotateY(0deg);
+    z-index: 3;
 }
 
-.carousel-img.spin-exit-left {
-    opacity: 0;
-    transform: perspective(700px) rotateY(-80deg);
-}
-
-.carousel-img.spin-exit-right {
-    opacity: 0;
-    transform: perspective(700px) rotateY(80deg);
-}
-
-.carousel-img.spin-enter-right {
-    opacity: 0;
-    transform: perspective(700px) rotateY(80deg);
-    transition: none;
-}
-
-.carousel-img.spin-enter-left {
-    opacity: 0;
-    transform: perspective(700px) rotateY(-80deg);
-    transition: none;
-}
-
-/* Side arrows flanking the circle */
-.carousel-side-arrow {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 2.2rem;
-    line-height: 1;
+/* Left neighbor: smaller, dimmer, shifted left — tappable */
+.carousel-img.pos-left {
+    transform: translate(calc(-50% - 148px), -50%) scale(0.58);
+    opacity: 0.5;
+    z-index: 2;
+    pointer-events: auto;
     cursor: pointer;
-    padding: 0 4px;
-    transition: color 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    flex-shrink: 0;
 }
 
-.carousel-side-arrow:hover {
-    color: rgba(255, 255, 255, 0.9);
+/* Right neighbor: smaller, dimmer, shifted right — tappable */
+.carousel-img.pos-right {
+    transform: translate(calc(-50% + 148px), -50%) scale(0.58);
+    opacity: 0.5;
+    z-index: 2;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
-/* Dot indicators below the circle */
+/* Dot indicators below the circles */
 
 .carousel-stepper {
     display: flex;
     gap: 6px;
     align-items: center;
     justify-content: center;
-    padding: 0.65rem 0 0;
+    padding: 0.7rem 0 0;
     flex-shrink: 0;
 }
 
