@@ -452,6 +452,13 @@ async function initSplatViewer() {
   app.setCanvasResolution(RESOLUTION_FIXED)
   app.start()
 
+  // Reduce heat: cap render loop + stop when tab is hidden
+  app.setFramerateLimit(30)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) app.pause()
+    else app.resume()
+  })
+
   resizeCanvas(canvas, app, container)
 
   const resizeObserver = new ResizeObserver(() => {
