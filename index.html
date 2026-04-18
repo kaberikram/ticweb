@@ -81,10 +81,10 @@
                     </div>
                     <div class="carousel-stepper" role="tablist" aria-label="Image steps">
                         <button type="button" class="carousel-stepper-arrow carousel-prev" aria-label="Previous">&larr;</button>
-                        <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true">1</button>
-                        <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false">2</button>
-                        <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false">3</button>
-                        <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false">4</button>
+                        <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true" aria-label="Image 1"></button>
+                        <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false" aria-label="Image 2"></button>
+                        <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false" aria-label="Image 3"></button>
+                        <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false" aria-label="Image 4"></button>
                         <button type="button" class="carousel-stepper-arrow carousel-next" aria-label="Next">&rarr;</button>
                     </div>
                 </div>
@@ -109,67 +109,30 @@
                         <p>Made to order. 1–2 weeks for production, plus 2–3 weeks for global delivery.</p>
                     </div>
 
-                    <!-- Multi-Size Selector -->
+                    <!-- Size Pills -->
                     <div class="size-selector">
-                        <div class="size-options-header">
-                            <span class="selector-label">Size</span>
-                            <span class="selector-label">Quantity</span>
-                        </div>
-                        <div class="size-options">
-                            <div class="size-row" data-size="S">
-                                <span class="size-label">S</span>
-                                <div class="qty-control">
-                                    <button class="qty-btn qty-minus">-</button>
-                                    <span class="qty-value">0</span>
-                                    <button class="qty-btn qty-plus">+</button>
-                                </div>
-                            </div>
-                            <div class="size-row" data-size="M">
-                                <span class="size-label">M</span>
-                                <div class="qty-control">
-                                    <button class="qty-btn qty-minus">-</button>
-                                    <span class="qty-value">0</span>
-                                    <button class="qty-btn qty-plus">+</button>
-                                </div>
-                            </div>
-                            <div class="size-row" data-size="L">
-                                <span class="size-label">L</span>
-                                <div class="qty-control">
-                                    <button class="qty-btn qty-minus">-</button>
-                                    <span class="qty-value">0</span>
-                                    <button class="qty-btn qty-plus">+</button>
-                                </div>
-                            </div>
-                            <div class="size-row" data-size="XL">
-                                <span class="size-label">XL</span>
-                                <div class="qty-control">
-                                    <button class="qty-btn qty-minus">-</button>
-                                    <span class="qty-value">0</span>
-                                    <button class="qty-btn qty-plus">+</button>
-                                </div>
-                            </div>
-                            <div class="size-row" data-size="2XL">
-                                <span class="size-label">2XL</span>
-                                <div class="qty-control">
-                                    <button class="qty-btn qty-minus">-</button>
-                                    <span class="qty-value">0</span>
-                                    <button class="qty-btn qty-plus">+</button>
-                                </div>
-                            </div>
+                        <span class="selector-label">Size</span>
+                        <div class="size-pills">
+                            <button class="size-pill" data-size="S">S</button>
+                            <button class="size-pill" data-size="M">M</button>
+                            <button class="size-pill" data-size="L">L</button>
+                            <button class="size-pill" data-size="XL">XL</button>
+                            <button class="size-pill" data-size="2XL">2XL</button>
                         </div>
                     </div>
 
-                    <!-- Order Summary -->
-                    <div class="order-summary">
-                        <div class="summary-row total">
-                            <span id="totalPrice">$0</span>
+                    <!-- Quantity Stepper -->
+                    <div class="qty-stepper-row">
+                        <span class="selector-label">Qty</span>
+                        <div class="qty-stepper">
+                            <button class="qty-stepper-btn" id="qtyMinus">−</button>
+                            <span class="qty-stepper-value" id="qtyDisplay">1</span>
+                            <button class="qty-stepper-btn" id="qtyPlus">+</button>
                         </div>
                     </div>
 
                     <!-- Confirm Button -->
-                    <button id="confirmCheckoutBtn" disabled>
-                        Checkout
-                    </button>
+                    <button id="confirmCheckoutBtn" disabled>Select a size</button>
                 </div>
             </div>
         </div>
@@ -350,13 +313,19 @@
         const closeSizeGuide = document.getElementById('closeJacketSizeGuide');
         
         // Size Selection State
-        const sizeQuantities = { S: 0, M: 0, L: 0, XL: 0, '2XL': 0 };
+        let selectedSize = null;
+        let selectedQty = 1;
         const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 8888;
         
         let currentSlide = 0;
 
         // Open Modal
         function openModal() {
+            selectedSize = null;
+            selectedQty = 1;
+            document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('active'));
+            document.getElementById('qtyDisplay').textContent = '1';
+            updateCheckoutBtn();
             modalOverlay.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
@@ -389,54 +358,56 @@
             showSlide(prev);
         }
 
-        // Update Order Summary
-        function updateSummary() {
-            const totalItems = Object.values(sizeQuantities).reduce((a, b) => a + b, 0);
-            const totalCents = totalItems * pricePerItem;
-            const totalDollars = (totalCents / 100).toFixed(2);
-            
-            document.getElementById('totalPrice').textContent = `$${totalDollars}`;
-            confirmBtn.disabled = totalItems === 0;
+        // Update checkout button text/state
+        function updateCheckoutBtn() {
+            if (!isCheckoutReleased) return;
+            if (!selectedSize) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Select a size';
+            } else {
+                confirmBtn.disabled = false;
+                const totalCents = pricePerItem * selectedQty;
+                const totalDollars = (totalCents / 100).toFixed(2);
+                confirmBtn.textContent = `Order now · US$${totalDollars}`;
+            }
         }
 
-        // Size Quantity Controls
-        document.querySelectorAll('.size-row').forEach(row => {
-            const size = row.dataset.size;
-            const minusBtn = row.querySelector('.qty-minus');
-            const plusBtn = row.querySelector('.qty-plus');
-            const qtyValue = row.querySelector('.qty-value');
-
-            minusBtn.addEventListener('click', () => {
-                if (sizeQuantities[size] > 0) {
-                    sizeQuantities[size]--;
-                    qtyValue.textContent = sizeQuantities[size];
-                    updateSummary();
-                }
+        // Size pill selection
+        document.querySelectorAll('.size-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                selectedSize = pill.dataset.size;
+                updateCheckoutBtn();
             });
+        });
 
-            plusBtn.addEventListener('click', () => {
-                sizeQuantities[size]++;
-                qtyValue.textContent = sizeQuantities[size];
-                updateSummary();
-            });
+        // Quantity stepper
+        document.getElementById('qtyMinus').addEventListener('click', () => {
+            if (selectedQty > 1) {
+                selectedQty--;
+                document.getElementById('qtyDisplay').textContent = selectedQty;
+                updateCheckoutBtn();
+            }
+        });
+
+        document.getElementById('qtyPlus').addEventListener('click', () => {
+            selectedQty++;
+            document.getElementById('qtyDisplay').textContent = selectedQty;
+            updateCheckoutBtn();
         });
 
         // Build Cart for Checkout
         function buildCart() {
-            const cart = [];
-            Object.entries(sizeQuantities).forEach(([size, qty]) => {
-                if (qty > 0) {
-                    cart.push({
-                        name: "Rat'teryx Jacket",
-                        fit: 'N/A',
-                        size: size,
-                        price: pricePerItem,
-                        quantity: qty,
-                        imageSrc: '/jacketCloseup1.png'
-                    });
-                }
-            });
-            return cart;
+            if (!selectedSize || selectedQty < 1) return [];
+            return [{
+                name: "Rat'teryx Jacket",
+                fit: 'N/A',
+                size: selectedSize,
+                price: pricePerItem,
+                quantity: selectedQty,
+                imageSrc: '/jacketCloseup1.png'
+            }];
         }
 
         const releaseDateMsModal = new Date('2025-03-04T00:00:00+08:00').getTime(); // TODO: change back to 2026-03-20 for launch
@@ -464,14 +435,14 @@
 
             if (diff <= 0) {
                 isCheckoutReleased = true;
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Checkout';
+                updateCheckoutBtn();
                 return;
             }
 
+            isCheckoutReleased = false;
             confirmBtn.disabled = true;
             const formatted = formatTimeRemainingModal(diff);
-            if (formatted) confirmBtn.textContent = 'Available to check out in\n' + formatted;
+            if (formatted) confirmBtn.textContent = 'Available in\n' + formatted;
         }
 
         updateModalCountdown();
@@ -492,9 +463,8 @@
             } catch (err) {
                 console.error('Checkout error:', err);
                 alert('Unable to process checkout. Please try again.');
-            } finally {
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Confirm & Checkout';
+                updateCheckoutBtn();
             }
         }
 
