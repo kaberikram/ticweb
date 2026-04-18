@@ -159,7 +159,7 @@
 
 .product-carousel {
     width: 100%;
-    padding: 1.75rem 0 0;
+    padding: 0;
     flex-shrink: 0;
 }
 
@@ -217,14 +217,14 @@
     cursor: pointer;
 }
 
-/* Dot indicators below the circles */
+/* Dot indicators above the circles */
 
 .carousel-stepper {
     display: flex;
-    gap: 6px;
+    gap: 20px;
     align-items: center;
     justify-content: center;
-    padding: 0.7rem 0 0;
+    padding: 1.75rem 0 0.65rem;
     flex-shrink: 0;
 }
 
@@ -288,18 +288,11 @@
 }
 
 /* ============================================
-   SIZE GUIDE & TRACK ORDER LINKS
+   PRODUCT INFO PANEL — SIZE GUIDE & LINKS
    ============================================ */
 
-.product-links {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
 #jacketSizeGuideBtn,
-.product-links .size-guide-link {
-    align-self: flex-start;
+.product-info-panel .size-guide-link {
     font-size: 11px;
     font-weight: 600;
     color: #fff;
@@ -313,22 +306,31 @@
 }
 
 #jacketSizeGuideBtn:hover,
-.product-links .size-guide-link:hover {
+.product-info-panel .size-guide-link:hover {
     color: var(--color-white, #fff);
 }
 
-.product-links .size-guide-link {
+.product-info-panel .size-guide-link {
     text-decoration: underline;
 }
 
+.product-info-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin: 0 0 0.75rem;
+}
+
 /* ============================================
-   SHIPPING & PRODUCTION INFO TOGGLE
+   PRODUCT & SHIPPING INFO TOGGLE
    ============================================ */
 
 .product-info-toggle {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 0.4rem;
     width: 100%;
     margin-top: 0.5rem;
     padding: 0.4rem 0;
@@ -338,8 +340,7 @@
     font-size: 11px;
     font-weight: 600;
     color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: normal;
     cursor: pointer;
     text-align: left;
     transition: color 0.2s ease;
@@ -350,16 +351,41 @@
 }
 
 .product-info-toggle-icon {
-    font-size: 14px;
-    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-info-toggle[aria-expanded="true"] .product-info-toggle-icon {
     transform: rotate(45deg);
 }
 
+/* Height animation: 0fr → 1fr (smooth expand/collapse) */
+.product-info-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-info-collapse.is-open {
+    grid-template-rows: 1fr;
+}
+
 .product-info-panel {
+    overflow: hidden;
+    min-height: 0;
     padding: 0.5rem 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-info-collapse {
+        transition-duration: 0.01ms;
+    }
+
+    .product-info-toggle-icon {
+        transition-duration: 0.01ms;
+    }
 }
 
 .product-info-panel p {
@@ -380,8 +406,10 @@
     padding-top: 0.75rem;
     margin-top: 0.25rem;
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
 }
 
 .selector-label {
@@ -390,14 +418,21 @@
     font-size: 11px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: normal;
+    /* Same column width so size pills and qty stepper start on one vertical line */
+    flex: 0 0 5ch;
+    min-width: 5ch;
+    max-width: 5ch;
+    text-align: left;
 }
 
 .size-pills {
     display: flex;
+    flex: 1 1 auto;
     gap: 8px;
     flex-wrap: wrap;
+    justify-content: flex-start;
+    min-width: 0;
 }
 
 .size-pill {
@@ -433,7 +468,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding-top: 0.5rem;
+    margin-top: 1rem;
 }
 
 .qty-stepper {
@@ -483,7 +518,7 @@
 
 #confirmCheckoutBtn {
     width: 100%;
-    margin-top: 0.75rem;
+    margin-top: 1.75rem;
     padding: 14px 24px;
     font-family: var(--font-family-primary, 'Source Code Pro', monospace);
     font-size: 13px;

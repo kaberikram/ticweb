@@ -71,6 +71,14 @@
             <button id="jacketModalClose" class="modal-close-x">&times;</button>
             
             <div class="product-modal-content">
+                <!-- Dot indicators (above circular images) -->
+                <div class="carousel-stepper" role="tablist" aria-label="Image steps">
+                    <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true" aria-label="Image 1"></button>
+                    <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false" aria-label="Image 2"></button>
+                    <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false" aria-label="Image 3"></button>
+                    <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false" aria-label="Image 4"></button>
+                </div>
+
                 <!-- 3-Circle Carousel -->
                 <div class="product-carousel">
                     <div class="carousel-circle-track" id="carouselCircle">
@@ -81,32 +89,24 @@
                     </div>
                 </div>
 
-                <!-- Dot indicators -->
-                <div class="carousel-stepper" role="tablist" aria-label="Image steps">
-                    <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true" aria-label="Image 1"></button>
-                    <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false" aria-label="Image 2"></button>
-                    <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false" aria-label="Image 3"></button>
-                    <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false" aria-label="Image 4"></button>
-                </div>
-
                 <!-- Product Details -->
                 <div class="product-details">
                     <h2 class="product-name">Rat'teryx Jacket</h2>
                     <p class="product-price" data-price="8888">$88.88</p>
 
-                    <!-- Size Guide & Track Order Links -->
-                    <div class="product-links">
-                        <button class="size-guide-link" id="jacketSizeGuideBtn">Size Guide</button>
-                        <a href="https://www.laughwithtic.com/trackingportal" target="_blank" rel="noopener noreferrer" class="size-guide-link">Track your order</a>
-                    </div>
-
-                    <!-- Made to Order / Delivery Info -->
+                    <!-- Product & shipping (collapsible) -->
                     <button type="button" class="product-info-toggle" id="deliveryInfoToggle" aria-expanded="false">
-                        <span class="product-info-toggle-label">Shipping & production info</span>
+                        <span class="product-info-toggle-label">Product & Shipping Info</span>
                         <span class="product-info-toggle-icon">+</span>
                     </button>
-                    <div class="product-info-panel" id="deliveryInfoPanel" hidden>
-                        <p>Made to order. 1–2 weeks for production, plus 2–3 weeks for global delivery.</p>
+                    <div class="product-info-collapse" id="deliveryInfoCollapse" aria-hidden="true" inert>
+                        <div class="product-info-panel" id="deliveryInfoPanel">
+                            <div class="product-info-panel-actions">
+                                <button type="button" class="size-guide-link" id="jacketSizeGuideBtn">Size Guide</button>
+                                <a href="https://www.laughwithtic.com/trackingportal" target="_blank" rel="noopener noreferrer" class="size-guide-link">Track your order</a>
+                            </div>
+                            <p>Made to order. 1–2 weeks for production, plus 2–3 weeks for global delivery.</p>
+                        </div>
                     </div>
 
                     <!-- Size Pills -->
@@ -479,16 +479,65 @@
             }
         }
 
-        // Swipe on circle to change image
-        const carouselCircle = document.getElementById('carouselCircle');
-        let touchStartX = 0;
-        carouselCircle.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
+        // Swipe anywhere on the modal to change image (mobile); horizontal must beat vertical
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        modal.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
         }, { passive: true });
-        carouselCircle.addEventListener('touchend', (e) => {
-            const delta = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(delta) > 30) delta < 0 ? nextSlide() : prevSlide();
+        modal.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length !== 1) return;
+            const dx = e.changedTouches[0].clientX - swipeStartX;
+            const dy = e.changedTouches[0].clientY - swipeStartY;
+            const minSwipe = 40;
+            if (Math.abs(dx) < minSwipe) return;
+            if (Math.abs(dx) <= Math.abs(dy)) return;
+            dx < 0 ? nextSlide() : prevSlide();
         }, { passive: true });
+
+        // Trackpad / mouse wheel: horizontal scroll changes slide (accumulated so small ticks don’t spam)
+        let wheelAccumX = 0;
+        const WHEEL_THRESHOLD = 165;
+        let lastWheelSlideAt = 0;
+        const WHEEL_COOLDOWN_MS = 280;
+
+        modal.addEventListener('wheel', (e) => {
+            let dx = e.deltaX;
+            let dy = e.deltaY;
+            if (e.shiftKey && Math.abs(dy) >= Math.abs(dx)) {
+                dx = dy;
+                dy = 0;
+            }
+
+            if (Date.now() - lastWheelSlideAt < WHEEL_COOLDOWN_MS) {
+                wheelAccumX = 0;
+                return;
+            }
+
+            if (Math.abs(dy) > Math.abs(dx) * 1.65 && Math.abs(dy) > 8) {
+                wheelAccumX = 0;
+                return;
+            }
+
+            if (Math.abs(dx) < Math.abs(dy) * 0.72 && !e.shiftKey) {
+                wheelAccumX = 0;
+                return;
+            }
+
+            if (wheelAccumX !== 0 && Math.sign(dx) !== Math.sign(wheelAccumX)) wheelAccumX = 0;
+
+            wheelAccumX += dx;
+
+            if (Math.abs(wheelAccumX) < WHEEL_THRESHOLD) return;
+
+            e.preventDefault();
+            const goNext = wheelAccumX < 0;
+            wheelAccumX = 0;
+            lastWheelSlideAt = Date.now();
+            goNext ? nextSlide() : prevSlide();
+        }, { passive: false });
 
         // Event Listeners
         buyBtn.addEventListener('click', openModal);
@@ -512,13 +561,16 @@
             });
         });
 
-        // Delivery Info Toggle
+        // Delivery Info Toggle (animated expand/collapse)
         const deliveryToggle = document.getElementById('deliveryInfoToggle');
-        const deliveryPanel = document.getElementById('deliveryInfoPanel');
+        const deliveryCollapse = document.getElementById('deliveryInfoCollapse');
         deliveryToggle.addEventListener('click', () => {
             const isExpanded = deliveryToggle.getAttribute('aria-expanded') === 'true';
-            deliveryToggle.setAttribute('aria-expanded', !isExpanded);
-            deliveryPanel.hidden = isExpanded;
+            const willExpand = !isExpanded;
+            deliveryToggle.setAttribute('aria-expanded', String(willExpand));
+            deliveryCollapse.classList.toggle('is-open', willExpand);
+            deliveryCollapse.setAttribute('aria-hidden', String(!willExpand));
+            deliveryCollapse.toggleAttribute('inert', !willExpand);
         });
 
         // Size Guide
