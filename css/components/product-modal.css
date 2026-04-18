@@ -210,7 +210,7 @@
 
 /* Left neighbor: smaller, dimmer, overlapping center from behind */
 .carousel-img.pos-left {
-    transform: translate(calc(-50% - 145px), -50%) scale(0.52);
+    transform: translate(calc(-50% - 115px), -50%) scale(0.52);
     opacity: 0.5;
     z-index: 2;
     pointer-events: auto;
@@ -219,7 +219,7 @@
 
 /* Right neighbor: smaller, dimmer, overlapping center from behind */
 .carousel-img.pos-right {
-    transform: translate(calc(-50% + 145px), -50%) scale(0.52);
+    transform: translate(calc(-50% + 115px), -50%) scale(0.52);
     opacity: 0.5;
     z-index: 2;
     pointer-events: auto;
