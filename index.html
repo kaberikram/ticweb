@@ -585,6 +585,7 @@
         const lightbox = document.getElementById('jacketImageLightbox');
         const lightboxImg = lightbox ? lightbox.querySelector('.jacket-lightbox-img') : null;
         let lightboxHideTimer = null;
+        let lightboxBlurOffTimer = null;
         let lightboxSourceEl = null;
         const LIGHTBOX_DURATION_MS = 520;
         const LIGHTBOX_MAX_SIZE_PX = 560;
@@ -616,6 +617,7 @@
         function openLightbox(sourceImg) {
             if (!lightbox || !lightboxImg || !sourceImg) return;
             clearTimeout(lightboxHideTimer);
+            clearTimeout(lightboxBlurOffTimer);
 
             lightboxSourceEl = sourceImg;
             lightboxImg.src = sourceImg.src;
@@ -627,7 +629,6 @@
             lightboxImg.classList.add('is-priming');
             lightboxImg.style.transform = startTransform;
             lightbox.classList.add('is-visible');
-            document.body.classList.add('lightbox-open'); // disables modal backdrop-filter
             lightbox.setAttribute('aria-hidden', 'false');
 
             // 2) Next frame, play: re-enable transitions and animate to identity
@@ -637,12 +638,25 @@
                 lightbox.classList.add('is-open');
                 lightboxImg.style.transform = IDENTITY_TRANSFORM;
             });
+
+            // 3) Only kill the modal blur AFTER the backdrop is fully opaque —
+            //    avoids the pop of the modal losing blur while still visible.
+            lightboxBlurOffTimer = setTimeout(() => {
+                document.body.classList.add('lightbox-open');
+                lightboxBlurOffTimer = null;
+            }, LIGHTBOX_DURATION_MS);
         }
 
         function closeLightbox() {
             if (!lightbox || !lightbox.classList.contains('is-visible')) return;
             lightbox.classList.remove('is-open');
             lightbox.setAttribute('aria-hidden', 'true');
+
+            // Re-enable the modal blur immediately so it fades back in under the
+            // closing (still-opaque) backdrop, instead of popping in at the end.
+            clearTimeout(lightboxBlurOffTimer);
+            lightboxBlurOffTimer = null;
+            document.body.classList.remove('lightbox-open');
 
             // Animate back to the carousel slot (recompute — modal may have moved)
             if (lightboxSourceEl) {
@@ -655,7 +669,6 @@
             clearTimeout(lightboxHideTimer);
             lightboxHideTimer = setTimeout(() => {
                 lightbox.classList.remove('is-visible');
-                document.body.classList.remove('lightbox-open');
                 lightboxImg.classList.remove('is-closing');
                 lightboxImg.style.transform = '';
                 lightboxSourceEl = null;
