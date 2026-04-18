@@ -171,15 +171,17 @@
     overflow: hidden;
 }
 
-/* Each image is its own circle, positioned from center */
+/* Each image is its own feathered circle, positioned from center */
 .carousel-img {
     position: absolute;
     width: 210px;
     height: 210px;
-    border-radius: 50%;
     object-fit: cover;
     top: 50%;
     left: 50%;
+    /* Soft god-ray fade instead of hard circle clip */
+    mask-image: radial-gradient(circle, black 36%, transparent 72%);
+    -webkit-mask-image: radial-gradient(circle, black 36%, transparent 72%);
     /* Default: hidden (no position class) */
     transform: translate(-50%, -50%) scale(0.15);
     opacity: 0;
