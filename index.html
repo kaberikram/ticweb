@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TIC Corp.</title>
     <!-- Import map for PlayCanvas (used by splat viewer and camera-controls script) -->
     <script type="importmap">
@@ -319,6 +319,7 @@
         const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 8888;
         
         let currentSlide = 0;
+        let buyBtnSettleTimer = null;
 
         // Open Modal
         function openModal() {
@@ -335,15 +336,22 @@
             });
             updateCheckoutBtn();
             modalOverlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+            // body.home already locks overflow in CSS — avoid toggling inline overflow (mobile reflow)
             window.dispatchEvent(new CustomEvent('splat:pause'));
         }
 
         // Close Modal
         function closeModal() {
             modalOverlay.style.display = 'none';
-            document.body.style.overflow = '';
             window.dispatchEvent(new CustomEvent('splat:resume'));
+            // Skip transform transitions for one beat — avoids a visible "jump" when the
+            // overlay disappears and mobile Safari recalculates viewport / layers.
+            buyBtn.classList.add('floating-buy-btn--settling');
+            clearTimeout(buyBtnSettleTimer);
+            buyBtnSettleTimer = setTimeout(() => {
+                buyBtn.classList.remove('floating-buy-btn--settling');
+                buyBtnSettleTimer = null;
+            }, 140);
         }
 
         // Carousel Functions
