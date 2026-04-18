@@ -709,15 +709,25 @@
  *   - On .is-open: rect = centered target rect
  *   - On close: rect = original carousel image rect (so it returns home)
  */
+/*
+ * Native size = the final centered target.
+ * FLIP: JS writes an inline transform to "invert" it to the carousel rect on open,
+ * then transitions to identity (translate(0,0) scale(1)) to play the reveal.
+ * Only transform + opacity animate = cheap on mobile GPUs.
+ */
 .jacket-lightbox-img {
+    --jl-size: min(88vmin, 560px);
     position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 210px;
-    height: 210px;
+    top: calc(50% - var(--jl-size) / 2);
+    left: calc(50% - var(--jl-size) / 2);
+    width: var(--jl-size);
+    height: var(--jl-size);
     object-fit: cover;
     display: block;
     opacity: 1;
+    transform-origin: center center;
+    transform: translate3d(0, 0, 0) scale(1);
+    backface-visibility: hidden;
     --jl-mask-inner: 36%;
     --jl-mask-outer: 72%;
     mask-image: radial-gradient(circle,
@@ -727,18 +737,15 @@
         black var(--jl-mask-inner),
         transparent var(--jl-mask-outer));
     transition:
-        top 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        left 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        width 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        height 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        transform 0.52s cubic-bezier(0.35, 0, 0.25, 1),
         opacity 0.22s ease,
         --jl-mask-inner 0.52s ease-out,
         --jl-mask-outer 0.52s ease-out;
-    will-change: top, left, width, height, opacity;
+    will-change: transform, opacity;
     pointer-events: none; /* clicks fall through to backdrop to close */
 }
 
-/* Instant snap when syncing to the starting rect on open */
+/* Instant snap when syncing to the starting transform on open (no transition) */
 .jacket-lightbox-img.is-priming {
     transition: none !important;
 }
@@ -748,17 +755,53 @@
     --jl-mask-outer: 150%;
 }
 
-/* Closing: keep the "return home" motion, then softly fade at the end so the hide is seamless */
+/* Closing: keep the "return home" motion, then softly fade so the hide isn't a hard cut */
 .jacket-lightbox-img.is-closing {
     opacity: 0;
     transition:
-        top 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        left 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        width 0.52s cubic-bezier(0.35, 0, 0.25, 1),
-        height 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        transform 0.52s cubic-bezier(0.35, 0, 0.25, 1),
         opacity 0.28s ease 0.22s,
         --jl-mask-inner 0.52s ease-out,
         --jl-mask-outer 0.52s ease-out;
+}
+
+/*
+ * Mobile / touch: animating mask-image (radial-gradient stops) re-rasterizes
+ * the mask every frame and murders battery. Keep the mask STATIC (matches the
+ * carousel's feathered circle) and let transform do the work. The reveal still
+ * reads — the feathered circle simply grows bigger.
+ */
+@media (hover: none) and (pointer: coarse) {
+    .jacket-lightbox-img {
+        transition:
+            transform 0.42s cubic-bezier(0.35, 0, 0.25, 1),
+            opacity 0.22s ease;
+    }
+
+    .jacket-lightbox.is-open .jacket-lightbox-img {
+        --jl-mask-inner: 36%;
+        --jl-mask-outer: 72%;
+    }
+
+    .jacket-lightbox-img.is-closing {
+        transition:
+            transform 0.42s cubic-bezier(0.35, 0, 0.25, 1),
+            opacity 0.24s ease 0.18s;
+    }
+
+    .jacket-lightbox {
+        transition: background-color 0.42s ease;
+    }
+}
+
+/*
+ * While the lightbox is open, kill the modal's backdrop-filter blur. The
+ * lightbox covers it with a near-opaque backdrop anyway, and blur is the single
+ * most expensive thing on mobile GPUs.
+ */
+body.lightbox-open .product-modal {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
