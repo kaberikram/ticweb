@@ -211,6 +211,8 @@
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
     z-index: 3;
+    pointer-events: auto;
+    cursor: zoom-in;
 }
 
 /* Left neighbor: smaller, dimmer, overlapping center from behind */
@@ -661,4 +663,107 @@
 
 #jacketSizeGuidePopup #closeJacketSizeGuide:hover {
     color: var(--color-white, #fff);
+}
+
+/* ============================================
+   JACKET IMAGE LIGHTBOX — Circle-mask reveal
+   Registered custom properties so the radial-gradient
+   mask stops can actually animate (Chrome 85+, Safari 16.4+, FF 128+).
+   ============================================ */
+
+@property --jl-mask-inner {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 36%;
+}
+
+@property --jl-mask-outer {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 72%;
+}
+
+.jacket-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal, 1000) + 10);
+    display: none;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color 0.52s ease;
+    cursor: zoom-out;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.jacket-lightbox.is-visible {
+    display: block;
+}
+
+.jacket-lightbox.is-open {
+    background-color: rgba(0, 0, 0, 0.92);
+}
+
+/*
+ * Position + size are set inline from JS (FLIP-style):
+ *   - On open: start rect = tapped carousel image rect
+ *   - On .is-open: rect = centered target rect
+ *   - On close: rect = original carousel image rect (so it returns home)
+ */
+.jacket-lightbox-img {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 210px;
+    height: 210px;
+    object-fit: cover;
+    display: block;
+    opacity: 1;
+    --jl-mask-inner: 36%;
+    --jl-mask-outer: 72%;
+    mask-image: radial-gradient(circle,
+        black var(--jl-mask-inner),
+        transparent var(--jl-mask-outer));
+    -webkit-mask-image: radial-gradient(circle,
+        black var(--jl-mask-inner),
+        transparent var(--jl-mask-outer));
+    transition:
+        top 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        left 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        width 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        height 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        opacity 0.22s ease,
+        --jl-mask-inner 0.52s ease-out,
+        --jl-mask-outer 0.52s ease-out;
+    will-change: top, left, width, height, opacity;
+    pointer-events: none; /* clicks fall through to backdrop to close */
+}
+
+/* Instant snap when syncing to the starting rect on open */
+.jacket-lightbox-img.is-priming {
+    transition: none !important;
+}
+
+.jacket-lightbox.is-open .jacket-lightbox-img {
+    --jl-mask-inner: 110%;
+    --jl-mask-outer: 150%;
+}
+
+/* Closing: keep the "return home" motion, then softly fade at the end so the hide is seamless */
+.jacket-lightbox-img.is-closing {
+    opacity: 0;
+    transition:
+        top 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        left 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        width 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        height 0.52s cubic-bezier(0.35, 0, 0.25, 1),
+        opacity 0.28s ease 0.22s,
+        --jl-mask-inner 0.52s ease-out,
+        --jl-mask-outer 0.52s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jacket-lightbox,
+    .jacket-lightbox-img {
+        transition-duration: 0.01ms;
+    }
 }

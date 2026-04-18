@@ -195,6 +195,11 @@
         </div>
     </div>
 
+    <!-- Jacket Image Lightbox (circle-mask reveal) -->
+    <div id="jacketImageLightbox" class="jacket-lightbox" aria-hidden="true" role="dialog" aria-label="Enlarged image">
+        <img class="jacket-lightbox-img" src="" alt="">
+    </div>
+
     <!-- Show Buy Button After Loading + Countdown Lock (Malaysia time) -->
     <script>
     (function() {
@@ -564,13 +569,109 @@
             dot.addEventListener('click', () => showSlide(index));
         });
 
-        // Tap side circles to navigate
+        // Tap side circles to navigate; tap center to open lightbox
         carouselImages.forEach(img => {
-            img.addEventListener('click', () => {
-                if (img.classList.contains('pos-left'))  prevSlide();
-                if (img.classList.contains('pos-right')) nextSlide();
+            img.addEventListener('click', (e) => {
+                if (img.classList.contains('pos-left'))  return prevSlide();
+                if (img.classList.contains('pos-right')) return nextSlide();
+                if (img.classList.contains('pos-center')) {
+                    e.stopPropagation();
+                    openLightbox(img);
+                }
             });
         });
+
+        // --- Image Lightbox (FLIP: circle-mask reveal from the carousel slot) ---
+        const lightbox = document.getElementById('jacketImageLightbox');
+        const lightboxImg = lightbox ? lightbox.querySelector('.jacket-lightbox-img') : null;
+        let lightboxHideTimer = null;
+        let lightboxSourceEl = null;
+        const LIGHTBOX_DURATION_MS = 520;
+        const LIGHTBOX_MAX_SIZE_PX = 560;
+        const LIGHTBOX_VIEWPORT_RATIO = 0.88;
+
+        function applyRect(rect) {
+            lightboxImg.style.top = rect.top + 'px';
+            lightboxImg.style.left = rect.left + 'px';
+            lightboxImg.style.width = rect.width + 'px';
+            lightboxImg.style.height = rect.height + 'px';
+        }
+
+        function centeredTargetRect() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const size = Math.min(vw, vh) * LIGHTBOX_VIEWPORT_RATIO;
+            const final = Math.min(size, LIGHTBOX_MAX_SIZE_PX);
+            return {
+                top: (vh - final) / 2,
+                left: (vw - final) / 2,
+                width: final,
+                height: final,
+            };
+        }
+
+        function openLightbox(sourceImg) {
+            if (!lightbox || !lightboxImg || !sourceImg) return;
+            clearTimeout(lightboxHideTimer);
+
+            lightboxSourceEl = sourceImg;
+            lightboxImg.src = sourceImg.src;
+            lightboxImg.alt = sourceImg.alt || '';
+
+            // 1) Snap the lightbox image onto the tapped carousel image (no transition)
+            const startRect = sourceImg.getBoundingClientRect();
+            lightboxImg.classList.remove('is-closing');
+            lightboxImg.classList.add('is-priming');
+            applyRect(startRect);
+            lightbox.classList.add('is-visible');
+            lightbox.setAttribute('aria-hidden', 'false');
+
+            // 2) Next frame, re-enable transitions and animate to the centered target
+            requestAnimationFrame(() => {
+                // Force style flush so priming state is committed before the next change
+                void lightboxImg.offsetHeight;
+                lightboxImg.classList.remove('is-priming');
+                lightbox.classList.add('is-open');
+                applyRect(centeredTargetRect());
+            });
+        }
+
+        function closeLightbox() {
+            if (!lightbox || !lightbox.classList.contains('is-visible')) return;
+            lightbox.classList.remove('is-open');
+            lightbox.setAttribute('aria-hidden', 'true');
+
+            // Animate back to the exact carousel slot (recompute in case modal scrolled)
+            if (lightboxSourceEl) {
+                applyRect(lightboxSourceEl.getBoundingClientRect());
+            }
+            // Trigger the delayed opacity fade so the hide isn't an abrupt cut
+            lightboxImg.classList.add('is-closing');
+
+            clearTimeout(lightboxHideTimer);
+            lightboxHideTimer = setTimeout(() => {
+                lightbox.classList.remove('is-visible');
+                lightboxImg.classList.remove('is-closing');
+                lightboxSourceEl = null;
+            }, LIGHTBOX_DURATION_MS);
+        }
+
+        if (lightbox) lightbox.addEventListener('click', closeLightbox);
+
+        // Keep the centered target correct if the viewport resizes while open
+        window.addEventListener('resize', () => {
+            if (lightbox && lightbox.classList.contains('is-open')) {
+                applyRect(centeredTargetRect());
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (lightbox && lightbox.classList.contains('is-open')) {
+                e.stopPropagation();
+                closeLightbox();
+            }
+        }, true);
 
         // Delivery Info Toggle (animated expand/collapse)
         const deliveryToggle = document.getElementById('deliveryInfoToggle');
