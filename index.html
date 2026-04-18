@@ -335,12 +335,14 @@
             updateCheckoutBtn();
             modalOverlay.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            window.dispatchEvent(new CustomEvent('splat:pause'));
         }
 
         // Close Modal
         function closeModal() {
             modalOverlay.style.display = 'none';
             document.body.style.overflow = '';
+            window.dispatchEvent(new CustomEvent('splat:resume'));
         }
 
         // Carousel Functions

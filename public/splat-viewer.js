@@ -227,10 +227,11 @@ function initGyroControls(container, splat, baseRot, app) {
   overlay.className = 'splat-gyro-prompt'
   overlay.innerHTML = `
     <div class="splat-gyro-prompt-box">
-      <p>Enable motion controls?</p>
+      <p class="splat-gyro-prompt-lead">Tilt and move your phone to look around, or drag on the screen—touch always works.</p>
+      <p class="splat-gyro-prompt-note">If you use motion, your browser may ask for permission next (common on iPhone).</p>
       <div class="splat-gyro-prompt-actions">
-        <button class="splat-gyro-prompt-btn splat-gyro-yes">Yes</button>
-        <button class="splat-gyro-prompt-btn splat-gyro-no">No</button>
+        <button type="button" class="splat-gyro-prompt-btn splat-gyro-yes">Use motion</button>
+        <button type="button" class="splat-gyro-prompt-btn splat-gyro-no">Touch only</button>
       </div>
     </div>
   `

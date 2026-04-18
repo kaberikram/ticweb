@@ -1,6 +1,9 @@
 /**
  * Gaussian splat (.sog) viewer using PlayCanvas Engine (CDN)
  * Renders in #splat-viewer; SOG URL from data-sog (default /scene.sog)
+ *
+ * Mobile-optimized: on-demand rendering, paused when hidden/offscreen/modal open,
+ * reduced DPR + shBands=0 on mobile, lazy-loaded via IntersectionObserver.
  */
 
 import {
@@ -17,7 +20,12 @@ import {
 const CONTAINER_ID = 'splat-viewer'
 const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
-const MAX_DPR = 1.5
+
+const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+const IS_LOW_END =
+  (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4) ||
+  (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4)
+const MAX_DPR = IS_MOBILE ? (IS_LOW_END ? 1.0 : 1.25) : 1.5
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
@@ -37,7 +45,7 @@ function parseVec3(attr, defaults) {
 }
 
 function resizeCanvas(canvas, app, container) {
-  if (!container || !canvas || !app) return
+  if (!container || !canvas || !app) return false
   const rect = container.getBoundingClientRect()
   const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
   const w = Math.max(1, Math.floor(rect.width * dpr))
@@ -46,7 +54,9 @@ function resizeCanvas(canvas, app, container) {
     canvas.width = w
     canvas.height = h
     app.resizeCanvas()
+    return true
   }
+  return false
 }
 
 const LOADER_IMAGES = [
@@ -127,14 +137,13 @@ const HAPTIC = {
 
 const GYRO_CHANGE_THRESHOLD = 0.0005
 
-function initGyroControls(container, splat, baseRot, app) {
+function initGyroControls(container, splat, baseRot, app, renderCtl) {
   if (!window.DeviceOrientationEvent) return
-
-  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-  if (!isMobile) return
+  if (!IS_MOBILE) return
 
   const wrap = container.closest('.splat-viewer-wrap') || container
   let gyroEnabled = false
+  let gyroListenerAttached = false
 
   let refAlpha = null
   let refBeta = null
@@ -185,9 +194,22 @@ function initGyroControls(container, splat, baseRot, app) {
     targetPitch = clamp(rawPitch, -GYRO_MAX_OFFSET, GYRO_MAX_OFFSET)
   }
 
+  function attachOrientationListener() {
+    if (gyroListenerAttached) return
+    window.addEventListener('deviceorientation', onOrientation)
+    gyroListenerAttached = true
+  }
+
+  function detachOrientationListener() {
+    if (!gyroListenerAttached) return
+    window.removeEventListener('deviceorientation', onOrientation)
+    gyroListenerAttached = false
+  }
+
   // Hook into PlayCanvas's own update loop — no separate RAF needed
   app.on('update', () => {
     if (!gyroEnabled) return
+    if (renderCtl.isPaused()) return
 
     const nextYaw = currentYaw + (targetYaw - currentYaw) * GYRO_LERP
     const nextPitch = currentPitch + (targetPitch - currentPitch) * GYRO_LERP
@@ -195,7 +217,7 @@ function initGyroControls(container, splat, baseRot, app) {
     const yawDelta = Math.abs(nextYaw - currentYaw)
     const pitchDelta = Math.abs(nextPitch - currentPitch)
 
-    // Skip setEulerAngles when movement is negligible
+    // Skip setEulerAngles AND skip render when movement is negligible
     if (yawDelta < GYRO_CHANGE_THRESHOLD && pitchDelta < GYRO_CHANGE_THRESHOLD) return
 
     currentYaw = Math.abs(nextYaw) < 0.001 ? 0 : nextYaw
@@ -206,6 +228,7 @@ function initGyroControls(container, splat, baseRot, app) {
       baseRot[1] + currentYaw,
       baseRot[2]
     )
+    renderCtl.requestRender(2)
   })
 
   async function enableGyro() {
@@ -217,17 +240,25 @@ function initGyroControls(container, splat, baseRot, app) {
     }
     gyroEnabled = true
     HAPTIC.success()
-    window.addEventListener('deviceorientation', onOrientation)
+    if (!renderCtl.isPaused()) attachOrientationListener()
   }
+
+  // Detach the sensor when paused so the OS can suspend it; re-attach on resume.
+  renderCtl.onPauseChange((paused) => {
+    if (!gyroEnabled) return
+    if (paused) detachOrientationListener()
+    else attachOrientationListener()
+  })
 
   const overlay = document.createElement('div')
   overlay.className = 'splat-gyro-prompt'
   overlay.innerHTML = `
     <div class="splat-gyro-prompt-box">
-      <p>Enable motion controls?</p>
+      <p class="splat-gyro-prompt-lead">Tilt and move your phone to look around, or drag on the screen—touch always works.</p>
+      <p class="splat-gyro-prompt-note">If you use motion, your browser may ask for permission next (common on iPhone).</p>
       <div class="splat-gyro-prompt-actions">
-        <button class="splat-gyro-prompt-btn splat-gyro-yes">Yes</button>
-        <button class="splat-gyro-prompt-btn splat-gyro-no">No</button>
+        <button type="button" class="splat-gyro-prompt-btn splat-gyro-yes">Use motion</button>
+        <button type="button" class="splat-gyro-prompt-btn splat-gyro-no">Touch only</button>
       </div>
     </div>
   `
@@ -281,6 +312,116 @@ async function fetchSogWithProgress(url, onProgress) {
   return buf.buffer
 }
 
+/**
+ * Resolves once `el` is within `rootMargin` of the viewport.
+ * Returns immediately if IntersectionObserver is unavailable.
+ */
+function waitForNearViewport(el, rootMargin = '200px') {
+  return new Promise((resolve) => {
+    if (!('IntersectionObserver' in window)) return resolve()
+    const rect = el.getBoundingClientRect()
+    if (rect.top < window.innerHeight + 200 && rect.bottom > -200) return resolve()
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io.disconnect()
+        resolve()
+      }
+    }, { rootMargin })
+    io.observe(el)
+  })
+}
+
+/**
+ * Creates on-demand render controller.
+ * Renders N frames after each requestRender(N) call, then idles the GPU.
+ * Pauses entirely when tab hidden, viewer offscreen, or modal open.
+ */
+function createRenderController(app, container) {
+  let renderFramesLeft = 0
+  let tabHidden = document.hidden
+  let offscreen = false
+  let modalOpen = false
+  let paused = false
+  const pauseListeners = []
+
+  function isPaused() {
+    return paused
+  }
+
+  function requestRender(frames = 2) {
+    if (paused) return
+    if (frames > renderFramesLeft) renderFramesLeft = frames
+    app.renderNextFrame = true
+  }
+
+  app.on('frameend', () => {
+    if (paused) return
+    if (renderFramesLeft > 0) {
+      renderFramesLeft--
+      if (renderFramesLeft > 0) app.renderNextFrame = true
+    }
+  })
+
+  function updatePauseState() {
+    const shouldPause = tabHidden || offscreen || modalOpen
+    if (shouldPause === paused) return
+    paused = shouldPause
+    if (paused) {
+      renderFramesLeft = 0
+    } else {
+      requestRender(3)
+    }
+    for (const fn of pauseListeners) fn(paused)
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    tabHidden = document.hidden
+    updatePauseState()
+  })
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      offscreen = !entries[0].isIntersecting
+      updatePauseState()
+    }, { threshold: 0 })
+    io.observe(container)
+  }
+
+  window.addEventListener('splat:pause', () => {
+    modalOpen = true
+    updatePauseState()
+  })
+  window.addEventListener('splat:resume', () => {
+    modalOpen = false
+    updatePauseState()
+  })
+
+  return {
+    requestRender,
+    isPaused,
+    onPauseChange(fn) {
+      pauseListeners.push(fn)
+    }
+  }
+}
+
+function attachInteractionRenderHooks(canvas, renderCtl) {
+  const onMove = () => renderCtl.requestRender(3)
+  const onDown = () => renderCtl.requestRender(6)
+  // Pointerup / wheel requests a generous inertia tail so camera-controls damping plays out.
+  const onEnd = () => renderCtl.requestRender(120)
+  const onWheel = () => renderCtl.requestRender(30)
+
+  canvas.addEventListener('pointerdown', onDown)
+  canvas.addEventListener('pointermove', onMove)
+  canvas.addEventListener('pointerup', onEnd)
+  canvas.addEventListener('pointercancel', onEnd)
+  canvas.addEventListener('wheel', onWheel, { passive: true })
+  canvas.addEventListener('touchstart', onDown, { passive: true })
+  canvas.addEventListener('touchmove', onMove, { passive: true })
+  canvas.addEventListener('touchend', onEnd, { passive: true })
+}
+
 async function initSplatViewer() {
   const container = document.getElementById(CONTAINER_ID)
   if (!container) return
@@ -306,14 +447,19 @@ async function initSplatViewer() {
   app.setCanvasResolution(RESOLUTION_FIXED)
   app.start()
 
+  const renderCtl = createRenderController(app, container)
+
   resizeCanvas(canvas, app, container)
 
   const resizeObserver = new ResizeObserver(() => {
-    resizeCanvas(canvas, app, container)
+    if (resizeCanvas(canvas, app, container)) renderCtl.requestRender(2)
   })
   resizeObserver.observe(container)
 
   const loader = createLoader(container)
+
+  // Defer the 5.1 MB .sog fetch until the viewer is near the viewport.
+  await waitForNearViewport(container)
 
   let sogAsset
   try {
@@ -373,9 +519,19 @@ async function initSplatViewer() {
   splat.setPosition(splatPos[0], splatPos[1], splatPos[2])
   splat.setEulerAngles(splatRot[0], splatRot[1], splatRot[2])
   splat.addComponent('gsplat', { asset: assets[1] })
+  // Drop view-dependent SH term — massive shader cost saving on mobile, near-invisible
+  // for a matte garment.
+  const gsplatMaterial = splat.gsplat?.material
+  if (gsplatMaterial && 'shBands' in gsplatMaterial) gsplatMaterial.shBands = 0
   app.root.addChild(splat)
 
-  initGyroControls(container, splat, splatRot, app)
+  initGyroControls(container, splat, splatRot, app, renderCtl)
+  attachInteractionRenderHooks(canvas, renderCtl)
+
+  // Switch to on-demand rendering. Paint a generous initial window so the splat
+  // settles (camera-controls may apply initial damping, textures stream in).
+  app.autoRender = false
+  renderCtl.requestRender(30)
 }
 
 if (document.readyState === 'loading') {
