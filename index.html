@@ -71,22 +71,24 @@
             <button id="jacketModalClose" class="modal-close-x">&times;</button>
             
             <div class="product-modal-content">
-                <!-- Image Carousel -->
+                <!-- Circular Spinwheel Carousel -->
                 <div class="product-carousel">
-                    <div class="carousel-images">
+                    <button type="button" class="carousel-side-arrow carousel-prev" aria-label="Previous">&#8249;</button>
+                    <div class="carousel-circle-wrap" id="carouselCircle">
                         <img src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img active" data-index="0">
                         <img src="/jacketCloseUp2.png" alt="Rat'teryx Jacket hood detail" class="carousel-img" data-index="1">
                         <img src="/jacketCloseUp3.png" alt="Rat'teryx Jacket label" class="carousel-img" data-index="2">
                         <img src="/jacketCloseup4.png" alt="Rat'teryx Jacket worn" class="carousel-img" data-index="3">
                     </div>
-                    <div class="carousel-stepper" role="tablist" aria-label="Image steps">
-                        <button type="button" class="carousel-stepper-arrow carousel-prev" aria-label="Previous">&larr;</button>
-                        <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true" aria-label="Image 1"></button>
-                        <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false" aria-label="Image 2"></button>
-                        <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false" aria-label="Image 3"></button>
-                        <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false" aria-label="Image 4"></button>
-                        <button type="button" class="carousel-stepper-arrow carousel-next" aria-label="Next">&rarr;</button>
-                    </div>
+                    <button type="button" class="carousel-side-arrow carousel-next" aria-label="Next">&#8250;</button>
+                </div>
+
+                <!-- Dot indicators -->
+                <div class="carousel-stepper" role="tablist" aria-label="Image steps">
+                    <button type="button" class="carousel-step dot active" data-index="0" role="tab" aria-selected="true" aria-label="Image 1"></button>
+                    <button type="button" class="carousel-step dot" data-index="1" role="tab" aria-selected="false" aria-label="Image 2"></button>
+                    <button type="button" class="carousel-step dot" data-index="2" role="tab" aria-selected="false" aria-label="Image 3"></button>
+                    <button type="button" class="carousel-step dot" data-index="3" role="tab" aria-selected="false" aria-label="Image 4"></button>
                 </div>
 
                 <!-- Product Details -->
@@ -337,10 +339,31 @@
         }
 
         // Carousel Functions
-        function showSlide(index) {
-            carouselImages.forEach((img, i) => {
-                img.classList.toggle('active', i === index);
-            });
+        function showSlide(index, direction) {
+            if (index === currentSlide) return;
+            const dir = direction || (index > currentSlide ? 'next' : 'prev');
+
+            const currentImg = carouselImages[currentSlide];
+            const nextImg = carouselImages[index];
+
+            // Snap next image to enter position instantly (no transition)
+            nextImg.classList.remove('active', 'spin-exit-left', 'spin-exit-right');
+            nextImg.classList.add(dir === 'next' ? 'spin-enter-right' : 'spin-enter-left');
+
+            // Force reflow so the snap is applied before transitions re-enable
+            void nextImg.getBoundingClientRect();
+
+            // Animate current out, next in
+            currentImg.classList.remove('active');
+            currentImg.classList.add(dir === 'next' ? 'spin-exit-left' : 'spin-exit-right');
+            nextImg.classList.remove('spin-enter-right', 'spin-enter-left');
+            nextImg.classList.add('active');
+
+            // Clean up exit classes after animation
+            setTimeout(() => {
+                currentImg.classList.remove('spin-exit-left', 'spin-exit-right');
+            }, 500);
+
             carouselDots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
                 dot.setAttribute('aria-selected', i === index);
@@ -349,13 +372,11 @@
         }
 
         function nextSlide() {
-            const next = (currentSlide + 1) % carouselImages.length;
-            showSlide(next);
+            showSlide((currentSlide + 1) % carouselImages.length, 'next');
         }
 
         function prevSlide() {
-            const prev = (currentSlide - 1 + carouselImages.length) % carouselImages.length;
-            showSlide(prev);
+            showSlide((currentSlide - 1 + carouselImages.length) % carouselImages.length, 'prev');
         }
 
         // Update checkout button text/state
@@ -468,14 +489,15 @@
             }
         }
 
-        // Swipe anywhere on modal to change image
+        // Swipe on circle to change image
+        const carouselCircle = document.getElementById('carouselCircle');
         let touchStartX = 0;
-        modal.addEventListener('touchstart', (e) => {
+        carouselCircle.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
         }, { passive: true });
-        modal.addEventListener('touchend', (e) => {
+        carouselCircle.addEventListener('touchend', (e) => {
             const delta = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(delta) > 40) delta < 0 ? nextSlide() : prevSlide();
+            if (Math.abs(delta) > 30) delta < 0 ? nextSlide() : prevSlide();
         }, { passive: true });
 
         // Event Listeners
