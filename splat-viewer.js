@@ -170,6 +170,9 @@ function createLoader(container) {
   const barEl = el.querySelector('.splat-loader-bar')
   const imgs = el.querySelectorAll('.splat-loader-img')
   let slideIdx = 0
+  let displayedPct = 0
+  let targetPct = 0
+  let trickleTimer = null
 
   const slideTimer = setInterval(() => {
     imgs[slideIdx].classList.remove('active')
@@ -177,17 +180,61 @@ function createLoader(container) {
     imgs[slideIdx].classList.add('active')
   }, SLIDE_INTERVAL)
 
+  const paintTimer = setInterval(() => {
+    const delta = targetPct - displayedPct
+    if (Math.abs(delta) < 0.1) {
+      displayedPct = targetPct
+    } else {
+      const step = Math.max(0.25, Math.abs(delta) * 0.14)
+      displayedPct += delta > 0 ? step : -step
+      if (delta > 0 && displayedPct > targetPct) displayedPct = targetPct
+      if (delta < 0 && displayedPct < targetPct) displayedPct = targetPct
+    }
+    const rounded = Math.round(displayedPct)
+    pctEl.textContent = rounded
+    barEl.style.width = rounded + '%'
+  }, 42)
+
+  function setTarget(pct, allowDecrease = false) {
+    const clamped = Math.min(100, Math.max(0, pct))
+    if (!allowDecrease && clamped < targetPct) return
+    targetPct = clamped
+  }
+
+  function stopTrickle() {
+    if (!trickleTimer) return
+    clearInterval(trickleTimer)
+    trickleTimer = null
+  }
+
+  function trickleTo(maxPct, intervalMs = 190) {
+    stopTrickle()
+    trickleTimer = setInterval(() => {
+      if (targetPct >= maxPct) return
+      const bump = 0.2 + (Math.random() * 0.5)
+      setTarget(Math.min(maxPct, targetPct + bump))
+    }, intervalMs)
+  }
+
   return {
-    set(pct) {
-      const v = Math.min(100, Math.max(0, Math.round(pct)))
-      pctEl.textContent = v
-      barEl.style.width = v + '%'
+    set(pct, opts = {}) {
+      const allowDecrease = !!opts.allowDecrease
+      setTarget(pct, allowDecrease)
+    },
+    stage(maxPct, intervalMs = 190) {
+      trickleTo(maxPct, intervalMs)
     },
     done() {
+      stopTrickle()
       clearInterval(slideTimer)
-      this.set(100)
-      el.classList.add('splat-loader-done')
-      setTimeout(() => el.remove(), 900)
+      setTarget(100, true)
+      setTimeout(() => {
+        el.classList.add('splat-loader-done')
+        setTimeout(() => {
+          clearInterval(paintTimer)
+          el.remove()
+        }, 900)
+      }, 280)
     }
   }
 }
@@ -700,24 +747,35 @@ async function initSplatViewer() {
   resizeObserver.observe(container)
 
   const loader = createLoader(container)
+  loader.stage(12, 170)
 
   // Defer the 5.1 MB .sog fetch until the viewer is near the viewport.
   await waitForNearViewport(container)
+  loader.stage(86, 190)
 
   let sogAsset
   try {
-    const arrayBuffer = await fetchSogWithProgress(sogUrl, (pct) => loader.set(pct))
+    const arrayBuffer = await fetchSogWithProgress(
+      sogUrl,
+      (pct) => loader.set(12 + (pct * 0.74))
+    )
     sogAsset = new Asset('splat', 'gsplat', { url: sogUrl, contents: arrayBuffer })
   } catch (err) {
     console.warn('Splat viewer: fetch failed, trying fallback SOG.', err)
     if (sogUrl !== FALLBACK_SOG_URL) {
-      loader.set(0)
-      const arrayBuffer = await fetchSogWithProgress(FALLBACK_SOG_URL, (pct) => loader.set(pct))
+      loader.set(8, { allowDecrease: true })
+      loader.stage(86, 180)
+      const arrayBuffer = await fetchSogWithProgress(
+        FALLBACK_SOG_URL,
+        (pct) => loader.set(12 + (pct * 0.74))
+      )
       sogAsset = new Asset('splat', 'gsplat', { url: FALLBACK_SOG_URL, contents: arrayBuffer })
     } else {
       throw err
     }
   }
+  loader.set(89)
+  loader.stage(98, 210)
 
   const assets = [
     new Asset('camera-controls', 'script', { url: CAMERA_CONTROLS_SCRIPT_URL }),
@@ -736,7 +794,9 @@ async function initSplatViewer() {
     throw err
   }
 
+  loader.set(99)
   loader.done()
+  window.dispatchEvent(new CustomEvent('splat:ready'))
 
   // Camera: X right, Y up, Z back. Default (0,0,2.5) = 2.5 units in front of origin.
   const cameraPos = parseVec3('data-camera-position', [0, 0, 2.5])
@@ -874,6 +934,7 @@ function initFallback(container) {
     startX = null
     startY = null
   })
+  window.dispatchEvent(new CustomEvent('splat:ready'))
 }
 
 function bootstrap() {

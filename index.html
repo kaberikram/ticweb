@@ -83,10 +83,10 @@
                 <!-- 3-Circle Carousel -->
                 <div class="product-carousel">
                     <div class="carousel-circle-track" id="carouselCircle">
-                        <img src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img" data-index="0">
-                        <img src="/jacketCloseUp2.png" alt="Rat'teryx Jacket hood detail" class="carousel-img" data-index="1">
-                        <img src="/jacketCloseUp3.png" alt="Rat'teryx Jacket label" class="carousel-img" data-index="2">
-                        <img src="/jacketCloseup4.png" alt="Rat'teryx Jacket worn" class="carousel-img" data-index="3">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="/jacketCloseup1.png" alt="Rat'teryx Jacket front" class="carousel-img" data-index="0" loading="lazy" decoding="async" fetchpriority="low">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="/jacketCloseUp2.png" alt="Rat'teryx Jacket hood detail" class="carousel-img" data-index="1" loading="lazy" decoding="async" fetchpriority="low">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="/jacketCloseUp3.png" alt="Rat'teryx Jacket label" class="carousel-img" data-index="2" loading="lazy" decoding="async" fetchpriority="low">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="/jacketCloseup4.png" alt="Rat'teryx Jacket worn" class="carousel-img" data-index="3" loading="lazy" decoding="async" fetchpriority="low">
                     </div>
                 </div>
 
@@ -325,9 +325,24 @@
         
         let currentSlide = 0;
         let buyBtnSettleTimer = null;
+        let hasHydratedModalImages = false;
+
+        function hydrateModalImages() {
+            if (hasHydratedModalImages) return;
+            hasHydratedModalImages = true;
+            carouselImages.forEach((img) => {
+                const src = img.dataset.src;
+                if (!src) return;
+                img.src = src;
+                img.removeAttribute('data-src');
+            });
+        }
+
+        window.addEventListener('splat:ready', hydrateModalImages, { once: true });
 
         // Open Modal
         function openModal() {
+            hydrateModalImages();
             selectedSize = null;
             selectedQty = 1;
             currentSlide = 0;
