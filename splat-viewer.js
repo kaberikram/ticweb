@@ -4,28 +4,104 @@
  *
  * Mobile-optimized: on-demand rendering, paused when hidden/offscreen/modal open,
  * reduced DPR + shBands=0 on mobile, lazy-loaded via IntersectionObserver.
+ *
+ * Low-end devices skip the splat entirely and get an auto-rotating image
+ * carousel instead (see initFallback). Override with ?splat=1 / ?splat=0.
  */
-
-import {
-  Application,
-  Asset,
-  AssetListLoader,
-  Color,
-  Entity,
-  FILLMODE_NONE,
-  RESOLUTION_FIXED,
-  Vec2
-} from 'playcanvas'
 
 const CONTAINER_ID = 'splat-viewer'
 const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
 
 const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-const IS_LOW_END =
-  (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4) ||
-  (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4)
-const MAX_DPR = IS_MOBILE ? (IS_LOW_END ? 1.0 : 1.25) : 1.5
+
+/**
+ * Scan the GPU renderer string for known-weak mobile GPUs. Some browsers
+ * (Safari, Firefox with privacy.resistFingerprinting) mask this; in that
+ * case we return false and fall back to other signals.
+ */
+function hasWeakGpu() {
+  try {
+    const c = document.createElement('canvas')
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl')
+    if (!gl) return true
+    const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    if (!ext) return false
+    const r = String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '').toLowerCase()
+    return (
+      /adreno.*(3\d\d|4\d\d|5[0-2]\d)/.test(r) ||
+      /mali-4\d\d/.test(r) ||
+      /mali-t[67]\d\d/.test(r) ||
+      /mali-g3[12]/.test(r) ||
+      /powervr sgx/.test(r) ||
+      /powervr rogue ge/.test(r)
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Returns 'low' | 'mid' | 'high' based on layered static signals.
+ * No runtime probe — cheap enough to run synchronously on boot.
+ * Memoized because hasWeakGpu() creates a throwaway WebGL context.
+ */
+let _deviceTier = null
+function classifyDevice() {
+  if (_deviceTier) return _deviceTier
+  _deviceTier = computeDeviceTier()
+  return _deviceTier
+}
+
+function computeDeviceTier() {
+  const mem = navigator.deviceMemory
+  const cores = navigator.hardwareConcurrency
+  const conn = navigator.connection || {}
+  const saveData = !!conn.saveData
+  const slowNet = /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (saveData) return 'low'
+  if (slowNet) return 'low'
+  if (typeof mem === 'number' && mem <= 2) return 'low'
+  if (IS_MOBILE && hasWeakGpu()) return 'low'
+  if (IS_MOBILE && reducedMotion) return 'low'
+  if (IS_MOBILE &&
+      typeof mem === 'number' && mem <= 4 &&
+      typeof cores === 'number' && cores <= 4) return 'low'
+
+  if (!IS_MOBILE) return 'high'
+  if (typeof mem === 'number' && mem <= 4) return 'mid'
+  if (typeof cores === 'number' && cores <= 4) return 'mid'
+  return 'high'
+}
+
+/**
+ * Resolves the render mode. Precedence:
+ *   1. ?splat=1 / ?splat=0 URL param (also persists to localStorage)
+ *   2. localStorage override from a previous visit
+ *   3. device classification
+ */
+function resolveMode() {
+  let override = null
+  try {
+    const params = new URLSearchParams(location.search)
+    const p = params.get('splat')
+    if (p === '1' || p === '0') {
+      override = p === '1' ? 'force-on' : 'force-off'
+      localStorage.setItem('splat:mode', override)
+    } else {
+      override = localStorage.getItem('splat:mode')
+    }
+  } catch {}
+
+  if (override === 'force-on') return 'splat'
+  if (override === 'force-off') return 'fallback'
+  return classifyDevice() === 'low' ? 'fallback' : 'splat'
+}
+
+const TIER = classifyDevice()
+const MAX_DPR = IS_MOBILE ? (TIER === 'high' ? 1.25 : 1.0) : 1.5
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
@@ -421,12 +497,180 @@ function attachInteractionRenderHooks(canvas, renderCtl) {
   canvas.addEventListener('touchend', onEnd, { passive: true })
 }
 
+/**
+ * Floating alpha-blended decals positioned in 3D around the splat.
+ * Loads textures async after the splat is already on screen so they never
+ * block first paint. Fires renderCtl.requestRender on load so they show up
+ * under on-demand rendering.
+ */
+function addStickerPlanes(app, pc, renderCtl) {
+  const { Asset, BLEND_NORMAL, Color, CULLFACE_NONE, Entity, StandardMaterial, Vec2 } = pc
+
+  const dreamAsset    = new Asset('dream-sticker',    'texture', { url: '/DreamSticker.webp' })
+  const hereAsset     = new Asset('here-sticker',     'texture', { url: '/AreyoureallyhereSticker.webp' })
+  const noitsnotAsset = new Asset('noitsnot-sticker', 'texture', { url: '/noitsnotSticker.webp' })
+  const paycheckAsset = new Asset('paycheck-sticker', 'texture', { url: '/paycheckisinSticker.webp' })
+
+  const allAssets = [dreamAsset, hereAsset, noitsnotAsset, paycheckAsset]
+  allAssets.forEach((a) => app.assets.add(a))
+
+  let loadedCount = 0
+  function onAllLoaded() {
+    if (++loadedCount < allAssets.length) return
+
+    function makeMat(tex) {
+      const mat = new StandardMaterial()
+      mat.emissiveMap = tex
+      mat.emissive = new Color(1, 1, 1)
+      mat.emissiveMapTiling = new Vec2(1, -1)
+      mat.emissiveMapOffset = new Vec2(0, 1)
+      mat.opacityMap = tex
+      mat.opacityMapTiling = new Vec2(1, -1)
+      mat.opacityMapOffset = new Vec2(0, 1)
+      mat.blendType = BLEND_NORMAL
+      mat.depthWrite = false
+      mat.cull = CULLFACE_NONE
+      mat.update()
+      return mat
+    }
+
+    const matDream    = makeMat(dreamAsset.resource)
+    const matHere     = makeMat(hereAsset.resource)
+    const matNoitsnot = makeMat(noitsnotAsset.resource)
+    const matPaycheck = makeMat(paycheckAsset.resource)
+
+    const configs = [
+      { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+      { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,     matName: 'matHere'     },
+      { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matNoitsnot, matName: 'matNoitsnot' },
+      { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,     matName: 'matHere'     },
+      { pos: [ 1.50,  2.30, -7.30], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+      { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matPaycheck, matName: 'matPaycheck' },
+    ]
+
+    const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
+      const sticker = new Entity(`Sticker_${i}`)
+      sticker.addComponent('render', { type: 'plane' })
+      sticker.render.meshInstances[0].material = mat
+      sticker.setPosition(pos[0], pos[1], pos[2])
+      sticker.setEulerAngles(rot[0], rot[1], rot[2])
+      sticker.setLocalScale(scale[0], scale[1], scale[2])
+      app.root.addChild(sticker)
+      return { entity: sticker, pos: [...pos], rot, scale, matName }
+    })
+
+    renderCtl.requestRender(6)
+    initDebugPanel(entityData, renderCtl)
+  }
+
+  allAssets.forEach((a) => { a.ready(onAllLoaded); app.assets.load(a) })
+}
+
+/** Sticker position tuner — only mounts when ?debug is in the URL. */
+function initDebugPanel(entityData, renderCtl) {
+  if (!new URLSearchParams(window.location.search).has('debug')) return
+
+  let selected = 0
+  let step = 0.1
+
+  const panel = document.createElement('div')
+  panel.id = 'splat-debug'
+  panel.style.cssText = [
+    'position:fixed', 'bottom:0', 'left:0', 'right:0',
+    'background:#fff', 'border-top:2px solid #000',
+    'padding:12px 14px 20px', 'z-index:99999',
+    "font-family:'Source Code Pro',monospace", 'font-size:12px', 'color:#000',
+  ].join(';')
+  document.body.appendChild(panel)
+
+  function render() {
+    const { pos } = entityData[selected]
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:11px;letter-spacing:1px">STICKER DEBUG</strong>
+        <div style="display:flex;gap:5px">
+          ${entityData.map((d, i) => `<button data-sel="${i}" style="width:30px;height:30px;border:2px solid #000;background:${i===selected?'#000':'#fff'};color:${i===selected?'#fff':'#000'};font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">${i}</button>`).join('')}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:14px 1fr;gap:7px 10px;align-items:center;margin-bottom:10px">
+        ${['X','Y','Z'].map((axis, ai) => `
+          <span style="font-weight:700">${axis}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button data-axis="${ai}" data-dir="-1" style="width:36px;height:36px;border:2px solid #000;background:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1">-</button>
+            <span style="min-width:54px;text-align:center;font-weight:700;font-size:13px">${pos[ai].toFixed(2)}</span>
+            <button data-axis="${ai}" data-dir="1" style="width:36px;height:36px;border:2px solid #000;background:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1">+</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <span style="font-weight:700;font-size:11px;margin-right:2px">STEP</span>
+        ${[0.05, 0.1, 0.5, 1.0].map(s => `<button data-step="${s}" style="padding:5px 10px;border:2px solid #000;background:${s===step?'#000':'#fff'};color:${s===step?'#fff':'#000'};font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">${s}</button>`).join('')}
+      </div>
+
+      <button id="dbg-copy" style="width:100%;padding:11px;border:2px solid #000;background:#000;color:#fff;font-family:inherit;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer">
+        Copy All Positions
+      </button>
+    `
+
+    panel.querySelectorAll('[data-sel]').forEach((btn) =>
+      btn.addEventListener('click', () => { selected = +btn.dataset.sel; render() })
+    )
+
+    panel.querySelectorAll('[data-axis]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        const ai = +btn.dataset.axis, dir = +btn.dataset.dir
+        entityData[selected].pos[ai] = parseFloat((entityData[selected].pos[ai] + dir * step).toFixed(3))
+        const [x, y, z] = entityData[selected].pos
+        entityData[selected].entity.setPosition(x, y, z)
+        renderCtl.requestRender(3)
+        render()
+      })
+    )
+
+    panel.querySelectorAll('[data-step]').forEach((btn) =>
+      btn.addEventListener('click', () => { step = parseFloat(btn.dataset.step); render() })
+    )
+
+    document.getElementById('dbg-copy').addEventListener('click', () => {
+      const lines = entityData.map(({ pos, rot, scale, matName }) =>
+        `{ pos: [${pos.map(v => v.toFixed(2)).join(', ')}], rot: [${rot.join(', ')}], scale: [${scale.join(', ')}], mat: ${matName} },`
+      ).join('\n')
+      navigator.clipboard.writeText(lines).then(() => {
+        const btn = document.getElementById('dbg-copy')
+        btn.textContent = 'COPIED!'
+        setTimeout(() => { btn.textContent = 'Copy All Positions' }, 2000)
+      })
+    })
+  }
+
+  render()
+}
+
 async function initSplatViewer() {
   const container = document.getElementById(CONTAINER_ID)
   if (!container) return
 
   const sogUrl = getSogUrl()
   if (!sogUrl) return
+
+  // Dynamic import keeps the ~1 MB PlayCanvas engine off the low-end device
+  // path entirely — low-end phones never pay this download cost.
+  const pc = await import('playcanvas')
+  const {
+    Application,
+    Asset,
+    AssetListLoader,
+    BLEND_NORMAL,
+    Color,
+    CULLFACE_NONE,
+    Entity,
+    FILLMODE_NONE,
+    RESOLUTION_FIXED,
+    StandardMaterial,
+    Vec2
+  } = pc
 
   const canvas = document.createElement('canvas')
   canvas.style.display = 'block'
@@ -524,6 +768,8 @@ async function initSplatViewer() {
   if (gsplatMaterial && 'shBands' in gsplatMaterial) gsplatMaterial.shBands = 0
   app.root.addChild(splat)
 
+  addStickerPlanes(app, pc, renderCtl)
+
   initGyroControls(container, splat, splatRot, app, renderCtl)
   attachInteractionRenderHooks(canvas, renderCtl)
 
@@ -533,8 +779,121 @@ async function initSplatViewer() {
   renderCtl.requestRender(30)
 }
 
+/**
+ * Lightweight fallback for low-end devices: an auto-rotating carousel of the
+ * existing jacket product photos. No WebGL, no engine, no .sog fetch.
+ * Tap to advance, swipe to navigate. Pauses when offscreen or tab is hidden.
+ */
+function initFallback(container) {
+  const wrap = container.closest('.splat-viewer-wrap') || container
+  const el = document.createElement('div')
+  el.className = 'splat-fallback'
+  el.setAttribute('role', 'group')
+  el.setAttribute('aria-label', 'Jacket photo carousel')
+
+  const imagesHtml = LOADER_IMAGES.map((src, i) =>
+    `<img class="splat-fallback-img${i === 0 ? ' active' : ''}" src="${src}" alt="Jacket photo ${i + 1}" draggable="false" ${i === 0 ? '' : 'loading="lazy"'} />`
+  ).join('')
+  const dotsHtml = LOADER_IMAGES.map((_, i) =>
+    `<span class="splat-fallback-dot${i === 0 ? ' active' : ''}" aria-hidden="true"></span>`
+  ).join('')
+
+  el.innerHTML = `
+    <div class="splat-fallback-slides">${imagesHtml}</div>
+    <div class="splat-fallback-dots">${dotsHtml}</div>
+  `
+  wrap.appendChild(el)
+
+  const imgs = el.querySelectorAll('.splat-fallback-img')
+  const dots = el.querySelectorAll('.splat-fallback-dot')
+  const SLIDE_MS = 2600
+  let idx = 0
+  let timer = null
+  let paused = false
+
+  function show(nextRaw) {
+    const next = ((nextRaw % imgs.length) + imgs.length) % imgs.length
+    if (next === idx) return
+    imgs[idx].classList.remove('active')
+    dots[idx].classList.remove('active')
+    imgs[next].classList.add('active')
+    dots[next].classList.add('active')
+    idx = next
+  }
+
+  function startTimer() {
+    if (paused || timer) return
+    timer = setInterval(() => show(idx + 1), SLIDE_MS)
+  }
+  function stopTimer() {
+    if (!timer) return
+    clearInterval(timer)
+    timer = null
+  }
+  function restartTimer() {
+    stopTimer()
+    startTimer()
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    paused = document.hidden
+    if (paused) stopTimer()
+    else startTimer()
+  })
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(([e]) => {
+      paused = !e.isIntersecting || document.hidden
+      if (paused) stopTimer()
+      else startTimer()
+    }, { threshold: 0 })
+    io.observe(wrap)
+  } else {
+    startTimer()
+  }
+
+  let startX = null
+  let startY = null
+  wrap.addEventListener('pointerdown', (e) => {
+    startX = e.clientX
+    startY = e.clientY
+  })
+  wrap.addEventListener('pointerup', (e) => {
+    if (startX === null) return
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    const horizontal = Math.abs(dx) > Math.abs(dy)
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) show(idx + 1)
+    else if (horizontal && dx > 40) show(idx - 1)
+    else if (horizontal && dx < -40) show(idx + 1)
+    startX = null
+    startY = null
+    restartTimer()
+  })
+  wrap.addEventListener('pointercancel', () => {
+    startX = null
+    startY = null
+  })
+}
+
+function bootstrap() {
+  const container = document.getElementById(CONTAINER_ID)
+  if (!container) return
+  const mode = resolveMode()
+  if (mode === 'fallback') {
+    initFallback(container)
+    return
+  }
+  initSplatViewer().catch((err) => {
+    console.warn('Splat viewer failed — falling back to carousel.', err)
+    // Nuke anything the viewer partially built, then show the carousel.
+    while (container.firstChild) container.removeChild(container.firstChild)
+    initFallback(container)
+  })
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSplatViewer)
+  document.addEventListener('DOMContentLoaded', bootstrap)
 } else {
-  initSplatViewer()
+  bootstrap()
 }
