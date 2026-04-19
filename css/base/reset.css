@@ -38,6 +38,10 @@ body, html {
     background-color: var(--color-black);
     overflow-x: auto;
     overflow-y: hidden;
+    /* Kill pull-to-refresh + rubber-band at the viewport root. Any inner scroll
+     * that reaches its boundary (e.g. .product-modal-content at scrollTop:0)
+     * can still chain up to html, so we stop it here. */
+    overscroll-behavior: none;
 }
 
 body {
