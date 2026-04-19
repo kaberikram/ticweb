@@ -546,9 +546,8 @@ function attachInteractionRenderHooks(canvas, renderCtl) {
 
 /**
  * Floating alpha-blended decals positioned in 3D around the splat.
- * Loads textures async after the splat is already on screen so they never
- * block first paint. Fires renderCtl.requestRender on load so they show up
- * under on-demand rendering.
+ * Resolves after all sticker textures decode and planes are created — the
+ * homepage loader waits on this so decals are present on first reveal.
  */
 function addStickerPlanes(app, pc, renderCtl) {
   const { Asset, BLEND_NORMAL, Color, CULLFACE_NONE, Entity, StandardMaterial, Vec2 } = pc
@@ -561,56 +560,71 @@ function addStickerPlanes(app, pc, renderCtl) {
   const allAssets = [dreamAsset, hereAsset, noitsnotAsset, paycheckAsset]
   allAssets.forEach((a) => app.assets.add(a))
 
-  let loadedCount = 0
-  function onAllLoaded() {
-    if (++loadedCount < allAssets.length) return
-
-    function makeMat(tex) {
-      const mat = new StandardMaterial()
-      mat.emissiveMap = tex
-      mat.emissive = new Color(1, 1, 1)
-      mat.emissiveMapTiling = new Vec2(1, -1)
-      mat.emissiveMapOffset = new Vec2(0, 1)
-      mat.opacityMap = tex
-      mat.opacityMapTiling = new Vec2(1, -1)
-      mat.opacityMapOffset = new Vec2(0, 1)
-      mat.blendType = BLEND_NORMAL
-      mat.depthWrite = false
-      mat.cull = CULLFACE_NONE
-      mat.update()
-      return mat
+  return new Promise((resolve, reject) => {
+    let settled = false
+    function finish(ok, err) {
+      if (settled) return
+      settled = true
+      if (ok) resolve()
+      else reject(err)
     }
 
-    const matDream    = makeMat(dreamAsset.resource)
-    const matHere     = makeMat(hereAsset.resource)
-    const matNoitsnot = makeMat(noitsnotAsset.resource)
-    const matPaycheck = makeMat(paycheckAsset.resource)
+    let loadedCount = 0
+    function onAllLoaded() {
+      if (++loadedCount < allAssets.length) return
 
-    const configs = [
-      { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
-      { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,     matName: 'matHere'     },
-      { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matNoitsnot, matName: 'matNoitsnot' },
-      { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,     matName: 'matHere'     },
-      { pos: [ 1.50,  2.30, -7.30], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
-      { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matPaycheck, matName: 'matPaycheck' },
-    ]
+      function makeMat(tex) {
+        const mat = new StandardMaterial()
+        mat.emissiveMap = tex
+        mat.emissive = new Color(1, 1, 1)
+        mat.emissiveMapTiling = new Vec2(1, -1)
+        mat.emissiveMapOffset = new Vec2(0, 1)
+        mat.opacityMap = tex
+        mat.opacityMapTiling = new Vec2(1, -1)
+        mat.opacityMapOffset = new Vec2(0, 1)
+        mat.blendType = BLEND_NORMAL
+        mat.depthWrite = false
+        mat.cull = CULLFACE_NONE
+        mat.update()
+        return mat
+      }
 
-    const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
-      const sticker = new Entity(`Sticker_${i}`)
-      sticker.addComponent('render', { type: 'plane' })
-      sticker.render.meshInstances[0].material = mat
-      sticker.setPosition(pos[0], pos[1], pos[2])
-      sticker.setEulerAngles(rot[0], rot[1], rot[2])
-      sticker.setLocalScale(scale[0], scale[1], scale[2])
-      app.root.addChild(sticker)
-      return { entity: sticker, pos: [...pos], rot, scale, matName }
+      const matDream    = makeMat(dreamAsset.resource)
+      const matHere     = makeMat(hereAsset.resource)
+      const matNoitsnot = makeMat(noitsnotAsset.resource)
+      const matPaycheck = makeMat(paycheckAsset.resource)
+
+      const configs = [
+        { pos: [-1.50,  2.60, -8.80], rot: [-90, 0, -15], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+        { pos: [ 1.70,  0.30, -7.40], rot: [-90, 0,  10], scale: [1.60, 1, 0.58], mat: matHere,     matName: 'matHere'     },
+        { pos: [-1.20,  0.20, -5.20], rot: [-90, 0,  -8], scale: [1.60, 1, 0.58], mat: matNoitsnot, matName: 'matNoitsnot' },
+        { pos: [-0.80,  1.00, -4.60], rot: [-90, 0,  13], scale: [1.44, 1, 0.52], mat: matHere,     matName: 'matHere'     },
+        { pos: [ 1.50,  2.30, -7.30], rot: [-90, 0, -17], scale: [1.60, 1, 0.58], mat: matDream,    matName: 'matDream'    },
+        { pos: [ 1.30,  1.20, -6.20], rot: [-90, 0,   6], scale: [1.44, 1, 0.52], mat: matPaycheck, matName: 'matPaycheck' },
+      ]
+
+      const entityData = configs.map(({ pos, rot, scale, mat, matName }, i) => {
+        const sticker = new Entity(`Sticker_${i}`)
+        sticker.addComponent('render', { type: 'plane' })
+        sticker.render.meshInstances[0].material = mat
+        sticker.setPosition(pos[0], pos[1], pos[2])
+        sticker.setEulerAngles(rot[0], rot[1], rot[2])
+        sticker.setLocalScale(scale[0], scale[1], scale[2])
+        app.root.addChild(sticker)
+        return { entity: sticker, pos: [...pos], rot, scale, matName }
+      })
+
+      renderCtl.requestRender(6)
+      initDebugPanel(entityData, renderCtl)
+      finish(true)
+    }
+
+    allAssets.forEach((a) => {
+      a.on('error', (err) => finish(false, err))
+      a.ready(onAllLoaded)
+      app.assets.load(a)
     })
-
-    renderCtl.requestRender(6)
-    initDebugPanel(entityData, renderCtl)
-  }
-
-  allAssets.forEach((a) => { a.ready(onAllLoaded); app.assets.load(a) })
+  })
 }
 
 /** Sticker position tuner — only mounts when ?debug is in the URL. */
@@ -794,10 +808,6 @@ async function initSplatViewer() {
     throw err
   }
 
-  loader.set(99)
-  loader.done()
-  window.dispatchEvent(new CustomEvent('splat:ready'))
-
   // Camera: X right, Y up, Z back. Default (0,0,2.5) = 2.5 units in front of origin.
   const cameraPos = parseVec3('data-camera-position', [0, 0, 2.5])
   const camera = new Entity('Camera')
@@ -828,7 +838,16 @@ async function initSplatViewer() {
   if (gsplatMaterial && 'shBands' in gsplatMaterial) gsplatMaterial.shBands = 0
   app.root.addChild(splat)
 
-  addStickerPlanes(app, pc, renderCtl)
+  loader.set(99)
+  try {
+    await addStickerPlanes(app, pc, renderCtl)
+  } catch (err) {
+    console.error('Splat viewer: sticker load error', err)
+    throw err
+  }
+
+  loader.done()
+  window.dispatchEvent(new CustomEvent('splat:ready'))
 
   initGyroControls(container, splat, splatRot, app, renderCtl)
   attachInteractionRenderHooks(canvas, renderCtl)
