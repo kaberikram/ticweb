@@ -170,9 +170,10 @@
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
-    background: #fff;
-    color: #000;
+    background: #ff3b30;
+    color: #fff;
     border-radius: 999px;
+    box-shadow: 0 0 0 1.5px #000, 0 0 8px rgba(255, 59, 48, 0.6);
     font-family: var(--font-family-primary, 'Source Code Pro', monospace);
     font-size: 9px;
     font-weight: 700;
