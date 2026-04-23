@@ -173,7 +173,7 @@
     background: #ff3b30;
     color: #fff;
     border-radius: 999px;
-    box-shadow: 0 0 0 1.5px #000, 0 0 8px rgba(255, 59, 48, 0.6);
+    box-shadow: 0 0 8px rgba(255, 59, 48, 0.55);
     font-family: var(--font-family-primary, 'Source Code Pro', monospace);
     font-size: 9px;
     font-weight: 700;
@@ -189,6 +189,15 @@
 }
 .wr-badge[style*="opacity: 1"] {
     transform: scale(1);
+}
+@keyframes badgePing {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.5); }
+    70%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+.wr-badge--ping {
+    animation: badgePing 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (max-width: 600px) {

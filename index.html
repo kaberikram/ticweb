@@ -261,6 +261,7 @@
                 sb.channel('homepage-badge')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
                         setBadge(++total);
+                        pingBadge();
                     })
                     .subscribe();
             } catch (e) {
@@ -271,6 +272,12 @@
                 if (n <= 0) { badge.style.opacity = '0'; return; }
                 badge.textContent = n > 99 ? '99+' : n;
                 badge.style.opacity = '1';
+            }
+            function pingBadge() {
+                badge.classList.remove('wr-badge--ping');
+                void badge.offsetWidth;
+                badge.classList.add('wr-badge--ping');
+                badge.addEventListener('animationend', () => badge.classList.remove('wr-badge--ping'), { once: true });
             }
         }
 

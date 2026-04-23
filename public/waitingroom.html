@@ -200,7 +200,7 @@
             border-radius: 999px;
             color: #fff;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 16px; /* must be ≥16px — iOS Safari auto-zooms on anything smaller */
             padding: 11px 16px;
             outline: none;
             transition: border-color 0.2s, background 0.2s;
@@ -672,6 +672,24 @@
         // Countdown tick
         updateCountdown()
         setInterval(updateCountdown, 1000)
+
+        // iOS keyboard fix — viewport doesn't resize when keyboard opens, so
+        // the input bar gets buried under it. visualViewport gives real height.
+        if (window.visualViewport) {
+            const inputWrap = document.querySelector('.wr-input-wrap')
+            function onViewportResize() {
+                const keyboardHeight = window.innerHeight - window.visualViewport.height
+                inputWrap.style.transform = keyboardHeight > 50
+                    ? `translateY(-${keyboardHeight}px)`
+                    : ''
+            }
+            window.visualViewport.addEventListener('resize', onViewportResize)
+        }
+
+        // After keyboard dismisses, iOS sometimes leaves page scrolled — reset it
+        inputEl.addEventListener('blur', () => {
+            setTimeout(() => window.scrollTo(0, 0), 100)
+        })
     </script>
 </body>
 </html>
