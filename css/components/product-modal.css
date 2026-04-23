@@ -37,7 +37,7 @@
                 box-shadow 0.3s ease, letter-spacing 0.3s ease;
     letter-spacing: 1px;
     text-transform: uppercase;
-    animation: btnPulse 2.8s ease-in-out infinite;
+    animation: btnPulse 3.4s ease-in-out infinite;
     white-space: pre-line;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -58,7 +58,7 @@
     pointer-events: auto;
     transition: opacity 0.8s ease-out, transform 0.3s ease,
                 border-color 0.3s ease, box-shadow 0.3s ease, letter-spacing 0.3s ease;
-    animation: btnPulse 2.8s ease-in-out infinite;
+    animation: btnPulse 3.4s ease-in-out infinite;
 }
 
 /* One frame after modal close: kill transitions so iOS viewport/layer updates don't ease */
@@ -69,14 +69,16 @@
 @keyframes btnPulse {
     0%, 100% {
         box-shadow:
-            0 0 8px  2px rgba(255, 255, 255, 0.18),
-            0 0 18px 5px rgba(255, 255, 255, 0.08);
+            0 0 6px  2px rgba(255, 255, 255, 0.12),
+            0 0 14px 4px rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.60);
     }
     50% {
         box-shadow:
-            0 0 14px  4px rgba(255, 255, 255, 0.55),
-            0 0 32px 10px rgba(255, 255, 255, 0.25),
-            0 0 56px 18px rgba(255, 255, 255, 0.10);
+            0 0 18px  6px rgba(255, 255, 255, 0.70),
+            0 0 42px 14px rgba(255, 255, 255, 0.32),
+            0 0 72px 26px rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 1.0);
     }
 }
 
