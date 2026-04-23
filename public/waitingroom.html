@@ -27,18 +27,35 @@
             height: 100dvh;
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+        /* Background ambience — subtle radial warmth gives the glass something to blur */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(120, 80, 200, 0.18), transparent 45%),
+                radial-gradient(ellipse at 80% 90%, rgba(200, 80, 120, 0.15), transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(40, 40, 50, 0.4), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
 
-        /* Header */
+        /* Header — frosted glass floating bar */
         .wr-header {
             padding: 14px 18px calc(12px + env(safe-area-inset-top, 0));
             padding-top: calc(14px + env(safe-area-inset-top, 0));
+            background: rgba(38, 38, 42, 0.55);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
             flex-shrink: 0;
+            z-index: 5;
         }
         .wr-back {
             color: rgba(255, 255, 255, 0.6);
@@ -163,7 +180,7 @@
             color: #fff;
         }
 
-        /* Input bar */
+        /* Input bar — frosted glass floating bar */
         .wr-input-wrap {
             padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0));
             border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -171,7 +188,10 @@
             gap: 8px;
             align-items: center;
             flex-shrink: 0;
-            background: #000;
+            background: rgba(38, 38, 42, 0.55);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            z-index: 5;
         }
         .wr-input {
             flex: 1;
@@ -209,13 +229,11 @@
         .wr-send:active { transform: scale(0.95); }
         .wr-send:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        /* Nickname prompt */
+        /* Nickname prompt — frosted glass floating card */
         .wr-nick-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.55);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -224,8 +242,15 @@
         }
         .wr-nick-card {
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
             text-align: center;
+            background: rgba(38, 38, 42, 0.62);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 22px;
+            padding: 32px 28px 26px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
         }
         .wr-nick-title {
             font-size: 14px;
