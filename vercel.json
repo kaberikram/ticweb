@@ -3,6 +3,7 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/privacypolicy", "destination": "/privacypolicy.html" },
-    { "source": "/checkout", "destination": "/checkout.html" }
+    { "source": "/checkout", "destination": "/checkout.html" },
+    { "source": "/waitingroom", "destination": "/waitingroom.html" }
   ]
 } 

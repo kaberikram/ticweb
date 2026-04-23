@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Waiting Room | Rat'teryx</title>
+    <link rel="icon" type="image/png" href="/ticLOGO.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <meta name="description" content="Rat'teryx waiting room — chat with other rats before the drop.">
+    <meta name="robots" content="noindex">
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: "Source Code Pro", monospace;
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .wr-header {
+            padding: 14px 18px calc(12px + env(safe-area-inset-top, 0));
+            padding-top: calc(14px + env(safe-area-inset-top, 0));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .wr-back {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .wr-back:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            color: #fff;
+        }
+        .wr-title-wrap {
+            text-align: center;
+            flex: 1;
+            min-width: 0;
+        }
+        .wr-title {
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 500;
+            color: #fff;
+        }
+        .wr-countdown {
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 2px;
+        }
+        .wr-online {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .wr-online::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #5ee87d;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(94, 232, 125, 0.7);
+        }
+
+        /* Message list */
+        .wr-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px 20px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .wr-empty {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            padding: 40px 20px;
+            line-height: 1.8;
+        }
+        .wr-msg {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            animation: msgIn 0.25s ease-out;
+        }
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .wr-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #000;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .wr-msg-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .wr-msg-meta {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            margin-bottom: 2px;
+        }
+        .wr-msg-name {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .wr-msg-time {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .wr-msg-text {
+            font-size: 14px;
+            line-height: 1.45;
+            color: rgba(255, 255, 255, 0.92);
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+        .wr-msg-self .wr-msg-text {
+            color: #fff;
+        }
+
+        /* Input bar */
+        .wr-input-wrap {
+            padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0));
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+            background: #000;
+        }
+        .wr-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 11px 16px;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            min-width: 0;
+        }
+        .wr-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .wr-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .wr-send {
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 18px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            flex-shrink: 0;
+        }
+        .wr-send:active { transform: scale(0.95); }
+        .wr-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Nickname prompt */
+        .wr-nick-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .wr-nick-card {
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .wr-nick-title {
+            font-size: 14px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .wr-nick-sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .wr-nick-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 12px 18px;
+            outline: none;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .wr-nick-input:focus { border-color: #fff; }
+        .wr-nick-btn {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 999px;
+            padding: 13px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .wr-nick-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Error / status toast */
+        .wr-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 83, 80, 0.95);
+            color: #fff;
+            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            max-width: 90vw;
+            text-align: center;
+        }
+        .wr-toast.show { opacity: 1; }
+
+        /* Connection status */
+        .wr-status-dot {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            margin-left: 6px;
+        }
+        .wr-status-dot.connected { background: #5ee87d; }
+
+        @media (max-width: 400px) {
+            .wr-header { padding-left: 12px; padding-right: 12px; }
+            .wr-title { font-size: 12px; }
+            .wr-online { font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="wr-header">
+        <a href="/" class="wr-back">← back</a>
+        <div class="wr-title-wrap">
+            <div class="wr-title">Rat'teryx Waiting Room</div>
+            <div class="wr-countdown" id="wrCountdown">—</div>
+        </div>
+        <div class="wr-online"><span id="wrOnlineCount">—</span></div>
+    </header>
+
+    <!-- Message list -->
+    <div class="wr-messages" id="wrMessages">
+        <div class="wr-empty" id="wrEmpty">
+            No messages yet.<br>
+            Be the first rat to speak.
+        </div>
+    </div>
+
+    <!-- Input bar -->
+    <form class="wr-input-wrap" id="wrForm" autocomplete="off">
+        <input
+            type="text"
+            class="wr-input"
+            id="wrInput"
+            placeholder="Say something…"
+            maxlength="500"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="sentences"
+            spellcheck="true"
+            disabled>
+        <button type="submit" class="wr-send" id="wrSend" disabled>Send</button>
+    </form>
+
+    <!-- Nickname prompt -->
+    <div class="wr-nick-overlay" id="wrNickOverlay">
+        <div class="wr-nick-card">
+            <div class="wr-nick-title">Pick a nickname</div>
+            <div class="wr-nick-sub">
+                Anonymous. No sign up. Just pick a name and chat with the other rats waiting for the drop.
+            </div>
+            <form id="wrNickForm" autocomplete="off">
+                <input
+                    type="text"
+                    class="wr-nick-input"
+                    id="wrNickInput"
+                    placeholder="your nickname"
+                    maxlength="24"
+                    minlength="1"
+                    required
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off">
+                <button type="submit" class="wr-nick-btn" id="wrNickBtn">Enter Waiting Room</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="wr-toast" id="wrToast"></div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        // ============================================
+        // CONFIG — paste your Supabase project credentials here
+        // Get them from: Supabase Dashboard → Project → Settings → API
+        // ============================================
+        const SUPABASE_URL = 'REPLACE_WITH_SUPABASE_URL'
+        const SUPABASE_ANON_KEY = 'REPLACE_WITH_SUPABASE_ANON_KEY'
+
+        const DROP_DATE_MS = new Date('2026-04-25T00:00:00+08:00').getTime()
+        const MAX_MESSAGES_ON_LOAD = 100
+        const SEND_COOLDOWN_MS = 1500
+        const NAME_KEY = 'wr:nick'
+
+        // ============================================
+        // DOM
+        // ============================================
+        const messagesEl = document.getElementById('wrMessages')
+        const emptyEl = document.getElementById('wrEmpty')
+        const formEl = document.getElementById('wrForm')
+        const inputEl = document.getElementById('wrInput')
+        const sendEl = document.getElementById('wrSend')
+        const nickOverlay = document.getElementById('wrNickOverlay')
+        const nickForm = document.getElementById('wrNickForm')
+        const nickInput = document.getElementById('wrNickInput')
+        const countdownEl = document.getElementById('wrCountdown')
+        const onlineEl = document.getElementById('wrOnlineCount')
+        const toastEl = document.getElementById('wrToast')
+
+        // ============================================
+        // State
+        // ============================================
+        let nickname = null
+        let supabase = null
+        let lastSendAt = 0
+        let presenceChannel = null
+
+        // ============================================
+        // Utilities
+        // ============================================
+        function showToast(msg, ms = 2600) {
+            toastEl.textContent = msg
+            toastEl.classList.add('show')
+            clearTimeout(showToast._t)
+            showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms)
+        }
+
+        function hashString(s) {
+            let h = 0
+            for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
+            return Math.abs(h)
+        }
+        function colorFor(name) {
+            const hues = [8, 28, 48, 88, 148, 188, 218, 268, 308, 338]
+            return `hsl(${hues[hashString(name) % hues.length]}, 65%, 70%)`
+        }
+        function initialFor(name) {
+            const trimmed = name.trim()
+            return trimmed ? trimmed[0] : '?'
+        }
+
+        function formatTime(ts) {
+            const d = new Date(ts)
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+
+        function formatCountdown(ms) {
+            if (ms <= 0) return 'Drop is live 🐀'
+            const s = Math.floor(ms / 1000)
+            const days = Math.floor(s / 86400)
+            const hours = Math.floor((s % 86400) / 3600)
+            const minutes = Math.floor((s % 3600) / 60)
+            const seconds = s % 60
+            const parts = []
+            if (days > 0) parts.push(days + 'd')
+            if (hours > 0 || days > 0) parts.push(String(hours).padStart(2, '0') + 'h')
+            parts.push(String(minutes).padStart(2, '0') + 'm')
+            parts.push(String(seconds).padStart(2, '0') + 's')
+            return 'Drop in ' + parts.join(' ')
+        }
+
+        function updateCountdown() {
+            countdownEl.textContent = formatCountdown(DROP_DATE_MS - Date.now())
+        }
+
+        // ============================================
+        // Messages
+        // ============================================
+        const seenIds = new Set()
+        function renderMessage(msg, prepend = false) {
+            if (seenIds.has(msg.id)) return
+            seenIds.add(msg.id)
+            if (emptyEl.parentNode) emptyEl.remove()
+
+            const row = document.createElement('div')
+            row.className = 'wr-msg'
+            if (msg.name === nickname) row.classList.add('wr-msg-self')
+
+            const avatar = document.createElement('div')
+            avatar.className = 'wr-avatar'
+            avatar.style.background = colorFor(msg.name)
+            avatar.textContent = initialFor(msg.name)
+
+            const body = document.createElement('div')
+            body.className = 'wr-msg-body'
+
+            const meta = document.createElement('div')
+            meta.className = 'wr-msg-meta'
+            const name = document.createElement('span')
+            name.className = 'wr-msg-name'
+            name.textContent = msg.name
+            const time = document.createElement('span')
+            time.className = 'wr-msg-time'
+            time.textContent = formatTime(msg.created_at)
+            meta.appendChild(name)
+            meta.appendChild(time)
+
+            const text = document.createElement('div')
+            text.className = 'wr-msg-text'
+            text.textContent = msg.body
+
+            body.appendChild(meta)
+            body.appendChild(text)
+            row.appendChild(avatar)
+            row.appendChild(body)
+
+            if (prepend) {
+                messagesEl.insertBefore(row, messagesEl.firstChild)
+            } else {
+                messagesEl.appendChild(row)
+                scrollToBottomIfNearby()
+            }
+        }
+
+        function scrollToBottomIfNearby() {
+            const threshold = 120
+            const distance = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
+            if (distance < threshold) {
+                requestAnimationFrame(() => {
+                    messagesEl.scrollTop = messagesEl.scrollHeight
+                })
+            }
+        }
+
+        // ============================================
+        // Supabase setup
+        // ============================================
+        async function initSupabase() {
+            if (!SUPABASE_URL.startsWith('http') || SUPABASE_ANON_KEY.length < 30) {
+                showToast('Chat offline — Supabase not configured', 6000)
+                return
+            }
+            supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                realtime: { params: { eventsPerSecond: 5 } }
+            })
+
+            // Load recent messages
+            const { data, error } = await supabase
+                .from('messages')
+                .select('id, name, body, created_at')
+                .order('created_at', { ascending: false })
+                .limit(MAX_MESSAGES_ON_LOAD)
+
+            if (error) {
+                console.error(error)
+                showToast('Could not load messages')
+                return
+            }
+            const ordered = (data || []).reverse()
+            ordered.forEach(m => renderMessage(m))
+            requestAnimationFrame(() => {
+                messagesEl.scrollTop = messagesEl.scrollHeight
+            })
+
+            // Subscribe to new messages
+            supabase
+                .channel('public:messages')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages'
+                }, (payload) => {
+                    renderMessage(payload.new)
+                })
+                .subscribe()
+
+            // Presence channel for online count
+            presenceChannel = supabase.channel('waitingroom-presence', {
+                config: { presence: { key: nickname + ':' + Math.random().toString(36).slice(2, 8) } }
+            })
+            presenceChannel
+                .on('presence', { event: 'sync' }, () => {
+                    const state = presenceChannel.presenceState()
+                    const count = Object.keys(state).length
+                    onlineEl.textContent = count + (count === 1 ? ' rat' : ' rats')
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await presenceChannel.track({ joined_at: new Date().toISOString() })
+                    }
+                })
+        }
+
+        // ============================================
+        // Sending
+        // ============================================
+        async function sendMessage(body) {
+            if (!supabase) {
+                showToast('Chat offline')
+                return
+            }
+            const now = Date.now()
+            if (now - lastSendAt < SEND_COOLDOWN_MS) {
+                showToast('Slow down, rat 🐀')
+                return
+            }
+            lastSendAt = now
+
+            sendEl.disabled = true
+            const { error } = await supabase
+                .from('messages')
+                .insert({ name: nickname, body: body })
+            sendEl.disabled = false
+
+            if (error) {
+                console.error(error)
+                showToast('Could not send')
+                lastSendAt = 0
+                return
+            }
+            inputEl.value = ''
+            inputEl.focus()
+        }
+
+        // ============================================
+        // Nickname flow
+        // ============================================
+        function enterChat(name) {
+            nickname = name
+            try { localStorage.setItem(NAME_KEY, name) } catch {}
+            nickOverlay.style.display = 'none'
+            inputEl.disabled = false
+            sendEl.disabled = false
+            inputEl.focus()
+            initSupabase()
+        }
+
+        nickForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const v = nickInput.value.trim().slice(0, 24)
+            if (!v) return
+            enterChat(v)
+        })
+
+        formEl.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const v = inputEl.value.trim()
+            if (!v) return
+            sendMessage(v.slice(0, 500))
+        })
+
+        // Restore saved nickname
+        try {
+            const saved = localStorage.getItem(NAME_KEY)
+            if (saved && saved.trim()) {
+                enterChat(saved.trim().slice(0, 24))
+            } else {
+                setTimeout(() => nickInput.focus(), 100)
+            }
+        } catch {
+            setTimeout(() => nickInput.focus(), 100)
+        }
+
+        // Countdown tick
+        updateCountdown()
+        setInterval(updateCountdown, 1000)
+    </script>
+</body>
+</html>

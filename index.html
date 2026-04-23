@@ -49,6 +49,9 @@
     <!-- Floating Buy Button -->
     <button id="buyJacketBtn" class="floating-buy-btn">Buy Jacket</button>
 
+    <!-- Waiting Room Link -->
+    <a href="/waitingroom" id="waitingRoomLink" class="waiting-room-link">enter the waiting room →</a>
+
     <!-- Gaussian splat viewer (.sog) -->
     <main class="splat-viewer-wrap" id="splatViewerWrap" aria-label="3D splat view">
         <div id="splat-viewer" data-sog="/jacket.sog"
@@ -224,6 +227,14 @@
         // Show button only after loader hits 100% and finishes
         let hasShownBuyButton = false;
         const startedAt = Date.now();
+        const waitingLink = document.getElementById('waitingRoomLink');
+
+        function revealUI() {
+            btn.classList.add('visible');
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
+            if (waitingLink) waitingLink.classList.add('visible');
+        }
 
         function maybeShowBuyButton() {
             if (hasShownBuyButton) return;
@@ -234,11 +245,7 @@
             if (!loader) {
                 if (Date.now() - startedAt > 15000) {
                     hasShownBuyButton = true;
-                    setTimeout(() => {
-                        btn.classList.add('visible');
-                        btn.style.opacity = '';
-                        btn.style.pointerEvents = '';
-                    }, 500);
+                    setTimeout(revealUI, 500);
                 }
                 return;
             }
@@ -247,13 +254,7 @@
             if (!isDone) return;
 
             hasShownBuyButton = true;
-            setTimeout(() => {
-                // At this point the loader has hit 100% (has splat-loader-done).
-                // We don't wait for DOM removal so the button can appear ~0.5s after 100%.
-                btn.classList.add('visible');
-                btn.style.opacity = '';
-                btn.style.pointerEvents = '';
-            }, 500);
+            setTimeout(revealUI, 500);
         }
 
         // Poll for loader progress / completion

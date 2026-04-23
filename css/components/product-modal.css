@@ -113,6 +113,40 @@
     z-index: var(--z-floating, 100);
 }
 
+.waiting-room-link {
+    position: fixed;
+    bottom: calc(10% - 36px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.55);
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    text-decoration: none;
+    text-align: center;
+    z-index: var(--z-floating, 100);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease-out, color 0.3s ease;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+.waiting-room-link.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.waiting-room-link:hover,
+.waiting-room-link:active {
+    color: #fff;
+}
+@media (max-width: 600px) {
+    .waiting-room-link {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + max(2.8rem, 9vmin));
+        font-size: 10px;
+    }
+}
+
 @media (max-width: 600px) {
     .floating-buy-btn {
         /*
