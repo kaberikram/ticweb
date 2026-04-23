@@ -124,10 +124,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    border: 1.5px solid rgba(255, 255, 255, 0.60);
     color: rgba(255, 255, 255, 0.85);
     cursor: pointer;
     z-index: var(--z-floating, 100);
@@ -137,12 +137,13 @@
                 background 0.25s ease, border-color 0.25s ease;
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 0 14px 3px rgba(255, 255, 255, 0.08);
+    animation: btnPulse 3.4s ease-in-out infinite;
 }
 .waiting-room-btn svg {
     width: 20px;
     height: 20px;
     display: block;
+    flex-shrink: 0;
 }
 .waiting-room-btn.visible {
     opacity: 1;
@@ -150,21 +151,51 @@
 }
 @media (hover: hover) and (pointer: fine) {
     .waiting-room-btn:hover {
-        background: rgba(255, 255, 255, 0.16);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(255, 255, 255, 1.0);
         color: #fff;
         transform: translate3d(-50%, 0, 0) scale(1.08);
+        animation-play-state: paused;
     }
 }
 .waiting-room-btn:active {
     transform: translate3d(-50%, 0, 0) scale(0.92);
 }
+
+/* Badge */
+.wr-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #fff;
+    color: #000;
+    border-radius: 999px;
+    font-family: var(--font-family-primary, 'Source Code Pro', monospace);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: scale(0.8);
+    pointer-events: none;
+    line-height: 1;
+}
+.wr-badge[style*="opacity: 1"] {
+    transform: scale(1);
+}
+
 @media (max-width: 600px) {
     .waiting-room-btn {
         bottom: calc(env(safe-area-inset-bottom, 0px) + max(4.25rem, 14vmin));
         left: calc(50% + 102px);
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
     }
     .waiting-room-btn svg {
         width: 18px;
