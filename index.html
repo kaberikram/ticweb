@@ -851,8 +851,6 @@
                 })
             })
             overlay.removeAttribute('aria-hidden')
-            if (footer) footer.style.display = 'none'
-            if (header) header.style.display = 'none'
             window.dispatchEvent(new CustomEvent('splat:pause'))
             if (!initialized) initChat()
             else setTimeout(() => inputEl.focus(), 300)
@@ -860,8 +858,6 @@
         function closeChat() {
             overlay.classList.remove('open')
             overlay.setAttribute('aria-hidden', 'true')
-            if (footer) footer.style.display = ''
-            if (header) header.style.display = ''
             window.dispatchEvent(new CustomEvent('splat:resume'))
             // wait for transition before hiding
             overlay.addEventListener('transitionend', () => {
