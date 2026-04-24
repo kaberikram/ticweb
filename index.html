@@ -225,6 +225,18 @@
                 <button class="chat-close" id="chatModalClose" aria-label="Close chat">&times;</button>
             </div>
 
+            <!-- Nickname Setup Screen -->
+            <div class="chat-nickname-screen" id="chatNicknameScreen">
+                <p class="chat-nickname-prompt">what should we call you?</p>
+                <p class="chat-nickname-sub">no sign up — just a name</p>
+                <form id="chatNicknameForm" class="chat-nickname-form" autocomplete="off">
+                    <input type="text" id="chatNicknameInput" class="chat-nickname-input"
+                           placeholder="your name…" maxlength="24"
+                           autocapitalize="off" autocorrect="off" spellcheck="false">
+                    <button type="submit" class="chat-nickname-btn">Join</button>
+                </form>
+            </div>
+
             <!-- Messages -->
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-loading" id="chatLoading">
@@ -904,6 +916,9 @@
         const sendEl    = document.getElementById('chatSend')
         const onlineEl  = document.getElementById('chatOnline')
         const countdownEl = document.getElementById('chatCountdown')
+        const nickScreenEl = document.getElementById('chatNicknameScreen')
+        const nickFormEl   = document.getElementById('chatNicknameForm')
+        const nickInputEl  = document.getElementById('chatNicknameInput')
 
         let sb = null
         let nickname = null
@@ -943,7 +958,7 @@
             overlay.removeAttribute('aria-hidden')
             window.dispatchEvent(new CustomEvent('splat:pause'))
             if (!initialized) initChat()
-            else setTimeout(() => inputEl.focus(), 300)
+            else setTimeout(() => { nickname ? inputEl.focus() : nickInputEl.focus() }, 300)
         }
         function closeChat() {
             overlay.classList.remove('open')
@@ -965,19 +980,6 @@
             try { return localStorage.getItem(NAME_KEY)?.trim().slice(0,24) || null } catch { return null }
         }
         function saveName(n) { try { localStorage.setItem(NAME_KEY, n) } catch {} }
-
-        function setJoinMode() {
-            inputEl.placeholder = 'pick a name to join…'
-            inputEl.maxLength = 24
-            inputEl.setAttribute('autocapitalize', 'off')
-            sendEl.textContent = 'Join'
-        }
-        function setSendMode() {
-            inputEl.placeholder = 'Say something…'
-            inputEl.maxLength = 500
-            inputEl.setAttribute('autocapitalize', 'sentences')
-            sendEl.textContent = 'Send'
-        }
 
         // Helpers
         function hashStr(s) {
@@ -1029,16 +1031,16 @@
         async function initChat() {
             initialized = true
             emptyEl.style.display = 'none'
-            inputEl.disabled = false
-            sendEl.disabled = false
             const saved = savedNick()
             if (saved) {
                 nickname = saved
-                setSendMode()
+                nickScreenEl.classList.add('hidden')
+                inputEl.disabled = false
+                sendEl.disabled = false
+                setTimeout(() => inputEl.focus(), 300)
             } else {
-                setJoinMode()
+                setTimeout(() => nickInputEl.focus(), 300)
             }
-            setTimeout(() => inputEl.focus(), 300)
 
             const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2')
             sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -1083,24 +1085,25 @@
             inputEl.addEventListener('blur', () => setTimeout(() => { modal.style.marginBottom = '' }, 150))
         }
 
-        // Join or Send
+        // Nickname setup form
+        nickFormEl.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const val = nickInputEl.value.trim().slice(0, 24)
+            if (!val) return
+            nickname = val
+            saveName(nickname)
+            nickScreenEl.classList.add('hidden')
+            inputEl.disabled = false
+            sendEl.disabled = false
+            nickInputEl.value = ''
+            inputEl.focus()
+        })
+
+        // Send message
         formEl.addEventListener('submit', async (e) => {
             e.preventDefault()
             const val = inputEl.value.trim()
-            if (!val) return
-
-            // Join mode — set nickname then switch to send mode
-            if (!nickname) {
-                nickname = val.slice(0, 24)
-                saveName(nickname)
-                setSendMode()
-                inputEl.value = ''
-                inputEl.focus()
-                return
-            }
-
-            // Send mode
-            if (!sb) return
+            if (!val || !nickname || !sb) return
             const now = Date.now()
             if (now - lastSendAt < SEND_COOLDOWN_MS) return
             lastSendAt = now
