@@ -272,6 +272,35 @@
     }
 }
 
+/* iPhone SE and other small screens (≤390px) */
+@media (max-width: 390px) {
+    .product-modal {
+        max-height: 84vh;
+    }
+    .carousel-circle-track {
+        height: 168px;
+    }
+    .carousel-img {
+        width: 162px;
+        height: 162px;
+    }
+    .carousel-img.pos-left {
+        transform: translate(calc(-50% - 90px), -50%) scale(0.52);
+    }
+    .carousel-img.pos-right {
+        transform: translate(calc(-50% + 90px), -50%) scale(0.52);
+    }
+    .product-details {
+        padding: 0.5rem 1.2rem 1rem;
+    }
+    .product-name {
+        font-size: 15px;
+    }
+    .size-pill {
+        padding: 5px 11px;
+    }
+}
+
 /* ============================================
    3-CIRCLE CAROUSEL
    ============================================ */
