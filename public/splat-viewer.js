@@ -4,9 +4,6 @@
  *
  * Mobile-optimized: on-demand rendering, paused when hidden/offscreen/modal open,
  * reduced DPR + shBands=0 on mobile, lazy-loaded via IntersectionObserver.
- *
- * Low-end devices skip the splat entirely and get an auto-rotating image
- * carousel instead (see initFallback). Override with ?splat=1 / ?splat=0.
  */
 
 const CONTAINER_ID = 'splat-viewer'
@@ -14,94 +11,7 @@ const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
 
 const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-
-/**
- * Scan the GPU renderer string for known-weak mobile GPUs. Some browsers
- * (Safari, Firefox with privacy.resistFingerprinting) mask this; in that
- * case we return false and fall back to other signals.
- */
-function hasWeakGpu() {
-  try {
-    const c = document.createElement('canvas')
-    const gl = c.getContext('webgl') || c.getContext('experimental-webgl')
-    if (!gl) return true
-    const ext = gl.getExtension('WEBGL_debug_renderer_info')
-    if (!ext) return false
-    const r = String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '').toLowerCase()
-    return (
-      /adreno.*(3\d\d|4\d\d|5[0-2]\d)/.test(r) ||
-      /mali-4\d\d/.test(r) ||
-      /mali-t[67]\d\d/.test(r) ||
-      /mali-g3[12]/.test(r) ||
-      /powervr sgx/.test(r) ||
-      /powervr rogue ge/.test(r)
-    )
-  } catch {
-    return false
-  }
-}
-
-/**
- * Returns 'low' | 'mid' | 'high' based on layered static signals.
- * No runtime probe — cheap enough to run synchronously on boot.
- * Memoized because hasWeakGpu() creates a throwaway WebGL context.
- */
-let _deviceTier = null
-function classifyDevice() {
-  if (_deviceTier) return _deviceTier
-  _deviceTier = computeDeviceTier()
-  return _deviceTier
-}
-
-function computeDeviceTier() {
-  const mem = navigator.deviceMemory
-  const cores = navigator.hardwareConcurrency
-  const conn = navigator.connection || {}
-  const saveData = !!conn.saveData
-  const slowNet = /^(slow-2g|2g|3g)$/.test(conn.effectiveType || '')
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  if (saveData) return 'low'
-  if (slowNet) return 'low'
-  if (typeof mem === 'number' && mem <= 2) return 'low'
-  if (IS_MOBILE && hasWeakGpu()) return 'low'
-  if (IS_MOBILE && reducedMotion) return 'low'
-  if (IS_MOBILE &&
-      typeof mem === 'number' && mem <= 4 &&
-      typeof cores === 'number' && cores <= 4) return 'low'
-
-  if (!IS_MOBILE) return 'high'
-  if (typeof mem === 'number' && mem <= 4) return 'mid'
-  if (typeof cores === 'number' && cores <= 4) return 'mid'
-  return 'high'
-}
-
-/**
- * Resolves the render mode. Precedence:
- *   1. ?splat=1 / ?splat=0 URL param (also persists to localStorage)
- *   2. localStorage override from a previous visit
- *   3. device classification
- */
-function resolveMode() {
-  let override = null
-  try {
-    const params = new URLSearchParams(location.search)
-    const p = params.get('splat')
-    if (p === '1' || p === '0') {
-      override = p === '1' ? 'force-on' : 'force-off'
-      localStorage.setItem('splat:mode', override)
-    } else {
-      override = localStorage.getItem('splat:mode')
-    }
-  } catch {}
-
-  if (override === 'force-on') return 'splat'
-  if (override === 'force-off') return 'fallback'
-  return classifyDevice() === 'low' ? 'fallback' : 'splat'
-}
-
-const TIER = classifyDevice()
-const MAX_DPR = IS_MOBILE ? (TIER === 'high' ? 1.25 : 1.0) : 1.5
+const MAX_DPR = IS_MOBILE ? 1.25 : 1.5
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
@@ -858,117 +768,11 @@ async function initSplatViewer() {
   renderCtl.requestRender(30)
 }
 
-/**
- * Lightweight fallback for low-end devices: an auto-rotating carousel of the
- * existing jacket product photos. No WebGL, no engine, no .sog fetch.
- * Tap to advance, swipe to navigate. Pauses when offscreen or tab is hidden.
- */
-function initFallback(container) {
-  const wrap = container.closest('.splat-viewer-wrap') || container
-  const el = document.createElement('div')
-  el.className = 'splat-fallback'
-  el.setAttribute('role', 'group')
-  el.setAttribute('aria-label', 'Jacket photo carousel')
-
-  const imagesHtml = LOADER_IMAGES.map((src, i) =>
-    `<img class="splat-fallback-img${i === 0 ? ' active' : ''}" src="${src}" alt="Jacket photo ${i + 1}" draggable="false" ${i === 0 ? '' : 'loading="lazy"'} />`
-  ).join('')
-  const dotsHtml = LOADER_IMAGES.map((_, i) =>
-    `<span class="splat-fallback-dot${i === 0 ? ' active' : ''}" aria-hidden="true"></span>`
-  ).join('')
-
-  el.innerHTML = `
-    <div class="splat-fallback-slides">${imagesHtml}</div>
-    <div class="splat-fallback-dots">${dotsHtml}</div>
-  `
-  wrap.appendChild(el)
-
-  const imgs = el.querySelectorAll('.splat-fallback-img')
-  const dots = el.querySelectorAll('.splat-fallback-dot')
-  const SLIDE_MS = 2600
-  let idx = 0
-  let timer = null
-  let paused = false
-
-  function show(nextRaw) {
-    const next = ((nextRaw % imgs.length) + imgs.length) % imgs.length
-    if (next === idx) return
-    imgs[idx].classList.remove('active')
-    dots[idx].classList.remove('active')
-    imgs[next].classList.add('active')
-    dots[next].classList.add('active')
-    idx = next
-  }
-
-  function startTimer() {
-    if (paused || timer) return
-    timer = setInterval(() => show(idx + 1), SLIDE_MS)
-  }
-  function stopTimer() {
-    if (!timer) return
-    clearInterval(timer)
-    timer = null
-  }
-  function restartTimer() {
-    stopTimer()
-    startTimer()
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    paused = document.hidden
-    if (paused) stopTimer()
-    else startTimer()
-  })
-
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(([e]) => {
-      paused = !e.isIntersecting || document.hidden
-      if (paused) stopTimer()
-      else startTimer()
-    }, { threshold: 0 })
-    io.observe(wrap)
-  } else {
-    startTimer()
-  }
-
-  let startX = null
-  let startY = null
-  wrap.addEventListener('pointerdown', (e) => {
-    startX = e.clientX
-    startY = e.clientY
-  })
-  wrap.addEventListener('pointerup', (e) => {
-    if (startX === null) return
-    const dx = e.clientX - startX
-    const dy = e.clientY - startY
-    const horizontal = Math.abs(dx) > Math.abs(dy)
-    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) show(idx + 1)
-    else if (horizontal && dx > 40) show(idx - 1)
-    else if (horizontal && dx < -40) show(idx + 1)
-    startX = null
-    startY = null
-    restartTimer()
-  })
-  wrap.addEventListener('pointercancel', () => {
-    startX = null
-    startY = null
-  })
-  window.dispatchEvent(new CustomEvent('splat:ready'))
-}
-
 function bootstrap() {
   const container = document.getElementById(CONTAINER_ID)
   if (!container) return
-  const mode = resolveMode()
-  if (mode === 'fallback') {
-    initFallback(container)
-    return
-  }
   initSplatViewer().catch((err) => {
-    console.warn('Splat viewer failed — falling back to carousel.', err)
-    // Nuke anything the viewer partially built, then show the carousel.
-    while (container.firstChild) container.removeChild(container.firstChild)
-    initFallback(container)
+    console.warn('Splat viewer failed to load.', err)
   })
 }
 
