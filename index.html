@@ -50,12 +50,12 @@
     <button id="buyJacketBtn" class="floating-buy-btn">Buy Jacket</button>
 
     <!-- Waiting Room Button -->
-    <a href="/waitingroom" id="waitingRoomLink" class="waiting-room-btn" aria-label="Enter the waiting room chat">
+    <button id="waitingRoomLink" class="waiting-room-btn" aria-label="Enter the waiting room chat">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
         </svg>
         <span class="wr-badge" id="wrBadge"></span>
-    </a>
+    </button>
 
     <!-- Gaussian splat viewer (.sog) -->
     <main class="splat-viewer-wrap" id="splatViewerWrap" aria-label="3D splat view">
@@ -206,6 +206,48 @@
     <!-- Jacket Image Lightbox (circle-mask reveal) -->
     <div id="jacketImageLightbox" class="jacket-lightbox" aria-hidden="true" role="dialog" aria-label="Enlarged image">
         <img class="jacket-lightbox-img" src="" alt="">
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModalOverlay" class="chat-overlay" aria-hidden="true">
+        <div id="chatModal" class="chat-modal" role="dialog" aria-label="Waiting Room Chat">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <span class="chat-header-title">Waiting Room</span>
+                    <span class="chat-header-sub" id="chatCountdown">—</span>
+                </div>
+                <span class="chat-online" id="chatOnline"></span>
+                <button class="chat-close" id="chatModalClose" aria-label="Close chat">&times;</button>
+            </div>
+
+            <!-- Nickname prompt (shown when no saved name) -->
+            <div class="chat-nick-wrap" id="chatNickWrap">
+                <form class="chat-nick-form" id="chatNickForm" autocomplete="off">
+                    <p class="chat-nick-label">Pick a nickname to join</p>
+                    <div class="chat-nick-row">
+                        <input type="text" class="chat-nick-input" id="chatNickInput"
+                            placeholder="your name" maxlength="24" autocomplete="off"
+                            autocorrect="off" autocapitalize="off">
+                        <button type="submit" class="chat-nick-btn" id="chatNickBtn">Join</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-empty" id="chatEmpty">No messages yet.<br>Be the first rat to speak.</div>
+            </div>
+
+            <!-- Input -->
+            <form class="chat-input-wrap" id="chatForm" autocomplete="off">
+                <input type="text" class="chat-input" id="chatInput"
+                    placeholder="Say something…" maxlength="500"
+                    autocomplete="off" autocorrect="off" autocapitalize="sentences"
+                    spellcheck="true" disabled>
+                <button type="submit" class="chat-send" id="chatSend" disabled>Send</button>
+            </form>
+        </div>
     </div>
 
     <!-- Show Buy Button After Loading + Countdown Lock (Malaysia time) -->
@@ -759,6 +801,205 @@
         stripeScript.async = true;
         document.head.appendChild(stripeScript);
     })();
+    </script>
+
+    <!-- Chat Modal Script -->
+    <script type="module">
+    (function() {
+        const SUPABASE_URL = 'https://qdrqbsgozqdbvawwphzk.supabase.co'
+        const SUPABASE_ANON_KEY = 'sb_publishable_5qQAzP6IzwU0l5Ei63waDQ_erygOtsy'
+        const DROP_DATE_MS = new Date('2026-04-25T00:00:00+08:00').getTime()
+        const NAME_KEY = 'wr:nick'
+        const SEND_COOLDOWN_MS = 1500
+
+        const overlay   = document.getElementById('chatModalOverlay')
+        const modal     = document.getElementById('chatModal')
+        const closeBtn  = document.getElementById('chatModalClose')
+        const openBtn   = document.getElementById('waitingRoomLink')
+        const nickWrap  = document.getElementById('chatNickWrap')
+        const nickForm  = document.getElementById('chatNickForm')
+        const nickInput = document.getElementById('chatNickInput')
+        const messagesEl = document.getElementById('chatMessages')
+        const emptyEl   = document.getElementById('chatEmpty')
+        const formEl    = document.getElementById('chatForm')
+        const inputEl   = document.getElementById('chatInput')
+        const sendEl    = document.getElementById('chatSend')
+        const onlineEl  = document.getElementById('chatOnline')
+        const countdownEl = document.getElementById('chatCountdown')
+
+        let sb = null
+        let nickname = null
+        let lastSendAt = 0
+        let initialized = false
+        const seenIds = new Set()
+
+        // Countdown
+        function formatCountdown(ms) {
+            if (ms <= 0) return 'Drop is live 🐀'
+            const s = Math.floor(ms / 1000)
+            const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600)
+            const m = Math.floor((s % 3600) / 60), sec = s % 60
+            const parts = []
+            if (d > 0) parts.push(d + 'd')
+            if (h > 0 || d > 0) parts.push(String(h).padStart(2,'0') + 'h')
+            parts.push(String(m).padStart(2,'0') + 'm')
+            parts.push(String(sec).padStart(2,'0') + 's')
+            return 'Drop in ' + parts.join(' ')
+        }
+        setInterval(() => { countdownEl.textContent = formatCountdown(DROP_DATE_MS - Date.now()) }, 1000)
+        countdownEl.textContent = formatCountdown(DROP_DATE_MS - Date.now())
+
+        // Open / close
+        function openChat() {
+            overlay.classList.add('open')
+            overlay.removeAttribute('aria-hidden')
+            window.dispatchEvent(new CustomEvent('splat:pause'))
+            if (!initialized) initChat()
+            else setTimeout(() => inputEl.focus(), 300)
+        }
+        function closeChat() {
+            overlay.classList.remove('open')
+            overlay.setAttribute('aria-hidden', 'true')
+            window.dispatchEvent(new CustomEvent('splat:resume'))
+        }
+
+        openBtn.addEventListener('click', openChat)
+        closeBtn.addEventListener('click', closeChat)
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeChat() })
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChat() })
+
+        // Nickname
+        function savedNick() {
+            try { return localStorage.getItem(NAME_KEY)?.trim().slice(0,24) || null } catch { return null }
+        }
+        function saveName(n) { try { localStorage.setItem(NAME_KEY, n) } catch {} }
+
+        nickForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const v = nickInput.value.trim().slice(0,24)
+            if (!v) return
+            nickname = v
+            saveName(v)
+            nickWrap.classList.remove('visible')
+            inputEl.disabled = false
+            sendEl.disabled = false
+            inputEl.focus()
+        })
+
+        // Helpers
+        function hashStr(s) {
+            let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
+            return Math.abs(h)
+        }
+        function colorFor(n) {
+            const hues = [8,28,48,88,148,188,218,268,308,338]
+            return `hsl(${hues[hashStr(n) % hues.length]},65%,70%)`
+        }
+        function formatTime(ts) {
+            return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+        }
+
+        function renderMessage(msg) {
+            if (seenIds.has(msg.id)) return
+            seenIds.add(msg.id)
+            if (emptyEl.parentNode) emptyEl.remove()
+
+            const row = document.createElement('div')
+            row.className = 'chat-msg'
+
+            const av = document.createElement('div')
+            av.className = 'chat-avatar'
+            av.style.background = colorFor(msg.name)
+            av.textContent = msg.name[0]
+
+            const body = document.createElement('div')
+            body.className = 'chat-msg-body'
+
+            const meta = document.createElement('div')
+            meta.className = 'chat-msg-meta'
+            const name = document.createElement('span'); name.className = 'chat-msg-name'; name.textContent = msg.name
+            const time = document.createElement('span'); time.className = 'chat-msg-time'; time.textContent = formatTime(msg.created_at)
+            meta.append(name, time)
+
+            const text = document.createElement('div')
+            text.className = 'chat-msg-text'
+            text.textContent = msg.body
+
+            body.append(meta, text)
+            row.append(av, body)
+            messagesEl.appendChild(row)
+
+            const dist = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight
+            if (dist < 120) messagesEl.scrollTop = messagesEl.scrollHeight
+        }
+
+        async function initChat() {
+            initialized = true
+            const saved = savedNick()
+            if (saved) {
+                nickname = saved
+            } else {
+                nickWrap.classList.add('visible')
+                setTimeout(() => nickInput.focus(), 300)
+            }
+
+            const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2')
+            sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                realtime: { params: { eventsPerSecond: 5 } }
+            })
+
+            // Load last 100 messages
+            const { data } = await sb.from('messages')
+                .select('id,name,body,created_at')
+                .order('created_at', { ascending: false })
+                .limit(100)
+            ;(data || []).reverse().forEach(renderMessage)
+            messagesEl.scrollTop = messagesEl.scrollHeight
+
+            // Realtime
+            sb.channel('chat:messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (p) => renderMessage(p.new))
+                .subscribe()
+
+            // Presence
+            const presence = sb.channel('chat-presence', {
+                config: { presence: { key: (nickname || 'anon') + ':' + Math.random().toString(36).slice(2,7) } }
+            })
+            presence.on('presence', { event: 'sync' }, () => {
+                const n = Object.keys(presence.presenceState()).length
+                onlineEl.textContent = n + (n === 1 ? ' rat' : ' rats')
+            }).subscribe(async (s) => {
+                if (s === 'SUBSCRIBED') await presence.track({ at: Date.now() })
+            })
+
+            if (nickname) { inputEl.disabled = false; sendEl.disabled = false; setTimeout(() => inputEl.focus(), 300) }
+
+            // iOS keyboard — lift input bar when keyboard opens
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    const offset = window.innerHeight - window.visualViewport.height
+                    modal.style.marginBottom = offset > 50 ? offset + 'px' : ''
+                })
+            }
+            inputEl.addEventListener('blur', () => setTimeout(() => { modal.style.marginBottom = '' }, 150))
+        }
+
+        // Send
+        formEl.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            if (!sb || !nickname) return
+            const now = Date.now()
+            if (now - lastSendAt < SEND_COOLDOWN_MS) return
+            const body = inputEl.value.trim().slice(0,500)
+            if (!body) return
+            lastSendAt = now
+            sendEl.disabled = true
+            await sb.from('messages').insert({ name: nickname, body })
+            sendEl.disabled = false
+            inputEl.value = ''
+            inputEl.focus()
+        })
+    })()
     </script>
 </body>
 </html>
