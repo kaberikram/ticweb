@@ -20,8 +20,7 @@
     z-index: var(--z-modal);
     font-family: var(--font-family-primary);
     /* Kill the 300ms double-tap-to-zoom delay so taps on modal buttons fire
-     * instantly. Still allows pan (scrolling inside .product-modal-content)
-     * and pinch-zoom. Applies to everything nested inside the overlay. */
+     * instantly. Pinch-zoom still works. (Jacket product modal uses scale-to-fit, no inner scroll.) */
     touch-action: manipulation;
 }
 

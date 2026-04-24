@@ -46,16 +46,16 @@
         <img src="/rateryxLogo.png" alt="TIC Corp. Logo" class="header-logo">
     </header>
 
-    <!-- Floating Buy Button -->
-    <button id="buyJacketBtn" class="floating-buy-btn">Buy Jacket</button>
-
-    <!-- Waiting Room Button -->
-    <button id="waitingRoomLink" class="waiting-room-btn" aria-label="Enter the waiting room chat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-        </svg>
-        <span class="wr-badge" id="wrBadge"></span>
-    </button>
+    <!-- Buy + waiting room: flex row so hover growth / letter-spacing push the chat control -->
+    <div class="floating-home-actions" role="group" aria-label="Jacket purchase and waiting room">
+        <button id="buyJacketBtn" class="floating-buy-btn" type="button">Buy Jacket</button>
+        <button id="waitingRoomLink" class="waiting-room-btn" type="button" aria-label="Enter the waiting room chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            <span class="wr-badge" id="wrBadge"></span>
+        </button>
+    </div>
 
     <!-- Gaussian splat viewer (.sog) -->
     <main class="splat-viewer-wrap" id="splatViewerWrap" aria-label="3D splat view">
@@ -77,6 +77,8 @@
     <!-- Product Modal -->
     <div id="jacketModalOverlay" class="modal-overlay">
         <div id="jacketModal" class="product-modal">
+            <div id="jacketModalScaleOuter" class="product-modal-scale-outer">
+            <div id="jacketModalScaleInner" class="product-modal-scale-inner">
             <button id="jacketModalClose" class="modal-close-x">&times;</button>
             
             <div class="product-modal-content">
@@ -143,6 +145,8 @@
                     <!-- Confirm Button -->
                     <button id="confirmCheckoutBtn" disabled>Select a size</button>
                 </div>
+            </div>
+            </div>
             </div>
         </div>
     </div>
@@ -349,6 +353,8 @@
         const buyBtn = document.getElementById('buyJacketBtn');
         const modalOverlay = document.getElementById('jacketModalOverlay');
         const modal = document.getElementById('jacketModal');
+        const jacketModalScaleOuter = document.getElementById('jacketModalScaleOuter');
+        const jacketModalScaleInner = document.getElementById('jacketModalScaleInner');
         const modalClose = document.getElementById('jacketModalClose');
         const confirmBtn = document.getElementById('confirmCheckoutBtn');
         
@@ -395,6 +401,72 @@
             setTimeout(hydrateModalImages, 1500);
         }
 
+        function getJacketModalOverlayContentBox(overlay) {
+            const r = overlay.getBoundingClientRect();
+            const cs = getComputedStyle(overlay);
+            const pl = parseFloat(cs.paddingLeft) || 0;
+            const pr = parseFloat(cs.paddingRight) || 0;
+            const pt = parseFloat(cs.paddingTop) || 0;
+            const pb = parseFloat(cs.paddingBottom) || 0;
+            return { maxW: r.width - pl - pr, maxH: r.height - pt - pb };
+        }
+
+        function updateJacketModalScale() {
+            if (!jacketModalScaleOuter || !jacketModalScaleInner) return;
+            if (!modalOverlay || modalOverlay.style.display === 'none') return;
+
+            jacketModalScaleOuter.style.width = '';
+            jacketModalScaleOuter.style.height = '';
+            jacketModalScaleInner.style.transform = 'none';
+            jacketModalScaleInner.style.width = '';
+
+            void jacketModalScaleInner.offsetWidth;
+            let rect = jacketModalScaleInner.getBoundingClientRect();
+            let w = rect.width;
+            let h = rect.height;
+            if (w < 1 || h < 1) return;
+
+            /* Lock width so the outer can shrink to w * s without reflowing the inner (breaks scale math). */
+            jacketModalScaleInner.style.width = w + 'px';
+            void jacketModalScaleInner.offsetWidth;
+            rect = jacketModalScaleInner.getBoundingClientRect();
+            h = rect.height;
+
+            const { maxW, maxH } = getJacketModalOverlayContentBox(modalOverlay);
+            if (maxW < 1 || maxH < 1) return;
+
+            const s = Math.min(1, maxW / w, maxH / h);
+            const tw = w * s;
+            const th = h * s;
+            jacketModalScaleInner.style.transform = 'scale(' + s + ')';
+            jacketModalScaleInner.style.transformOrigin = 'top left';
+            jacketModalScaleOuter.style.width = tw + 'px';
+            jacketModalScaleOuter.style.height = th + 'px';
+        }
+
+        let jacketModalScaleRaf = null;
+        let jacketModalScaleObserver = null;
+        if (jacketModalScaleInner && 'ResizeObserver' in window) {
+            jacketModalScaleObserver = new ResizeObserver(function() {
+                if (modalOverlay.style.display === 'none') return;
+                if (jacketModalScaleRaf) cancelAnimationFrame(jacketModalScaleRaf);
+                jacketModalScaleRaf = requestAnimationFrame(function() {
+                    jacketModalScaleRaf = null;
+                    updateJacketModalScale();
+                });
+            });
+            jacketModalScaleObserver.observe(jacketModalScaleInner);
+        }
+
+        function onJacketModalViewportChange() {
+            if (modalOverlay.style.display === 'none') return;
+            updateJacketModalScale();
+        }
+        window.addEventListener('resize', onJacketModalViewportChange);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', onJacketModalViewportChange);
+        }
+
         // Open Modal
         function openModal() {
             hydrateModalImages();
@@ -411,6 +483,11 @@
             });
             updateCheckoutBtn();
             modalOverlay.style.display = 'flex';
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    updateJacketModalScale();
+                });
+            });
             // body.home already locks overflow in CSS — avoid toggling inline overflow (mobile reflow)
             window.dispatchEvent(new CustomEvent('splat:pause'));
         }
@@ -418,6 +495,14 @@
         // Close Modal
         function closeModal() {
             modalOverlay.style.display = 'none';
+            if (jacketModalScaleOuter) {
+                jacketModalScaleOuter.style.width = '';
+                jacketModalScaleOuter.style.height = '';
+            }
+            if (jacketModalScaleInner) {
+                jacketModalScaleInner.style.transform = '';
+                jacketModalScaleInner.style.width = '';
+            }
             window.dispatchEvent(new CustomEvent('splat:resume'));
             // Skip transform transitions for one beat — avoids a visible "jump" when the
             // overlay disappears and mobile Safari recalculates viewport / layers.
@@ -765,6 +850,11 @@
             deliveryCollapse.classList.toggle('is-open', willExpand);
             deliveryCollapse.setAttribute('aria-hidden', String(!willExpand));
             deliveryCollapse.toggleAttribute('inert', !willExpand);
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    updateJacketModalScale();
+                });
+            });
         });
 
         // Size Guide
