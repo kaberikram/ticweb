@@ -928,7 +928,7 @@ body.lightbox-open .product-modal {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal-backdrop, 900);
+    z-index: var(--z-modal, 1000);
     padding: 20px;
 }
 .chat-overlay.open {
