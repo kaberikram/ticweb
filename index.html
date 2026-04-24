@@ -838,6 +838,8 @@
         countdownEl.textContent = formatCountdown(DROP_DATE_MS - Date.now())
 
         // Open / close
+        const footer = document.getElementById('mainFooter')
+
         function openChat() {
             // Show overlay first (display: flex) so backdrop-filter composites
             // before the fade-in begins — prevents the unblurred flash
@@ -848,6 +850,7 @@
                 })
             })
             overlay.removeAttribute('aria-hidden')
+            if (footer) footer.style.display = 'none'
             window.dispatchEvent(new CustomEvent('splat:pause'))
             if (!initialized) initChat()
             else setTimeout(() => inputEl.focus(), 300)
@@ -855,6 +858,7 @@
         function closeChat() {
             overlay.classList.remove('open')
             overlay.setAttribute('aria-hidden', 'true')
+            if (footer) footer.style.display = ''
             window.dispatchEvent(new CustomEvent('splat:resume'))
             // wait for transition before hiding
             overlay.addEventListener('transitionend', () => {
