@@ -1,8 +1,3 @@
-/**
- * Bandpassed noise burst — same profile as web-haptics / haptics.lochie.me (see web-haptics-setup.md).
- * Skipped when prefers-reduced-motion: reduce.
- */
-
 let sharedCtx = null
 
 function getAudioContext() {
@@ -11,6 +6,15 @@ function getAudioContext() {
   if (typeof AudioContext === 'undefined') return null
   sharedCtx = new AudioContext()
   return sharedCtx
+}
+
+// Unlock AudioContext on first interaction so it's ready by the time a click fires.
+// Desktop browsers (especially Safari) won't resume mid-handler reliably.
+if (typeof document !== 'undefined') {
+  document.addEventListener('pointerdown', () => {
+    const ctx = getAudioContext()
+    if (ctx && ctx.state === 'suspended') ctx.resume()
+  }, { once: true })
 }
 
 function prefersReducedMotion() {
