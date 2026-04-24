@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="preload" as="image" href="/packingRat.gif">
+    <link rel="preload" as="image" href="/receipt.webp" />
     <style>
         body {
             font-family: "Source Code Pro", monospace;
@@ -90,6 +91,138 @@
             font-size: 20px;
             font-weight: 500;
             color: #333;
+        }
+
+        .receipt-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .receipt-heading-row h2 {
+            margin: 0;
+        }
+
+        .receipt-help-btn {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            border: 1px solid #e0e0e0;
+            background: #fafafa;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: "Source Code Pro", monospace;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .receipt-help-btn:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .receipt-help-btn:active {
+            transform: scale(0.97);
+        }
+
+        .receipt-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .receipt-modal-overlay.is-open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .receipt-modal {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            max-height: min(90vh, 720px);
+            overflow: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+            border: 1px solid #eee;
+        }
+
+        .receipt-modal-inner {
+            padding: 22px 22px 20px;
+        }
+
+        .receipt-modal h3 {
+            margin: 0 0 12px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .receipt-modal-body {
+            margin: 0 0 16px 0;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #555;
+        }
+
+        .receipt-modal-image-wrap {
+            margin: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            background: #f9f9f9;
+        }
+
+        .receipt-modal-image-wrap img {
+            display: block;
+            width: 100%;
+            height: auto;
+            vertical-align: middle;
+        }
+
+        .receipt-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f2f2f2;
+            color: #333;
+            border-radius: 8px;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-family: "Source Code Pro", monospace;
+            transition: background 0.2s ease;
+        }
+
+        .receipt-modal-close:hover {
+            background: #e8e8e8;
         }
 
         .input-group {
@@ -292,10 +425,10 @@
 
         .processing-message {
             background-color: #f8f9fa;
-            border-left: 4px solid #000;
+            border: 1px solid #eaeaea;
             padding: 15px 20px;
             margin: 25px 0;
-            border-radius: 0 8px 8px 0;
+            border-radius: 8px;
             font-size: 14px;
             line-height: 1.5;
             color: #333;
@@ -505,7 +638,18 @@
     
     <div class="container">
         <div class="tracking-card">
-            <h2>Enter your receipt number</h2>
+            <div class="receipt-heading-row">
+                <h2 id="receiptNumberHeading">Enter your receipt number</h2>
+                <button
+                    type="button"
+                    class="receipt-help-btn"
+                    id="receiptHelpOpen"
+                    aria-label="Where to find your receipt number"
+                    aria-expanded="false"
+                    aria-controls="receiptHelpModal"
+                    title="Where to find your receipt number"
+                >?</button>
+            </div>
             <div class="input-group">
                 <input type="text" id="trackingNumber" placeholder="e.g. #1217-3499">
                 <button onclick="checkOrderStatus()">Track Order</button>
@@ -563,7 +707,86 @@
         </div>
     </div>
 
+    <div
+        id="receiptHelpModal"
+        class="receipt-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="receiptHelpTitle"
+        aria-describedby="receiptHelpDesc"
+        hidden
+    >
+        <div class="receipt-modal" role="document">
+            <button type="button" class="receipt-modal-close" id="receiptHelpClose" aria-label="Close">×</button>
+            <div class="receipt-modal-inner">
+                <h3 id="receiptHelpTitle">Your receipt number</h3>
+                <p class="receipt-modal-body" id="receiptHelpDesc">
+                    You can find the receipt number on the receipt you received by email from TIC Services.
+                </p>
+                <div class="receipt-modal-image-wrap">
+                    <img
+                        src="/receipt.webp"
+                        alt="Example: receipt from TIC Services with receipt number"
+                        loading="eager"
+                        decoding="async"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        (function initReceiptHelpModal() {
+            const overlay = document.getElementById('receiptHelpModal');
+            const openBtn = document.getElementById('receiptHelpOpen');
+            const closeBtn = document.getElementById('receiptHelpClose');
+            if (!overlay || !openBtn || !closeBtn) return;
+
+            const prevActive = { el: null };
+
+            function openModal() {
+                prevActive.el = document.activeElement;
+                overlay.removeAttribute('hidden');
+                overlay.classList.add('is-open');
+                openBtn.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+                closeBtn.focus();
+            }
+
+            function closeModal() {
+                overlay.classList.remove('is-open');
+                overlay.setAttribute('hidden', '');
+                openBtn.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+                if (prevActive.el && typeof prevActive.el.focus === 'function') {
+                    prevActive.el.focus();
+                } else {
+                    openBtn.focus();
+                }
+            }
+
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal();
+            });
+
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeModal();
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
+                    e.preventDefault();
+                    closeModal();
+                }
+            });
+        })();
+
         function checkOrderStatus() {
             const trackingNumber = document.getElementById('trackingNumber').value.trim();
             const orderStatus = document.getElementById('orderStatus');
