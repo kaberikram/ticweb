@@ -937,7 +937,7 @@ body.lightbox-open .product-modal {
 
 .chat-modal {
     width: 90%;
-    max-width: 420px;
+    max-width: 440px;
     height: 72vh;
     max-height: 620px;
     background: rgba(38, 38, 42, 0.62);
@@ -1151,16 +1151,12 @@ body.lightbox-open .product-modal {
 .chat-send:active { transform: scale(0.95); }
 .chat-send:disabled { opacity: 0.3; cursor: not-allowed; }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .chat-modal {
-        width: 100%;
-        max-width: 100%;
+        width: 88%;
+        max-width: 400px;
         height: 80vh;
-        border-radius: 22px 22px 12px 12px;
-    }
-    .chat-overlay {
-        align-items: flex-end;
-        padding: 0;
-        padding-bottom: env(safe-area-inset-bottom, 0);
+        max-height: 88vh;
+        border-radius: 22px;
     }
 }
