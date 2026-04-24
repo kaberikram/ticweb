@@ -929,7 +929,7 @@ body.lightbox-open .product-modal {
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal, 1000);
-    padding: 20px;
+    touch-action: manipulation;
 }
 .chat-overlay.open {
     display: flex;
