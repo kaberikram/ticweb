@@ -938,8 +938,7 @@ body.lightbox-open .product-modal {
 .chat-modal {
     width: 90%;
     max-width: 440px;
-    height: 72vh;
-    max-height: 620px;
+    height: 88vh;
     background: rgba(38, 38, 42, 0.62);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -1155,8 +1154,6 @@ body.lightbox-open .product-modal {
     .chat-modal {
         width: 88%;
         max-width: 400px;
-        height: 80vh;
-        max-height: 88vh;
         border-radius: 22px;
     }
 }
