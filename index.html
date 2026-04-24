@@ -236,6 +236,9 @@
 
             <!-- Messages -->
             <div class="chat-messages" id="chatMessages">
+                <div class="chat-loading" id="chatLoading">
+                    <span></span><span></span><span></span>
+                </div>
                 <div class="chat-empty" id="chatEmpty">No messages yet.<br>Be the first rat to speak.</div>
             </div>
 
@@ -819,8 +822,9 @@
         const nickWrap  = document.getElementById('chatNickWrap')
         const nickForm  = document.getElementById('chatNickForm')
         const nickInput = document.getElementById('chatNickInput')
-        const messagesEl = document.getElementById('chatMessages')
-        const emptyEl   = document.getElementById('chatEmpty')
+        const messagesEl  = document.getElementById('chatMessages')
+        const emptyEl    = document.getElementById('chatEmpty')
+        const loadingEl  = document.getElementById('chatLoading')
         const formEl    = document.getElementById('chatForm')
         const inputEl   = document.getElementById('chatInput')
         const sendEl    = document.getElementById('chatSend')
@@ -946,6 +950,7 @@
 
         async function initChat() {
             initialized = true
+            emptyEl.style.display = 'none' // hide until we know if there are messages
             const saved = savedNick()
             if (saved) {
                 nickname = saved
@@ -964,7 +969,10 @@
                 .select('id,name,body,created_at')
                 .order('created_at', { ascending: false })
                 .limit(100)
-            ;(data || []).reverse().forEach(renderMessage)
+            loadingEl.classList.add('hidden')
+            const msgs = (data || []).reverse()
+            msgs.forEach(renderMessage)
+            if (msgs.length === 0) emptyEl.style.display = ''
             messagesEl.scrollTop = messagesEl.scrollHeight
 
             // Realtime
