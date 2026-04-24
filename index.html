@@ -851,7 +851,14 @@
 
         // Open / close
         function openChat() {
-            overlay.classList.add('open')
+            // Show overlay first (display: flex) so backdrop-filter composites
+            // before the fade-in begins — prevents the unblurred flash
+            overlay.style.display = 'flex'
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    overlay.classList.add('open')
+                })
+            })
             overlay.removeAttribute('aria-hidden')
             window.dispatchEvent(new CustomEvent('splat:pause'))
             if (!initialized) initChat()
@@ -861,6 +868,10 @@
             overlay.classList.remove('open')
             overlay.setAttribute('aria-hidden', 'true')
             window.dispatchEvent(new CustomEvent('splat:resume'))
+            // wait for transition before hiding
+            overlay.addEventListener('transitionend', () => {
+                if (!overlay.classList.contains('open')) overlay.style.display = ''
+            }, { once: true })
         }
 
         openBtn.addEventListener('click', openChat)

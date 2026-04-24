@@ -925,18 +925,14 @@ body.lightbox-open .product-modal {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal-backdrop, 900);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
     padding: 20px;
 }
 .chat-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
+    display: flex;
 }
 
 .chat-modal {
@@ -952,13 +948,17 @@ body.lightbox-open .product-modal {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transform: translateY(16px);
-    transition: transform 0.35s cubic-bezier(0.35, 0, 0.25, 1);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.32s cubic-bezier(0.35, 0, 0.25, 1),
+                opacity 0.22s ease;
+    will-change: transform, opacity;
     color: #fff;
     font-family: "Source Code Pro", monospace;
 }
 .chat-overlay.open .chat-modal {
     transform: translateY(0);
+    opacity: 1;
 }
 
 /* Header */
