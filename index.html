@@ -103,7 +103,7 @@
                 <!-- Product Details -->
                 <div class="product-details">
                     <h2 class="product-name">Rat'teryx Jacket</h2>
-                    <p class="product-price" data-price="100">$1.00</p>
+                    <p class="product-price" data-price="8888">$88.88</p>
 
                     <!-- Product & shipping (collapsible) -->
                     <button type="button" class="product-info-toggle" id="deliveryInfoToggle" aria-expanded="false">
@@ -384,7 +384,7 @@
         // Size Selection State
         let selectedSize = null;
         let selectedQty = 1;
-        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 100;
+        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 8888;
         
         let currentSlide = 0;
         let buyBtnSettleTimer = null;
@@ -604,8 +604,8 @@
             }];
         }
 
-        const releaseDateMsModal = new Date('2000-01-01T00:00:00+08:00').getTime();
-        let isCheckoutReleased = true;
+        const releaseDateMsModal = new Date('2026-04-25T00:00:00+08:00').getTime();
+        let isCheckoutReleased = false;
 
         function formatTimeRemainingModal(ms) {
             if (ms <= 0) return null;
@@ -900,7 +900,7 @@
     (function() {
         const SUPABASE_URL = 'https://qdrqbsgozqdbvawwphzk.supabase.co'
         const SUPABASE_ANON_KEY = 'sb_publishable_5qQAzP6IzwU0l5Ei63waDQ_erygOtsy'
-        const DROP_DATE_MS = new Date('2000-01-01T00:00:00+08:00').getTime()
+        const DROP_DATE_MS = new Date('2026-04-25T00:00:00+08:00').getTime()
         const NAME_KEY = 'wr:nick'
         const SEND_COOLDOWN_MS = 1500
 

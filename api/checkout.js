@@ -69,7 +69,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: { message: 'Cart is required and must be a non-empty array.' } });
       }
 
-      // Stripe requires integer cent amounts; JSON may give strings (e.g. "100")
+      // Stripe requires integer cent amounts; JSON may give strings (e.g. "8888")
       const asCents = (n, fallback) => {
         const v = Math.round(Number(n));
         if (!Number.isFinite(v) || v < 1) return fallback;
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
         if (item.name && item.name.toLowerCase().includes('ratée')) {
           unitAmount = 29900; // RATÉE — La Rat Féminine price
         } else if (item.name && item.name.toLowerCase().includes('jacket')) {
-          unitAmount = asCents(item.price, 100); // TIC Jacket (cents; cart sends price)
+          unitAmount = asCents(item.price, 8888); // TIC Jacket ($88.88; cart sends price in cents)
         } else if (item.name && item.name.includes('Ratward')) {
           unitAmount = 3000; // RatwardScissor-T price
         } else {
