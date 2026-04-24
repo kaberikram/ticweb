@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         if (item.name && item.name.toLowerCase().includes('ratée')) {
           unitAmount = 29900; // RATÉE — La Rat Féminine price
         } else if (item.name && item.name.toLowerCase().includes('jacket')) {
-          unitAmount = item.price || 8888; // TIC Jacket price ($88.88)
+          unitAmount = item.price || 50; // TIC Jacket (cents; cart sends price)
         } else if (item.name && item.name.includes('Ratward')) {
           unitAmount = 3000; // RatwardScissor-T price
         } else {
