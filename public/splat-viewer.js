@@ -11,7 +11,7 @@ const FALLBACK_SOG_URL = 'https://developer.playcanvas.com/assets/toy-cat.sog'
 const CAMERA_CONTROLS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs'
 
 const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-const MAX_DPR = IS_MOBILE ? 1.25 : 1.5
+const MAX_DPR = IS_MOBILE ? 0.75 : 1.5
 
 function getSogUrl() {
   const el = document.getElementById(CONTAINER_ID)
