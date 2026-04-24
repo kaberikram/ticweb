@@ -109,7 +109,8 @@
           })
           if (!response.ok) {
             const err = await response.json().catch(() => ({}))
-            throw new Error(err.error?.message || err.error?.details || 'Could not start checkout')
+            const msg = [err.error?.details, err.error?.message].filter(Boolean).join(' — ') || 'Could not start checkout'
+            throw new Error(msg)
           }
           const data = await response.json()
           if (!data.clientSecret) throw new Error('No client secret returned')

@@ -55,13 +55,33 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({
+          error: {
+            message: 'Failed to create checkout session.',
+            details: 'STRIPE_SECRET_KEY is not set. Add it in Vercel (or .env) for this project.'
+          }
+        });
+      }
+
       const { cart, embedded } = req.body;
+      if (!Array.isArray(cart) || cart.length === 0) {
+        return res.status(400).json({ error: { message: 'Cart is required and must be a non-empty array.' } });
+      }
+
+      // Stripe requires integer cent amounts; JSON may give strings (e.g. "100")
+      const asCents = (n, fallback) => {
+        const v = Math.round(Number(n));
+        if (!Number.isFinite(v) || v < 1) return fallback;
+        return v;
+      };
+
       const line_items = cart.map(item => {
         let unitAmount;
         if (item.name && item.name.toLowerCase().includes('ratée')) {
           unitAmount = 29900; // RATÉE — La Rat Féminine price
         } else if (item.name && item.name.toLowerCase().includes('jacket')) {
-          unitAmount = item.price || 50; // TIC Jacket (cents; cart sends price)
+          unitAmount = asCents(item.price, 100); // TIC Jacket (cents; cart sends price)
         } else if (item.name && item.name.includes('Ratward')) {
           unitAmount = 3000; // RatwardScissor-T price
         } else {
@@ -76,6 +96,8 @@ export default async function handler(req, res) {
           productName = `${item.name} — ${item.size}`;
         }
 
+        const qty = Math.max(1, Math.min(99, Math.round(Number(item.quantity)) || 1));
+
         return {
           price_data: {
             currency: 'usd',
@@ -84,14 +106,16 @@ export default async function handler(req, res) {
               name: productName
             }
           },
-          quantity: item.quantity
+          quantity: qty
         };
       });
 
-      // Determine the origin for success and cancel URLs
-      // Vercel sets process.env.VERCEL_URL (the deployment URL)
-      // and process.env.NODE_ENV which could be 'production' or 'development'
-      const origin = req.headers.origin || 'http://localhost:3000'; // Fallback for local dev if origin header isn't there
+      // return_url / success_url must be real HTTPS in prod; some clients omit Origin
+      const vercelBase =
+        process.env.VERCEL_URL && !String(process.env.VERCEL_URL).includes('://')
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.VERCEL_URL;
+      const origin = req.headers.origin || vercelBase || 'http://localhost:3000';
 
       const itemsSummary = cart.map(item => {
         let name = item.name;
@@ -138,10 +162,15 @@ export default async function handler(req, res) {
         res.status(200).json({ sessionId: session.id, url: session.url });
       }
     } catch (err) {
+      const stripeMsg = err?.raw?.message || err?.message || 'Unknown error';
       console.error('Error creating Stripe Checkout session:', err);
-      // It's good practice to use a more generic error message for the client
-      // and log the detailed error on the server.
-      res.status(500).json({ error: { message: 'Failed to create checkout session.', details: err.message } });
+      // Include Stripe’s message so clients can show real cause (e.g. invalid key, below minimum, bad params).
+      res.status(500).json({
+        error: {
+          message: 'Failed to create checkout session.',
+          details: stripeMsg
+        }
+      });
     }
   } else {
     // Handle any other HTTP methods or return method not allowed
