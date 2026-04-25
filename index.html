@@ -103,7 +103,7 @@
                 <!-- Product Details -->
                 <div class="product-details">
                     <h2 class="product-name">Rat'teryx Jacket</h2>
-                    <p class="product-price" data-price="8888">US$88.88</p>
+                    <p class="product-price" data-price="35000">RM350.00</p>
 
                     <!-- Product & shipping (collapsible) -->
                     <button type="button" class="product-info-toggle" id="deliveryInfoToggle" aria-expanded="false">
@@ -384,7 +384,7 @@
         // Size Selection State
         let selectedSize = null;
         let selectedQty = 1;
-        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 8888;
+        const pricePerItem = parseInt(document.querySelector('.product-price').dataset.price) || 35000;
         
         let currentSlide = 0;
         let buyBtnSettleTimer = null;
@@ -561,8 +561,8 @@
             } else {
                 confirmBtn.disabled = false;
                 const totalCents = pricePerItem * selectedQty;
-                const totalDollars = (totalCents / 100).toFixed(2);
-                confirmBtn.textContent = `Order now · US$${totalDollars}`;
+                const totalRinggit = (totalCents / 100).toFixed(2);
+                confirmBtn.textContent = `Order now · RM${totalRinggit}`;
             }
         }
 

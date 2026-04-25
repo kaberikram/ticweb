@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Calculate and display price
         const price = currentShirtName.includes('Ratward') ? 3000 : 2000;
         if (modalShirtPriceElement) {
-            modalShirtPriceElement.textContent = `$${(price / 100).toFixed(2)}`;
+            modalShirtPriceElement.textContent = `RM${(price / 100).toFixed(2)}`;
         } else {
             console.error('Modal price element not found!');
         }
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemName = modalShirtName.textContent;
         const fitType = document.getElementById('fittingType').value;
         const size = document.getElementById('sizeSelect').value;
-        const defaultPrice = itemName.includes('Ratward') ? 3000 : 2000; // $20 default, $30 for Ratward Scissor-T
+        const defaultPrice = itemName.includes('Ratward') ? 3000 : 2000; // RM20 default, RM30 for Ratward Scissor-T
         // Build cart item
         const cartItem = { name: itemName, fit: fitType, size: size, price: defaultPrice, quantity: 1 };
         // Read existing cart

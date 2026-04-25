@@ -3,6 +3,8 @@ import Stripe from 'stripe';
 import cors from 'cors';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const CHECKOUT_CURRENCY = 'myr';
+const JACKET_UNIT_AMOUNT = 35000;
 
 // Initialize cors middleware
 const corsHandler = cors();
@@ -69,7 +71,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: { message: 'Cart is required and must be a non-empty array.' } });
       }
 
-      // Stripe requires integer cent amounts; JSON may give strings (e.g. "8888")
+      // Stripe requires integer minor-unit amounts; JSON may give strings.
       const asCents = (n, fallback) => {
         const v = Math.round(Number(n));
         if (!Number.isFinite(v) || v < 1) return fallback;
@@ -81,7 +83,7 @@ export default async function handler(req, res) {
         if (item.name && item.name.toLowerCase().includes('ratée')) {
           unitAmount = 29900; // RATÉE — La Rat Féminine price
         } else if (item.name && item.name.toLowerCase().includes('jacket')) {
-          unitAmount = asCents(item.price, 8888); // TIC Jacket ($88.88; cart sends price in cents)
+          unitAmount = asCents(item.price, JACKET_UNIT_AMOUNT); // Rat'teryx Jacket (RM350.00)
         } else if (item.name && item.name.includes('Ratward')) {
           unitAmount = 3000; // RatwardScissor-T price
         } else {
@@ -100,7 +102,7 @@ export default async function handler(req, res) {
 
         return {
           price_data: {
-            currency: 'usd',
+            currency: CHECKOUT_CURRENCY,
             unit_amount: unitAmount,
             product_data: {
               name: productName
@@ -144,7 +146,7 @@ export default async function handler(req, res) {
             shipping_rate_data: {
               display_name: 'Standard shipping',
               type: 'fixed_amount',
-              fixed_amount: { amount: 0, currency: 'usd' }
+              fixed_amount: { amount: 0, currency: CHECKOUT_CURRENCY }
             }
           }
         ];

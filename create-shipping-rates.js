@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Create 7 regional shipping rates in Stripe via API.
+ * Create 5 regional MYR shipping rates in Stripe via API.
  * Usage: node create-shipping-rates.js
  */
 
@@ -16,61 +16,42 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// 7 shipping regions (prices in cents, delivery in business days)
+// 5 shipping regions (amounts in sen, delivery in working/business days)
 const regions = [
   {
     name: 'Malaysia',
-    amount: 510, // $5.10
-    currency: 'usd',
+    amount: 2000, // RM20
+    currency: 'myr',
     countries: ['MY'],
-    delivery: { min: 11, max: 17 },
-  },
-  {
-    name: 'Singapore',
-    amount: 1270, // $12.70
-    currency: 'usd',
-    countries: ['SG'],
-    delivery: { min: 11, max: 15 },
+    delivery: { min: 3, max: 5 },
   },
   {
     name: 'Southeast Asia',
-    amount: 2290, // $22.90
-    currency: 'usd',
-    countries: ['TH', 'ID', 'PH', 'VN', 'KH', 'LA', 'MM', 'BN', 'TL'],
-    delivery: { min: 12, max: 18 },
+    amount: 8000, // RM80
+    currency: 'myr',
+    countries: ['SG', 'ID', 'TH', 'PH', 'VN', 'BN', 'KH', 'LA', 'MM', 'TL'],
+    delivery: { min: 5, max: 10 },
   },
   {
     name: 'East Asia',
-    amount: 2800, // $28.00
-    currency: 'usd',
-    countries: ['CN', 'JP', 'KR', 'TW', 'HK', 'MO', 'MN'],
-    delivery: { min: 12, max: 20 },
+    amount: 12000, // RM120
+    currency: 'myr',
+    countries: ['JP', 'KR', 'TW', 'HK', 'CN'],
+    delivery: { min: 7, max: 14 },
   },
   {
     name: 'Australia / New Zealand',
-    amount: 3820, // $38.20
-    currency: 'usd',
+    amount: 16000, // RM160
+    currency: 'myr',
     countries: ['AU', 'NZ'],
-    delivery: { min: 13, max: 22 },
-  },
-  {
-    name: 'Europe / United Kingdom',
-    amount: 5600, // $56.00
-    currency: 'usd',
-    countries: [
-      'GB', 'IE', 'FR', 'DE', 'ES', 'IT', 'NL', 'BE', 'LU',
-      'DK', 'SE', 'FI', 'NO', 'IS', 'CH', 'AT', 'PT', 'GR',
-      'PL', 'CZ', 'HU', 'SK', 'SI', 'HR', 'RO', 'BG', 'EE',
-      'LV', 'LT', 'MT', 'CY',
-    ],
-    delivery: { min: 13, max: 24 },
+    delivery: { min: 10, max: 21 },
   },
   {
     name: 'USA / Canada',
-    amount: 6620, // $66.20
-    currency: 'usd',
+    amount: 25000, // RM250
+    currency: 'myr',
     countries: ['US', 'CA'],
-    delivery: { min: 13, max: 25 },
+    delivery: { min: 10, max: 21 },
   },
 ];
 
@@ -82,7 +63,7 @@ async function createRates() {
     await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
-  console.log('Creating 7 regional shipping rates in Stripe…\n');
+  console.log('Creating 5 regional MYR shipping rates in Stripe…\n');
   const rateIds = [];
 
   for (const region of regions) {
@@ -113,7 +94,7 @@ async function createRates() {
 
       console.log(`✅ ${region.name}:`);
       console.log(`   ID: ${rate.id}`);
-      console.log(`   Price: $${(region.amount / 100).toFixed(2)}`);
+      console.log(`   Price: RM${(region.amount / 100).toFixed(2)}`);
       console.log(`   Countries: ${region.countries.length}`);
       rateIds.push(rate.id);
     } catch (error) {

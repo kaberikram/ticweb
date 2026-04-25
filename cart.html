@@ -138,7 +138,7 @@
     <main class="container" id="cart-container">
       <h1>Your Cart</h1>
       <div id="cart-items"></div>
-      <p id="cart-total">Total: $0.00</p>
+      <p id="cart-total">Total: RM0.00</p>
 
       <button id="checkout-button" class="nav-button">Checkout</button>
     </main>
@@ -302,13 +302,13 @@
           // 4. Price
           const priceSpan = document.createElement('span');
           priceSpan.classList.add('cart-item-price');
-          priceSpan.textContent = `$${(price/100).toFixed(2)}`;
+          priceSpan.textContent = `RM${(price/100).toFixed(2)}`;
           itemRow.appendChild(priceSpan);
           
           list.appendChild(itemRow);
           total += price * quantity;
         });
-        totalEl.textContent = `Total: $${(total/100).toFixed(2)}`;
+        totalEl.textContent = `Total: RM${(total/100).toFixed(2)}`;
       }
       renderCart();
       
